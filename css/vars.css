@@ -1,0 +1,139 @@
+/* ============ CSS VARIABLES ============ */
+:root {
+  --brand-a: #ef4444;
+  --brand-b: #f43f5e;
+  --brand-c: #f97316;
+  --brand-grad: linear-gradient(135deg, #ef4444, #f43f5e);
+  --brand-grad-story: linear-gradient(135deg, #f59e0b, #ef4444, #f43f5e);
+  --brand-shadow: 0 4px 20px rgba(239,68,68,.35);
+
+  --accent-green: #22c55e;
+  --accent-red:   #ef4444;
+  --accent-blue:  #3b82f6;
+  --accent-yellow:#eab308;
+  --accent-orange:#f97316;
+
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', Consolas, monospace;
+
+  /* Spacing */
+  --s1:.25rem; --s2:.5rem; --s3:.75rem; --s4:1rem;
+  --s5:1.25rem; --s6:1.5rem; --s8:2rem; --s10:2.5rem;
+  --s12:3rem; --s16:4rem;
+
+  /* Radius */
+  --r-sm:6px; --r-md:10px; --r-lg:14px;
+  --r-xl:20px; --r-2xl:28px; --r-full:9999px;
+
+  /* Typography */
+  --text-xs:.75rem; --text-sm:.875rem; --text-base:1rem;
+  --text-lg:1.125rem; --text-xl:1.25rem; --text-2xl:1.5rem;
+  --text-3xl:1.875rem; --text-4xl:2.25rem;
+
+  /* Z-index */
+  --z-nav:100; --z-dropdown:200; --z-modal:300; --z-toast:400;
+
+  /* Transitions */
+  --t-fast:120ms ease; --t-base:200ms ease; --t-slow:350ms ease;
+  --t-bounce:300ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* ========= LIGHT THEME ========= */
+.theme-light, [data-theme="light"] {
+  --bg:       #fafafa;
+  --bg-s:     #ffffff;
+  --bg-el:    #ffffff;
+  --bg-sub:   #f4f4f5;
+  --bg-muted: #e4e4e7;
+  --bg-hover: rgba(0,0,0,.04);
+  --bg-active:rgba(239,68,68,.08);
+
+  --border:   #e4e4e7;
+  --border-s: #f0f0f1;
+  --border-str:#d1d1d6;
+  --border-br:rgba(239,68,68,.35);
+
+  --tx:       #09090b;
+  --tx-2:     #52525b;
+  --tx-3:     #71717a;
+  --tx-muted: #a1a1aa;
+  --tx-inv:   #ffffff;
+  --tx-br:    #ef4444;
+  --tx-link:  #dc2626;
+
+  --card:     #ffffff;
+  --card-b:   #e4e4e7;
+  --card-sh:  0 1px 3px rgba(0,0,0,.06),0 2px 12px rgba(0,0,0,.04);
+
+  --in-bg:    #ffffff;
+  --in-b:     #d4d4d8;
+  --in-fb:    #ef4444;
+  --in-fr:    rgba(239,68,68,.2);
+
+  --sb-thumb: #d4d4d8;
+  --code-bg:  #f4f4f5;
+  --pre-bg:   #1e1e2e;
+}
+
+/* ========= DARK THEME ========= */
+.theme-dark, [data-theme="dark"] {
+  --bg:       #09090b;
+  --bg-s:     #111113;
+  --bg-el:    #18181b;
+  --bg-sub:   #1c1c20;
+  --bg-muted: #27272a;
+  --bg-hover: rgba(255,255,255,.04);
+  --bg-active:rgba(239,68,68,.12);
+
+  --border:   #27272a;
+  --border-s: #1e1e22;
+  --border-str:#3f3f46;
+  --border-br:rgba(239,68,68,.45);
+
+  --tx:       #fafafa;
+  --tx-2:     #a1a1aa;
+  --tx-3:     #71717a;
+  --tx-muted: #52525b;
+  --tx-inv:   #09090b;
+  --tx-br:    #f87171;
+  --tx-link:  #fca5a5;
+
+  --card:     #111113;
+  --card-b:   #27272a;
+  --card-sh:  0 1px 4px rgba(0,0,0,.3),0 2px 12px rgba(0,0,0,.2);
+
+  --in-bg:    #18181b;
+  --in-b:     #3f3f46;
+  --in-fb:    #f87171;
+  --in-fr:    rgba(248,113,113,.2);
+
+  --sb-thumb: #3f3f46;
+  --code-bg:  #27272a;
+  --pre-bg:   #0d0d0f;
+}
+
+/* ========= SYSTEM THEME ========= */
+@media (prefers-color-scheme:light) {
+  .theme-system {
+    --bg:#fafafa;--bg-s:#ffffff;--bg-el:#ffffff;--bg-sub:#f4f4f5;
+    --bg-muted:#e4e4e7;--bg-hover:rgba(0,0,0,.04);--bg-active:rgba(239,68,68,.08);
+    --border:#e4e4e7;--border-s:#f0f0f1;--border-str:#d1d1d6;--border-br:rgba(239,68,68,.35);
+    --tx:#09090b;--tx-2:#52525b;--tx-3:#71717a;--tx-muted:#a1a1aa;
+    --tx-inv:#ffffff;--tx-br:#ef4444;--tx-link:#dc2626;
+    --card:#ffffff;--card-b:#e4e4e7;--card-sh:0 1px 3px rgba(0,0,0,.06),0 2px 12px rgba(0,0,0,.04);
+    --in-bg:#ffffff;--in-b:#d4d4d8;--in-fb:#ef4444;--in-fr:rgba(239,68,68,.2);
+    --sb-thumb:#d4d4d8;--code-bg:#f4f4f5;--pre-bg:#1e1e2e;
+  }
+}
+@media (prefers-color-scheme:dark) {
+  .theme-system {
+    --bg:#09090b;--bg-s:#111113;--bg-el:#18181b;--bg-sub:#1c1c20;
+    --bg-muted:#27272a;--bg-hover:rgba(255,255,255,.04);--bg-active:rgba(239,68,68,.12);
+    --border:#27272a;--border-s:#1e1e22;--border-str:#3f3f46;--border-br:rgba(239,68,68,.45);
+    --tx:#fafafa;--tx-2:#a1a1aa;--tx-3:#71717a;--tx-muted:#52525b;
+    --tx-inv:#09090b;--tx-br:#f87171;--tx-link:#fca5a5;
+    --card:#111113;--card-b:#27272a;--card-sh:0 1px 4px rgba(0,0,0,.3),0 2px 12px rgba(0,0,0,.2);
+    --in-bg:#18181b;--in-b:#3f3f46;--in-fb:#f87171;--in-fr:rgba(248,113,113,.2);
+    --sb-thumb:#3f3f46;--code-bg:#27272a;--pre-bg:#0d0d0f;
+  }
+}
