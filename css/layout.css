@@ -462,57 +462,94 @@
   height: 24px !important;
 }
 
-@media (max-width: 640px) {
-  .sidebar-nav { display: none; }
-  .main-content {
-    margin-left: 0;
-    padding-bottom: 96px !important; /* prevent overlap with floating bottom nav */
+@media (orientation: portrait) {
+  /* Hide the separate bottom nav as we are refactoring the sidebar itself */
+  .bottom-nav {
+    display: none !important;
   }
-  .bottom-nav { display: flex; }
-}
 
-/* ---- Bottom Nav (mobile) ---- */
-.bottom-nav {
-  display: none;
-  position: fixed;
-  bottom: var(--s4);
-  left: var(--s4);
-  right: var(--s4);
-  background: color-mix(in srgb, var(--bg-s) 80%, transparent);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border);
-  border-radius: var(--r-full);
-  padding: var(--s2) 0;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  z-index: var(--z-nav);
-  animation: slideUp .3s var(--t-bounce);
-}
-.bottom-nav-items {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  width: 100%;
-}
-.bottom-nav .nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border-radius: 50%;
-  color: var(--tx-2);
-  transition: background var(--t-fast), color var(--t-fast), transform var(--t-fast);
-}
-.bottom-nav .nav-item:hover,
-.bottom-nav .nav-item.active {
-  background: var(--bg-active);
-  color: var(--tx-br);
-  transform: translateY(-2px);
-}
-.bottom-nav .nav-item svg {
-  width: 24px;
-  height: 24px;
+  /* Refactor Left Sidebar Nav into a Floating Bottom Pill Bar */
+  .sidebar-nav {
+    position: fixed !important;
+    top: auto !important;
+    bottom: var(--s4) !important;
+    left: var(--s4) !important;
+    right: var(--s4) !important;
+    width: auto !important;
+    height: auto !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+    padding: var(--s2) var(--s4) !important;
+    background: color-mix(in srgb, var(--bg-s) 80%, transparent) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--r-full) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+    z-index: var(--z-nav) !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    animation: slideUp .3s var(--t-bounce) !important;
+  }
+
+  /* Hide the sidebar logo inside the bottom bar */
+  .sidebar-logo {
+    display: none !important;
+  }
+
+  /* Lay out nav-items horizontally */
+  .nav-items {
+    flex-direction: row !important;
+    gap: var(--s2) !important;
+    flex: 1 !important;
+    justify-content: space-around !important;
+    margin: 0 !important;
+  }
+
+  /* Lay out settings horizontally next to other items */
+  .sidebar-nav > .mt-auto {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+  }
+
+  /* Hide all item text labels, only show icons */
+  .nav-item-label, .nav-section-title {
+    display: none !important;
+  }
+
+  /* Custom round styles for items in the floating bar */
+  .nav-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 44px !important;
+    height: 44px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    color: var(--tx-2) !important;
+    transition: background var(--t-fast), color var(--t-fast), transform var(--t-fast) !important;
+  }
+
+  .nav-item:hover,
+  .nav-item.active {
+    background: var(--bg-active) !important;
+    color: var(--tx-br) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  .nav-item-icon {
+    width: 24px !important;
+    height: 24px !important;
+    margin: 0 !important;
+  }
+
+  /* Pushing main content to avoid overlap with floating bar at the bottom */
+  .main-content {
+    margin-left: 0 !important;
+    padding-bottom: 96px !important;
+  }
 }
