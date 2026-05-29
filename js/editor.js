@@ -1,4 +1,4 @@
-import { el, toast, resizeImage } from './utils.js';
+import { el, toast, resizeImage, showModal } from './utils.js';
 import { icons } from './icons.js';
 import { store } from './store.js';
 
@@ -22,20 +22,14 @@ function hsvToHex(h, s, v) {
   return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
 }
 
-function createColorPickerPopup(onChange, onClose) {
-  const wrapper = el('div', { style: { position: 'fixed', top: '0', left: '0', right: '0', bottom: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: '99999' } });
-  const overlay = el('div', { style: { position: 'absolute', top: '0', left: '0', right: '0', bottom: '0', background: 'rgba(0,0,0,0.5)' }, onclick: () => {
-    if(onClose) onClose();
-  }});
-  
-  const popup = el('div', { 
-    style: { position: 'relative', background: 'var(--bg-el)', border: '1px solid var(--border)', borderRadius: 'var(--r-2xl)', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', gap: '2rem', zIndex: '10' }
-  });
+function showColorPickerModal(onChange, onClose) {
+  const wrap = el('div', { className: 'p-2 flex flex-col items-center w-full max-w-sm' });
+  wrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3 mb-4 w-full text-center' }, '색상 선택'));
 
   let h = 0, s = 100, v = 100;
   
-  const hexInput = el('input', { className: 'input p-1 text-xs text-center flex-1', value: '#ff0000' });
-  const colorPreview = el('div', { style: { width: '24px', height: '24px', borderRadius: '50%', background: '#ff0000', border: '1px solid var(--border)' } });
+  const hexInput = el('input', { className: 'input p-2 text-sm text-center flex-1 font-mono', value: '#ff0000' });
+  const colorPreview = el('div', { style: { width: '32px', height: '32px', borderRadius: '50%', background: '#ff0000', border: '1px solid var(--border)' } });
 
   function updateColor() {
     const hex = hsvToHex(h, s, v);
@@ -44,11 +38,11 @@ function createColorPickerPopup(onChange, onClose) {
     onChange(hex);
   }
 
-  const wheelSize = 140;
+  const wheelSize = 160;
   const wheelCanvas = el('canvas', { width: wheelSize, height: wheelSize, style: { borderRadius: '50%', cursor: 'crosshair', margin: '0 auto', display: 'block' } });
   const wheelCtx = wheelCanvas.getContext('2d');
   
-  const cx = wheelSize/2, cy = wheelSize/2, outerR = wheelSize/2, innerR = outerR - 15;
+  const cx = wheelSize/2, cy = wheelSize/2, outerR = wheelSize/2, innerR = outerR - 20;
   for(let angle = 0; angle < 360; angle++) {
     wheelCtx.beginPath();
     wheelCtx.arc(cx, cy, outerR, (angle-1)*Math.PI/180, (angle+1.5)*Math.PI/180);
@@ -80,31 +74,31 @@ function createColorPickerPopup(onChange, onClose) {
 
   const sSlider = el('input', { type: 'range', min: 0, max: 100, value: 100, className: 'w-full', oninput: (e) => { s = e.target.value; updateColor(); } });
   const vSlider = el('input', { type: 'range', min: 0, max: 100, value: 100, className: 'w-full', oninput: (e) => { v = e.target.value; updateColor(); } });
-  
-  const closeBtn = el('button', { style: { position: 'absolute', top: '1rem', right: '1rem', color: 'var(--tx-3)', cursor: 'pointer', background: 'none', border: 'none' }, onclick: () => {
-    document.removeEventListener('mousemove', onMove);
-    document.removeEventListener('mouseup', onUp);
-    if(onClose) onClose();
-  }}, el('span', { innerHTML: icons.x(20) }));
 
-  popup.append(
-    closeBtn,
+  wrap.append(
     wheelCanvas,
-    el('div', { className: 'flex flex-col gap-5 w-48' }, 
-      el('div', { className: 'flex flex-col gap-3' },
-        el('div', { className: 'flex items-center gap-3' }, el('label', { className: 'text-sm font-semibold text-tx-2 w-8' }, '채도'), sSlider),
-        el('div', { className: 'flex items-center gap-3' }, el('label', { className: 'text-sm font-semibold text-tx-2 w-8' }, '명도'), vSlider)
+    el('div', { className: 'flex flex-col gap-4 w-full mt-6 px-4' }, 
+      el('div', { className: 'flex flex-col gap-3 w-full' },
+        el('div', { className: 'flex items-center gap-3 w-full' }, el('label', { className: 'text-sm font-semibold text-tx-2 w-10' }, '채도'), sSlider),
+        el('div', { className: 'flex items-center gap-3 w-full' }, el('label', { className: 'text-sm font-semibold text-tx-2 w-10' }, '명도'), vSlider)
       ),
-      el('div', { className: 'w-full h-px bg-base' }),
-      el('div', { className: 'flex items-center gap-3' }, 
+      el('div', { className: 'w-full h-px bg-base my-2' }),
+      el('div', { className: 'flex items-center justify-between gap-3 w-full' }, 
         colorPreview, 
-        el('div', { className: 'flex-1' }, hexInput)
+        hexInput
       )
     )
   );
 
-  wrapper.append(overlay, popup);
-  return wrapper;
+  const modal = showModal(wrap, { 
+    onClose: () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      if(onClose) onClose();
+    }
+  });
+
+  return modal;
 }
 
 export function createRichTextEditor(options) {
@@ -604,15 +598,14 @@ export function createRichTextEditor(options) {
   );
   let colorPopup = null;
   colorBtn.onclick = () => {
-    if (colorPopup) { colorPopup.remove(); colorPopup = null; }
+    if (colorPopup) { colorPopup.close(); colorPopup = null; }
     else {
-      colorPopup = createColorPickerPopup((hex) => {
+      colorPopup = showColorPickerModal((hex) => {
         colorBtn.firstChild.style.color = hex;
         exec('foreColor', hex);
       }, () => {
-        if(colorPopup) { colorPopup.remove(); colorPopup = null; }
+        colorPopup = null;
       });
-      document.body.appendChild(colorPopup);
     }
   };
   colorBtnWrap.appendChild(colorBtn);

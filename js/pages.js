@@ -21,11 +21,34 @@ export function renderFeedPage(container, params = {}) {
         el('p', { className: 'text-sm mt-2' }, '첫 번째 리프를 작성하거나 다른 사용자를 팔로우해 보세요.')
       ));
     } else {
-      const grid = el('div', { className: 'grid gap-6 w-full', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' } });
-      posts.forEach(post => {
-        grid.appendChild(renderPostPreviewCard(post));
+      const colsContainer = el('div', { className: 'flex gap-6 w-full items-start feed-cols-container' });
+      
+      const createCol = (title, iconName, items) => {
+        const col = el('div', { className: 'flex-1 flex flex-col gap-6 w-1/3 min-w-0' });
+        const header = el('div', { className: 'flex items-center gap-2 font-bold text-lg text-tx border-b border-base pb-3 mb-2' },
+          el('span', { className: 'text-brand', innerHTML: icons[iconName] ? icons[iconName](24) : '' }),
+          title
+        );
+        col.appendChild(header);
+        items.forEach(post => {
+          col.appendChild(renderPostPreviewCard(post));
+        });
+        return col;
+      };
+
+      const c1 = [], c2 = [], c3 = [];
+      posts.forEach((post, i) => {
+        if (i % 3 === 0) c1.push(post);
+        else if (i % 3 === 1) c2.push(post);
+        else c3.push(post);
       });
-      main.appendChild(grid);
+
+      colsContainer.append(
+        createCol('사용자 맞춤 알고리즘', 'user', c1),
+        createCol('현재 화제가 되는 리프', 'hash', c2),
+        createCol('새로운 영감 발견', 'compass', c3)
+      );
+      main.appendChild(colsContainer);
     }
     
     const aside = el('div', { className: 'feed-aside' });
@@ -43,20 +66,100 @@ export function renderExplorePage(container) {
   container.innerHTML = '';
   const posts = store.getExplorePosts();
   
-  const wrap = el('div', { className: 'page-container anim-fade' });
+  const wrap = el('div', { className: 'page-container anim-fade flex flex-col gap-8 w-full max-w-5xl mx-auto' });
   
-  const tagsRow = el('div', { className: 'explore-tags-row mb-6' });
-  ['#사진', '#일상', '#디자인', '#개발', '#여행', '#맛집'].forEach(tag => {
-    tagsRow.appendChild(el('div', { className: 'chip', textContent: tag, onclick: () => window.navigateTo(`tag/${tag.substring(1)}`) }));
+  const searchHeader = el('div', { className: 'flex items-center gap-4 w-full' });
+  
+  const searchWrap = el('div', { className: 'flex-1 relative' });
+  const searchInput = el('input', { 
+    type: 'text', 
+    className: 'input w-full pl-12 py-3 rounded-2xl bg-element border-base text-lg font-semibold', 
+    placeholder: '검색어를 입력하세요...' 
   });
-  wrap.appendChild(tagsRow);
+  const searchIcon = el('div', { className: 'absolute left-4 top-1/2 -translate-y-1/2 text-tx-3', innerHTML: icons.search(22) });
+  searchWrap.append(searchIcon, searchInput);
   
-  const grid = el('div', { className: 'grid gap-6', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' } });
-  posts.forEach(post => {
-    grid.appendChild(renderPostPreviewCard(post));
+  const categorySelect = el('select', { className: 'select py-3 px-4 rounded-2xl bg-element border-base text-lg font-semibold min-w-[120px] cursor-pointer outline-none focus:ring-2 ring-brand' },
+    ...['전체', '사진', '일상', '개발', '디자인', '기타'].map(cat => el('option', { value: cat, textContent: cat }))
+  );
+  
+  searchHeader.append(searchWrap, categorySelect);
+  wrap.appendChild(searchHeader);
+
+  const contentArea = el('div', { className: 'w-full' });
+  wrap.appendChild(contentArea);
+  
+  const renderDefaultView = () => {
+    contentArea.innerHTML = '';
+    const defWrap = el('div', { className: 'flex flex-col gap-10 w-full' });
+    
+    const keywordsRow = el('div', { className: 'flex gap-12 w-full max-md:flex-col' });
+    
+    const recentWrap = el('div', { className: 'flex-1 flex flex-col gap-4' });
+    recentWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3' }, '최근 검색어'));
+    ['React 19', 'UI/UX 트렌드', '맛집 추천'].forEach(kw => {
+      recentWrap.appendChild(el('div', { className: 'flex items-center justify-between group cursor-pointer hover:bg-hover p-3 rounded-xl transition-colors' },
+        el('div', { className: 'flex items-center gap-3 text-tx-2 group-hover:text-tx font-medium', onclick: () => {
+          searchInput.value = kw;
+          renderSearchResults(kw);
+        }}, el('span', { innerHTML: icons.search(18) }), kw),
+        el('button', { className: 'text-tx-3 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity' }, el('span', { innerHTML: icons.x ? icons.x(18) : 'x' }))
+      ));
+    });
+    
+    const recWrap = el('div', { className: 'flex-1 flex flex-col gap-4' });
+    recWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3' }, '추천 검색어'));
+    const recGrid = el('div', { className: 'flex flex-wrap gap-2' });
+    ['#프론트엔드', '#감성사진', '#카페투어', 'OOTD', '포트폴리오', 'AI 활용법'].forEach(kw => {
+      recGrid.appendChild(el('div', { className: 'chip bg-element hover:bg-hover cursor-pointer border border-base font-medium', textContent: kw, onclick: () => {
+        searchInput.value = kw;
+        renderSearchResults(kw);
+      }}));
+    });
+    recWrap.appendChild(recGrid);
+    
+    keywordsRow.append(recentWrap, recWrap);
+    defWrap.appendChild(keywordsRow);
+    
+    const suggestedWrap = el('div', { className: 'flex flex-col gap-6 mt-4 w-full' });
+    suggestedWrap.appendChild(el('div', { className: 'font-bold text-2xl text-tx' }, '탐색 추천'));
+    const grid = el('div', { className: 'grid gap-6 w-full', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' } });
+    posts.slice(0, 6).forEach(post => {
+      grid.appendChild(renderPostPreviewCard(post));
+    });
+    suggestedWrap.appendChild(grid);
+    defWrap.appendChild(suggestedWrap);
+    
+    contentArea.appendChild(defWrap);
+  };
+  
+  const renderSearchResults = (query) => {
+    contentArea.innerHTML = '';
+    const resWrap = el('div', { className: 'flex flex-col gap-6 w-full' });
+    resWrap.appendChild(el('div', { className: 'font-bold text-xl text-tx border-b border-base pb-3' }, `'${query}' 검색 결과`));
+    
+    const grid = el('div', { className: 'grid gap-6 w-full', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' } });
+    posts.forEach(post => {
+      grid.appendChild(renderPostPreviewCard(post));
+    });
+    resWrap.appendChild(grid);
+    contentArea.appendChild(resWrap);
+  };
+  
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && searchInput.value.trim()) {
+      renderSearchResults(searchInput.value.trim());
+    }
   });
   
-  wrap.appendChild(grid);
+  searchInput.addEventListener('input', (e) => {
+    if (!e.target.value.trim()) {
+      renderDefaultView();
+    }
+  });
+
+  renderDefaultView();
+  
   container.appendChild(wrap);
 }
 

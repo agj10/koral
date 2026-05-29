@@ -32,16 +32,13 @@ function buildAppShell() {
     return item;
   };
   
+  const currentUser = store.getState().currentUser;
+  
   navItems.append(
-    createNavItem('home', icons.home(24), '홈', 'feed'),
+    currentUser ? createNavItem('profile', icons.user(24), '프로필', `profile/${currentUser.handle.substring(1)}`) : '',
     createNavItem('explore', icons.compass(24), '탐색', 'explore'),
     createNavItem('create', icons.plusSquare(24), '만들기', 'create')
   );
-  
-  const currentUser = store.getState().currentUser;
-  if (currentUser) {
-    navItems.appendChild(createNavItem('profile', icons.user(24), '프로필', `profile/${currentUser.handle.substring(1)}`));
-  }
   
   const bottomNavItems = el('div', { className: 'mt-auto mb-4', style: { display: 'flex', flexDirection: 'column' } },
     createNavItem('settings', icons.settings(24), '설정', 'settings')
@@ -55,10 +52,9 @@ function buildAppShell() {
   // Mobile Bottom Nav
   const mobileNav = el('nav', { className: 'bottom-nav' },
     el('div', { className: 'bottom-nav-items' },
-      createNavItem('m-home', icons.home(24), '', 'feed'),
+      currentUser ? createNavItem('m-profile', icons.user(24), '', `profile/${currentUser.handle.substring(1)}`) : '',
       createNavItem('m-explore', icons.compass(24), '', 'explore'),
-      createNavItem('m-create', icons.plusSquare(24), '', 'create'),
-      currentUser ? createNavItem('m-profile', icons.user(24), '', `profile/${currentUser.handle.substring(1)}`) : ''
+      createNavItem('m-create', icons.plusSquare(24), '', 'create')
     )
   );
   

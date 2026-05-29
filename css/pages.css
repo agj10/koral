@@ -305,3 +305,5 @@
   background: rgba(249,115,22,.08); position: absolute;
   border-radius: 50%; filter: blur(80px);
 }
+
+@media (max-width: 900px) { .feed-cols-container { flex-direction: column !important; } .feed-cols-container > div { width: 100% !important; } }

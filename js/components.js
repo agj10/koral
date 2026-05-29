@@ -656,102 +656,52 @@ export function renderSuggestSidebar() {
     style: { position: 'relative' }
   }, el('span', { innerHTML: icons.more(20) }));
   
-  // Floating menus — appended to body so they never affect layout
-  const menuStyle = {
-    position: 'fixed',
-    width: '16rem',
-    background: 'var(--bg-el)',
-    border: '1px solid var(--border)',
-    borderRadius: 'var(--r-2xl)',
-    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-    display: 'none',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    zIndex: '99999'
-  };
-  const moreDropdown = el('div', { style: menuStyle });
-  const switcherDropdown = el('div', { style: menuStyle });
-  document.body.append(moreDropdown, switcherDropdown);
-  
-  let dropdownOpen = false;
-  let switcherOpen = false;
-
-  const positionMenu = (menu) => {
-    const rect = asideSwitch.getBoundingClientRect();
-    menu.style.top = (rect.bottom + 4) + 'px';
-    menu.style.right = (window.innerWidth - rect.right) + 'px';
-    menu.style.left = 'auto';
-  };
-
-  const showMenu = (menu) => { positionMenu(menu); menu.style.display = 'flex'; };
-  const hideMenu = (menu) => { menu.style.display = 'none'; };
-
-  // Build More Dropdown
-  const switchBtn = el('div', { className: 'dropdown-item flex items-center gap-3 px-4 py-3 hover:bg-hover cursor-pointer transition-colors text-sm text-tx', onclick: (e) => {
-    e.stopPropagation();
-    dropdownOpen = false;
-    switcherOpen = true;
-    hideMenu(moreDropdown);
-    showMenu(switcherDropdown);
-  }}, el('span', { innerHTML: icons.user(18) }), '계정 전환');
-  
-  const logoutBtn = el('div', { className: 'dropdown-item danger flex items-center gap-3 px-4 py-3 border-t border-base hover:bg-red-50 cursor-pointer transition-colors text-sm text-red-500', onclick: () => {
-    store.logout();
-    window.navigateTo('login');
-  }}, el('span', { innerHTML: icons.logout(18) }), '로그아웃');
-
-  moreDropdown.append(switchBtn, logoutBtn);
-
-  // Build Switcher Dropdown
-  switcherDropdown.appendChild(el('div', { className: 'px-4 py-3 border-b border-base text-xs font-bold text-tx-3 uppercase tracking-wider flex items-center gap-2' }, 
-    el('span', { className: 'cursor-pointer hover:text-tx', innerHTML: icons.chevronLeft(16), onclick: (e) => {
-      e.stopPropagation();
-      switcherOpen = false;
-      dropdownOpen = true;
-      hideMenu(switcherDropdown);
-      showMenu(moreDropdown);
-    }}),
-    '계정 전환'
-  ));
-  
-  const otherUsers = store.getState().users.filter(u => u.id !== currentUser.id).slice(0, 2);
-  otherUsers.forEach(u => {
-    const item = el('div', { className: 'dropdown-item flex items-center gap-3 px-4 py-3 hover:bg-hover cursor-pointer transition-colors', onclick: () => {
-      store.getState().currentUser = u;
-      store._save();
-      window.location.hash = '';
-      window.location.reload();
-    }},
-      renderAvatar(u, 'av-sm'),
-      el('div', { className: 'font-semibold text-tx text-sm' }, u.handle)
-    );
-    switcherDropdown.appendChild(item);
-  });
-  
-  switcherDropdown.appendChild(el('div', { className: 'dropdown-item flex items-center gap-3 px-4 py-3 hover:bg-hover cursor-pointer transition-colors text-sm text-brand font-semibold border-t border-base', onclick: () => {
-    store.logout();
-    window.navigateTo('login');
-  } }, el('span', { innerHTML: icons.plusSquare(18) }), '기존 계정 추가'));
-
   asideSwitch.onclick = (e) => {
     e.stopPropagation();
-    if (switcherOpen) {
-      switcherOpen = false;
-      hideMenu(switcherDropdown);
-    } else {
-      dropdownOpen = !dropdownOpen;
-      if (dropdownOpen) showMenu(moreDropdown); else hideMenu(moreDropdown);
-    }
+    
+    const moreWrap = el('div', { className: 'p-2 w-full flex flex-col gap-1' });
+    moreWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx px-3 pt-2 pb-3 mb-1 border-b border-base' }, '옵션'));
+    
+    const switchBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3', onclick: () => {
+      modal.close();
+      showSwitcherModal();
+    }}, el('span', { innerHTML: icons.user(18) }), '계정 전환');
+    
+    const logoutBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3 text-red-500 hover:bg-red-50', onclick: () => {
+      store.logout();
+      window.navigateTo('login');
+    }}, el('span', { innerHTML: icons.logout(18) }), '로그아웃');
+    
+    moreWrap.append(switchBtn, logoutBtn);
+    const modal = showModal(moreWrap, { className: 'w-full max-w-sm' });
   };
 
-  document.addEventListener('click', () => {
-    if (dropdownOpen || switcherOpen) {
-      dropdownOpen = false;
-      switcherOpen = false;
-      hideMenu(moreDropdown);
-      hideMenu(switcherDropdown);
-    }
-  });
+  const showSwitcherModal = () => {
+    const wrap = el('div', { className: 'p-2 w-full flex flex-col gap-1' });
+    wrap.appendChild(el('div', { className: 'font-bold text-lg text-tx px-3 pt-2 pb-3 mb-1 border-b border-base' }, '계정 전환'));
+    
+    const otherUsers = store.getState().users.filter(u => u.id !== currentUser.id).slice(0, 2);
+    otherUsers.forEach(u => {
+      const item = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 text-left p-3', onclick: () => {
+        store.getState().currentUser = u;
+        store._save();
+        window.location.hash = '';
+        window.location.reload();
+      }},
+        renderAvatar(u, 'av-sm'),
+        el('div', { className: 'font-semibold text-tx text-sm' }, u.handle)
+      );
+      wrap.appendChild(item);
+    });
+    
+    const addBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3 mt-1 border-t border-base rounded-none text-brand', onclick: () => {
+      store.logout();
+      window.navigateTo('login');
+    } }, el('span', { innerHTML: icons.plusSquare(18) }), '기존 계정 추가');
+    
+    wrap.appendChild(addBtn);
+    showModal(wrap, { className: 'w-full max-w-sm' });
+  };
 
   const myProfile = el('div', { className: 'aside-profile flex items-center justify-between mb-6', style: { position: 'relative' } },
     el('div', { className: 'flex items-center gap-3' },

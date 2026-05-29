@@ -184,10 +184,10 @@
 .feed-layout {
   display: flex;
   gap: var(--s8);
-  justify-content: center;
+  justify-content: space-between;
   width: 100%;
-  max-width: 1600px;
-  padding: 0 var(--s6) var(--s8) 0;
+  max-width: 100%;
+  padding-left: var(--s6);
 }
 .feed-main {
   flex: 1;
@@ -195,21 +195,18 @@
   display: flex;
   flex-direction: column;
   gap: var(--s8);
+  padding: var(--s8) 0;
 }
 
 .feed-aside {
-  width: 360px;
+  width: 340px;
   flex-shrink: 0;
   position: sticky;
-  top: var(--s4);
-  height: fit-content;
-  background: color-mix(in srgb, var(--bg-s) 75%, transparent);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--border);
-  border-radius: var(--r-2xl);
-  padding: var(--s6);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+  top: 0;
+  height: 100dvh;
+  border-left: 1px solid var(--border);
+  padding: var(--s8) var(--s6);
+  overflow-y: auto;
 }
 
 /* ---- Top Bar (mobile / auth pages) ---- */
