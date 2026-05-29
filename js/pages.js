@@ -669,15 +669,16 @@ export function renderSecurityPage(container) {
       el('div', { className: 'text-tx-3' }, el('span', { innerHTML: icons.chevronRight(24) }))
     ),
     el('div', { 
-      className: 'flex items-center gap-4 p-5 rounded-2xl border border-red-500/30 bg-red-500/5 hover:bg-red-500/10 transition-all cursor-pointer shadow-sm mt-4', 
+      className: 'flex items-center gap-4 p-5 rounded-2xl border border-base bg-subtle hover:bg-hover hover:border-str transition-all cursor-pointer shadow-sm mt-4', 
+      style: { borderColor: 'var(--accent-red)' },
       onclick: openDeleteModal 
     },
-      el('div', { className: 'w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 shadow-sm' }, el('span', { innerHTML: icons.trash(24) })),
+      el('div', { className: 'w-12 h-12 rounded-xl flex items-center justify-center shadow-sm', style: { backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--accent-red)' } }, el('span', { innerHTML: icons.trash(24) })),
       el('div', { className: 'flex-1' }, 
-        el('div', { className: 'font-bold text-red-500 text-lg' }, '계정 삭제'),
-        el('div', { className: 'text-sm text-red-500/70 mt-1' }, '계정과 모든 데이터를 영구적으로 삭제합니다.')
+        el('div', { className: 'font-bold text-lg', style: { color: 'var(--accent-red)' } }, '계정 삭제'),
+        el('div', { className: 'text-sm mt-1', style: { color: 'rgba(239, 68, 68, 0.8)' } }, '계정과 모든 데이터를 영구적으로 삭제합니다.')
       ),
-      el('div', { className: 'text-red-500/50' }, el('span', { innerHTML: icons.chevronRight(24) }))
+      el('div', { style: { color: 'rgba(239, 68, 68, 0.5)' } }, el('span', { innerHTML: icons.chevronRight(24) }))
     )
   );
 
