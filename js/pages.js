@@ -44,7 +44,7 @@ export function renderFeedPage(container, params = {}) {
       });
 
       colsContainer.append(
-        createCol('나만의 맞춤 해류', 'user', c1),
+        createCol('보금자리', 'user', c1),
         createCol('연안 관광', 'hash', c2),
         createCol('수중 탐사', 'compass', c3)
       );
