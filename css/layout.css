@@ -276,6 +276,8 @@
     margin-top: var(--s6);
     position: relative;
     z-index: 1;
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
   .auth-banner-sub {
     font-size: var(--text-lg);
@@ -284,6 +286,8 @@
     max-width: 480px;
     position: relative;
     z-index: 1;
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
   .auth-form-side {
     padding: var(--s12);

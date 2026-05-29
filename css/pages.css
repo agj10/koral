@@ -275,11 +275,15 @@
   font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800;
   line-height: 1.15; max-width: 600px;
   position: relative; z-index: 1;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 .landing-sub {
   font-size: var(--text-lg); color: var(--tx-3);
   max-width: 460px; margin-top: var(--s4);
   position: relative; z-index: 1;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 .landing-buttons {
   display: flex; gap: var(--s3); margin-top: var(--s8);
