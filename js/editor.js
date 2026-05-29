@@ -137,6 +137,8 @@ export function createRichTextEditor(options) {
     container.appendChild(style);
   }
 
+  let savedRange = null;
+
   const saveDraft = () => {
     localStorage.setItem(draftKey, editorArea.innerHTML);
   };
@@ -146,6 +148,9 @@ export function createRichTextEditor(options) {
     const sel = document.getSelection();
     if (sel.anchorNode && editorArea.contains(sel.anchorNode)) {
       updateToolbarState();
+      if (sel.rangeCount > 0) {
+        savedRange = sel.getRangeAt(0);
+      }
     }
   });
 
@@ -515,6 +520,11 @@ export function createRichTextEditor(options) {
 
   const exec = (cmd, val = null) => {
     editorArea.focus();
+    if (savedRange) {
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(savedRange);
+    }
     document.execCommand(cmd, false, val);
     if (activeImage) updateOverlay();
     updateToolbarState();
