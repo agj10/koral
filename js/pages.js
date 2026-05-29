@@ -453,9 +453,48 @@ export function renderPostPage(container, { postId }) {
   }
 }
 
+function createAuthLanguageBar() {
+  const currentLang = localStorage.getItem('koral_language') || 'ko';
+  const langBar = el('div', {
+    className: 'auth-language-bar'
+  });
+  
+  const languages = [
+    { id: 'ko', label: 'KR', flag: '🇰🇷' },
+    { id: 'en', label: 'EN', flag: '🇺🇸' },
+    { id: 'ja', label: 'JA', flag: '🇯🇵' },
+    { id: 'zh', label: 'ZH', flag: '🇨🇳' }
+  ];
+  
+  languages.forEach(l => {
+    const isSel = currentLang === l.id;
+    const btn = el('button', {
+      className: `px-3 py-1 text-xs font-bold rounded-full transition-all cursor-pointer ${isSel ? 'bg-brand text-white shadow-sm' : 'text-tx-2 hover:bg-hover hover:text-tx'}`,
+      style: { border: 'none', background: isSel ? 'var(--brand-a, #ff7171)' : 'transparent' },
+      onclick: () => {
+        if (currentLang !== l.id) {
+          localStorage.setItem('koral_language', l.id);
+          let msg = '';
+          if (l.id === 'ko') msg = '한국어로 변경되었습니다.';
+          else if (l.id === 'en') msg = 'Language changed to English.';
+          else if (l.id === 'ja') msg = '日本語に変更されました。';
+          else msg = '语言已更改为简体中文。';
+          toast(msg, 'success');
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        }
+      }
+    }, `${l.flag} ${l.label}`);
+    langBar.appendChild(btn);
+  });
+  return langBar;
+}
+
 export function renderLoginPage(container) {
   container.innerHTML = '';
   const shell = el('div', { className: 'auth-shell' },
+    createAuthLanguageBar(),
     el('div', { className: 'auth-banner-side' },
       el('div', { className: 'auth-orb auth-orb-1' }),
       el('div', { className: 'auth-orb auth-orb-2' }),
@@ -503,6 +542,7 @@ export function renderLoginPage(container) {
 export function renderSignupPage(container) {
   container.innerHTML = '';
   const shell = el('div', { className: 'auth-shell' },
+    createAuthLanguageBar(),
     el('div', { className: 'auth-banner-side' },
       el('div', { className: 'auth-orb auth-orb-1' }),
       el('div', { className: 'auth-orb auth-orb-2' }),
@@ -610,6 +650,7 @@ export function renderSignupPage(container) {
 export function renderLandingPage(container) {
   container.innerHTML = '';
   const landing = el('div', { className: 'landing' },
+    createAuthLanguageBar(),
     el('div', { className: 'mesh-bg' },
       el('div', { className: 'orb-1' }), el('div', { className: 'orb-2' }), el('div', { className: 'orb-3' })
     ),

@@ -307,3 +307,30 @@
 }
 
 @media (max-width: 900px) { .feed-cols-container { flex-direction: column !important; } .feed-cols-container > div { width: 100% !important; } }
+
+/* ---- Auth Language Selector Pill ---- */
+.auth-language-bar {
+  position: absolute;
+  top: var(--s6);
+  right: var(--s6);
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  background: color-mix(in srgb, var(--bg-el) 60%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  box-shadow: var(--card-sh);
+  z-index: var(--z-nav);
+  animation: fadeIn .3s ease;
+}
+
+@media (max-width: 480px) {
+  .auth-language-bar {
+    top: var(--s4);
+    right: var(--s4);
+    gap: 4px;
+    padding: 4px;
+  }
+}
