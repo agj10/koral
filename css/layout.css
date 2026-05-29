@@ -546,3 +546,8 @@
     padding-bottom: 96px !important;
   }
 }
+
+/* Hide redundant mobile bottom nav element globally by default */
+.bottom-nav {
+  display: none !important;
+}
