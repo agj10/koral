@@ -555,14 +555,14 @@ export function renderStoryViewer(startIndex, groupedStories) {
   document.body.style.overflow = 'hidden';
   
   const closeBtn = el('button', { 
-    className: 'absolute top-4 right-4 text-white z-50 p-3 cursor-pointer bg-black/50 hover:bg-black/80 rounded-full transition-colors',
+    className: 'absolute top-3 right-3 text-white z-50 p-2 cursor-pointer bg-black/50 hover:bg-black/80 rounded-full transition-colors',
     style: { border: 'none' },
     onclick: () => {
       document.body.style.overflow = originalBodyOverflow;
       overlay.remove();
       window.location.reload();
     }
-  }, el('span', { innerHTML: icons.x(24) }));
+  }, el('span', { innerHTML: icons.x(20) }));
   
   const scrollContainer = el('div', { 
     className: 'relative flex flex-col bg-black shadow-2xl rounded-2xl overflow-hidden',
@@ -575,13 +575,23 @@ export function renderStoryViewer(startIndex, groupedStories) {
   });
   scrollContainer.innerHTML = '<style>.stories-scroll::-webkit-scrollbar { display: none; }</style>';
   scrollContainer.classList.add('stories-scroll');
+  scrollContainer.appendChild(closeBtn);
   
   group.stories.forEach((story, idx) => {
     store.markStoryViewed(story.id);
     
     const storyBox = el('div', { 
       className: 'relative w-full flex-shrink-0 bg-gray-900 overflow-hidden',
-      style: { height: '100%', scrollSnapAlign: 'start' }
+      style: { height: '100%', scrollSnapAlign: 'start', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+    });
+    
+    const virtualCanvas = el('div', {
+      className: 'relative',
+      style: {
+        width: '400px', height: '400px',
+        transform: 'scale(1.125)', // 450px / 400px
+        transformOrigin: 'center center'
+      }
     });
     
     const layers = story.layers || [];
@@ -589,15 +599,15 @@ export function renderStoryViewer(startIndex, groupedStories) {
       const container = el('div', { 
         className: 'absolute flex items-center justify-center',
         style: { 
-          left: (layer.x * 100) + '%', 
-          top: (layer.y * 100) + '%', 
-          width: (layer.width * 100) + '%',
+          left: (layer.x * 400) + 'px', 
+          top: (layer.y * 400) + 'px', 
+          width: (layer.width * 400) + 'px',
           transformOrigin: 'center center',
           transform: `translate(-50%, -50%) rotate(${layer.rotate}deg) scale(${layer.scale})`
         }
       });
       if (layer.type === 'image') {
-        container.style.height = (layer.height * 100) + '%';
+        container.style.height = (layer.height * 400) + 'px';
       }
       
       if (layer.type === 'image') {
@@ -614,13 +624,14 @@ export function renderStoryViewer(startIndex, groupedStories) {
         container.appendChild(textWrap);
       }
       
-      storyBox.appendChild(container);
+      virtualCanvas.appendChild(container);
     });
     
+    storyBox.appendChild(virtualCanvas);
     scrollContainer.appendChild(storyBox);
   });
   
-  overlay.append(closeBtn, scrollContainer);
+  overlay.append(scrollContainer);
   
   if (group.stories.length > 1) {
     const hint = el('div', { className: 'absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm flex flex-col items-center gap-1 z-50 pointer-events-none anim-up' },
@@ -1147,6 +1158,30 @@ export function renderPostPreviewCard(post, options = {}) {
 
   meta.append(authorWrap, statsWrap);
   body.appendChild(meta);
+  
+  const comments = store.getPostComments(post.id);
+  if (comments.length > 0) {
+    const topComment = comments.reduce((prev, current) => (prev.likes.length > current.likes.length) ? prev : current);
+    const topAuthor = store.getUser(topComment.authorHandle);
+    if (topAuthor) {
+      const commentWrap = el('div', { className: 'mt-4 p-3 bg-hover rounded-xl' },
+        el('div', { className: 'flex items-center justify-between mb-1' },
+          el('div', { className: 'flex items-center gap-2' },
+            renderAvatar(topAuthor, 'av-xs'),
+            el('span', { className: 'font-semibold text-xs text-tx' }, topAuthor.displayName),
+            el('span', { className: 'text-xs text-tx-3' }, timeAgo(topComment.createdAt))
+          ),
+          el('div', { className: 'flex items-center gap-1 text-xs text-brand' },
+            el('span', { innerHTML: icons.heartFilled(12) }),
+            el('span', { className: 'font-semibold' }, topComment.likes.length)
+          )
+        ),
+        el('div', { className: 'text-sm text-tx-2 clamp2 ml-8', innerHTML: renderMarkdown(topComment.text).replace(/^<p>/, '').replace(/<\/p>$/,'') })
+      );
+      body.appendChild(commentWrap);
+    }
+  }
+
   card.appendChild(body);
 
   return card;

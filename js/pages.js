@@ -21,9 +21,9 @@ export function renderFeedPage(container, params = {}) {
         el('p', { className: 'text-sm mt-2' }, '첫 번째 게시물을 작성하거나 다른 사용자를 팔로우해 보세요.')
       ));
     } else {
-      const grid = el('div', { className: 'grid gap-6', style: { display: 'flex', flexDirection: 'column' } });
+      const grid = el('div', { className: 'grid gap-6 w-full', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' } });
       posts.forEach(post => {
-        grid.appendChild(renderPostCard(post, { compact: false, onNavigate: window.navigateTo }));
+        grid.appendChild(renderPostPreviewCard(post));
       });
       main.appendChild(grid);
     }

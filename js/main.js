@@ -50,7 +50,8 @@ function buildAppShell() {
   sidebar.append(logoWrap, navItems, bottomNavItems);
   sidebar.style.display = 'flex';
   sidebar.style.flexDirection = 'column';
-  sidebar.style.height = '100%';
+  sidebar.style.height = '100dvh'; // Use 100dvh instead of 100%
+  sidebar.style.justifyContent = 'space-between'; // Ensure separation
   
   // Main Content
   mainContent = el('main', { className: 'main-content' });
