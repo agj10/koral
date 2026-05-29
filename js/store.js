@@ -152,6 +152,26 @@ class Store {
     return { ok: true };
   }
 
+  deleteAccount(password) {
+    if (!this.state.currentUser) return { ok: false };
+    if (this.state.currentUser.password !== password) return { ok: false, error: '현재 비밀번호가 일치하지 않습니다.' };
+    
+    const handle = this.state.currentUser.handle;
+    const userIndex = this.state.users.findIndex(u => u.handle === handle);
+    if (userIndex !== -1) {
+      this.state.users.splice(userIndex, 1);
+    }
+    
+    // Cleanup their data
+    this.state.posts = this.state.posts.filter(p => p.authorHandle !== handle);
+    this.state.comments = this.state.comments.filter(c => c.authorHandle !== handle);
+    this.state.notifications = this.state.notifications.filter(n => n.toHandle !== handle && n.fromHandle !== handle);
+    
+    this.state.currentUser = null;
+    this._save();
+    return { ok: true };
+  }
+
   changeHandle(currentPw, newHandle) {
     if (!this.state.currentUser) return { ok: false };
     if (this.state.currentUser.password !== currentPw) return { ok: false, error: '현재 비밀번호가 일치하지 않습니다.' };

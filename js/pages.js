@@ -615,6 +615,36 @@ export function renderSecurityPage(container) {
     );
   };
 
+  const openDeleteModal = () => {
+    const modal = showModal(
+      el('form', { className: 'p-8', onsubmit: (e) => {
+        e.preventDefault();
+        const currentPw = e.target.currentPw.value;
+        if (confirm('정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+          const res = store.deleteAccount(currentPw);
+          if (res.ok) {
+            toast('계정이 삭제되었습니다. 이용해 주셔서 감사합니다.', 'success');
+            modal.close();
+            window.navigateTo('login');
+          } else {
+            toast(res.error, 'error');
+          }
+        }
+      }},
+        el('h3', { className: 'text-2xl font-bold mb-4 text-red-500' }, '계정 삭제'),
+        el('p', { className: 'text-sm text-tx-2 mb-6' }, '계정을 삭제하려면 현재 비밀번호를 입력하세요. 삭제된 계정은 복구할 수 없습니다.'),
+        el('div', { className: 'input-group mb-8' },
+          el('label', { className: 'input-label' }, '현재 비밀번호'),
+          el('input', { name: 'currentPw', type: 'password', className: 'input input-lg', placeholder: '비밀번호 입력', required: true })
+        ),
+        el('div', { className: 'flex justify-end gap-3' },
+          el('button', { type: 'button', className: 'btn btn-ghost', onclick: () => modal.close() }, '취소'),
+          el('button', { type: 'submit', className: 'btn btn-danger', style: { backgroundColor: 'var(--accent-red)', color: '#fff' } }, '계정 삭제하기')
+        )
+      )
+    );
+  };
+
   actionsWrap.append(
     el('div', { 
       className: 'flex items-center gap-4 p-5 rounded-2xl border border-base bg-subtle hover:bg-hover hover:border-str transition-all cursor-pointer shadow-sm', 
@@ -637,6 +667,17 @@ export function renderSecurityPage(container) {
         el('div', { className: 'text-sm text-tx-3 mt-1' }, '계정의 비밀번호를 안전하게 재설정합니다.')
       ),
       el('div', { className: 'text-tx-3' }, el('span', { innerHTML: icons.chevronRight(24) }))
+    ),
+    el('div', { 
+      className: 'flex items-center gap-4 p-5 rounded-2xl border border-red-500/30 bg-red-500/5 hover:bg-red-500/10 transition-all cursor-pointer shadow-sm mt-4', 
+      onclick: openDeleteModal 
+    },
+      el('div', { className: 'w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 shadow-sm' }, el('span', { innerHTML: icons.trash(24) })),
+      el('div', { className: 'flex-1' }, 
+        el('div', { className: 'font-bold text-red-500 text-lg' }, '계정 삭제'),
+        el('div', { className: 'text-sm text-red-500/70 mt-1' }, '계정과 모든 데이터를 영구적으로 삭제합니다.')
+      ),
+      el('div', { className: 'text-red-500/50' }, el('span', { innerHTML: icons.chevronRight(24) }))
     )
   );
 
