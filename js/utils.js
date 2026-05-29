@@ -310,3 +310,13 @@ export function generatePlaceholderImage() {
   
   return canvas.toDataURL('image/png');
 }
+
+export function createDropdownSelect(options, value, onChange, placeholder = '') {
+  const wrap = el('div', { className: 'custom-select-wrap relative inline-block text-left w-full' });
+  const selectedOpt = options.find(o => o.value === value) || options[0];
+  const selectedText = el('span', { className: 'truncate', textContent: selectedOpt ? selectedOpt.label : placeholder });
+  const menu = el('div', { className: 'custom-select-menu hidden absolute top-full mt-2 left-0 min-w-[120px] bg-element border border-base rounded-2xl shadow-lg z-50 py-2 max-h-[300px] overflow-y-auto' });
+  const chevronSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+  const header = el('div', { className: 'custom-select-header flex items-center justify-between gap-2 cursor-pointer px-4 py-3 rounded-2xl bg-element border border-base text-sm font-semibold min-w-[120px] h-full', onclick: (e) => { e.stopPropagation(); document.querySelectorAll('.custom-select-menu').forEach(m => { if (m !== menu) m.classList.add('hidden'); }); menu.classList.toggle('hidden'); } }, selectedText, el('div', { innerHTML: chevronSvg, className: 'text-tx-3 flex-shrink-0' }));
+  const renderOptions = () => { menu.innerHTML = ''; options.forEach(opt => { const isSelected = opt.value === value; const item = el('div', { className: 'custom-select-item px-4 py-3 cursor-pointer hover:bg-hover transition-colors text-sm' + (isSelected ? ' text-brand font-bold bg-brand/10' : ''), textContent: opt.label, onclick: (e) => { e.stopPropagation(); value = opt.value; selectedText.textContent = opt.label; renderOptions(); menu.classList.add('hidden'); if (onChange) onChange(value); } }); menu.appendChild(item); }); }; renderOptions(); wrap.append(header, menu); document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) menu.classList.add('hidden'); }); return wrap; }
+

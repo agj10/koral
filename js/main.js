@@ -35,8 +35,8 @@ function buildAppShell() {
   const currentUser = store.getState().currentUser;
   
   navItems.append(
-    currentUser ? createNavItem('profile', icons.user(24), '프로필', `profile/${currentUser.handle.substring(1)}`) : '',
     createNavItem('explore', icons.compass(24), '탐색', 'explore'),
+    currentUser ? createNavItem('profile', icons.user(24), '프로필', `profile/${currentUser.handle.substring(1)}`) : '',
     createNavItem('create', icons.plusSquare(24), '만들기', 'create')
   );
   
@@ -52,8 +52,8 @@ function buildAppShell() {
   // Mobile Bottom Nav
   const mobileNav = el('nav', { className: 'bottom-nav' },
     el('div', { className: 'bottom-nav-items' },
-      currentUser ? createNavItem('m-profile', icons.user(24), '', `profile/${currentUser.handle.substring(1)}`) : '',
       createNavItem('m-explore', icons.compass(24), '', 'explore'),
+      currentUser ? createNavItem('m-profile', icons.user(24), '', `profile/${currentUser.handle.substring(1)}`) : '',
       createNavItem('m-create', icons.plusSquare(24), '', 'create')
     )
   );

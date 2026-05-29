@@ -1138,3 +1138,12 @@ export function renderPostPreviewCard(post, options = {}) {
 }
 
 
+
+export function createDropdownSelect(options, value, onChange, placeholder = '') {
+  const wrap = el('div', { className: 'custom-select-wrap relative inline-block' });
+  const selectedOpt = options.find(o => o.value === value);
+  const selectedText = el('span', { textContent: selectedOpt ? selectedOpt.label : placeholder });
+  const menu = el('div', { className: 'custom-select-menu hidden absolute top-full mt-2 left-0 min-w-full bg-element border border-base rounded-2xl shadow-lg z-50 py-2 max-h-[300px] overflow-y-auto' });
+  const header = el('div', { className: 'custom-select-header flex items-center justify-between cursor-pointer px-4 py-3 rounded-2xl bg-element border border-base text-lg font-semibold min-w-[120px]', onclick: (e) => { e.stopPropagation(); document.querySelectorAll('.custom-select-menu').forEach(m => { if (m !== menu) m.classList.add('hidden'); }); menu.classList.toggle('hidden'); } }, selectedText, el('div', { innerHTML: icons.chevronDown(20) }));
+  const renderOptions = () => { menu.innerHTML = ''; options.forEach(opt => { const isSelected = opt.value === value; const item = el('div', { className: 'custom-select-item px-4 py-3 cursor-pointer hover:bg-hover transition-colors' + (isSelected ? ' text-brand font-bold bg-brand/10' : ''), textContent: opt.label, onclick: (e) => { e.stopPropagation(); value = opt.value; selectedText.textContent = opt.label; renderOptions(); menu.classList.add('hidden'); if (onChange) onChange(value); } }); menu.appendChild(item); }); }; renderOptions(); wrap.append(header, menu); document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) menu.classList.add('hidden'); }); return wrap; }
+

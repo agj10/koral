@@ -1,4 +1,4 @@
-import { el, toast, resizeImage, showModal } from './utils.js';
+import { el, toast, resizeImage, showModal, createDropdownSelect } from './utils.js';
 import { icons } from './icons.js';
 import { store } from './store.js';
 
@@ -582,14 +582,23 @@ export function createRichTextEditor(options) {
     {val: 1, label: '10px'}, {val: 2, label: '13px'}, {val: 3, label: '16px'}, 
     {val: 4, label: '18px'}, {val: 5, label: '24px'}, {val: 6, label: '32px'}, {val: 7, label: '48px'}
   ];
-  const sizeSelect = el('select', { className: 'select px-2 py-1 text-sm', title: '글자 크기', style: {width: '100px'}, onchange: (e) => exec('fontSize', e.target.value) }, 
-    ...fontSizes.map(s => el('option', { value: s.val, textContent: s.label }))
+  const sizeSelect = createDropdownSelect(
+    fontSizes.map(s => ({ value: s.val, label: s.label })),
+    3,
+    (val) => exec('fontSize', val),
+    '글자 크기'
   );
-  sizeSelect.value = 3; 
+  sizeSelect.style.width = '100px';
 
   // Font Family Select
-  const fonts = ['Arial', 'Pretendard', 'Inter', 'Courier New', 'Georgia', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Times New Roman'].map(f => el('option', { value: f, textContent: f }));
-  const fontSelect = el('select', { className: 'select px-2 py-1 text-sm', title: '폰트', style: {width: '100px'}, onchange: (e) => exec('fontName', e.target.value) }, ...fonts);
+  const fonts = ['Arial', 'Pretendard', 'Inter', 'Courier New', 'Georgia', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Times New Roman'];
+  const fontSelect = createDropdownSelect(
+    fonts.map(f => ({ value: f, label: f })),
+    'Pretendard',
+    (val) => exec('fontName', val),
+    '폰트'
+  );
+  fontSelect.style.width = '120px';
 
   // Color Picker Popup Trigger
   const colorBtnWrap = el('div', { className: 'relative' });

@@ -1,7 +1,7 @@
 import { icons } from './icons.js';
 import { el, $, $$, timeAgo, renderMarkdown, escapeHtml, getInitials, toast, showModal, confirmDialog, resizeImage, uid, debounce } from './utils.js';
 import { store } from './store.js';
-import { renderAvatar, renderPostCard, renderPostPreviewCard, renderStoryRow, renderSuggestSidebar, renderThemeSelector, renderCommentSection } from './components.js';
+import { renderAvatar, renderPostCard, renderPostPreviewCard, renderStoryRow, renderSuggestSidebar, renderThemeSelector, renderCommentSection, createDropdownSelect } from './components.js';
 import { createRichTextEditor } from './editor.js';
 
 export function renderFeedPage(container, params = {}) {
@@ -73,15 +73,17 @@ export function renderExplorePage(container) {
   const searchWrap = el('div', { className: 'flex-1 relative' });
   const searchInput = el('input', { 
     type: 'text', 
-    className: 'input w-full pl-12 py-3 rounded-2xl bg-element border-base text-lg font-semibold', 
+    className: 'input w-full py-3 rounded-2xl bg-element border-base text-lg font-semibold', 
+    style: { paddingLeft: '48px' },
     placeholder: '검색어를 입력하세요...' 
   });
-  const searchIcon = el('div', { className: 'absolute left-4 top-1/2 -translate-y-1/2 text-tx-3', innerHTML: icons.search(22) });
+  const searchIcon = el('div', { className: 'absolute left-4 top-1/2 -translate-y-1/2 text-tx-3', style: { display: 'flex', alignItems: 'center' }, innerHTML: icons.search(22) });
   searchWrap.append(searchIcon, searchInput);
   
-  const categorySelect = el('select', { className: 'select py-3 px-4 rounded-2xl bg-element border-base text-lg font-semibold min-w-[120px] cursor-pointer outline-none focus:ring-2 ring-brand' },
-    ...['전체', '사진', '일상', '개발', '디자인', '기타'].map(cat => el('option', { value: cat, textContent: cat }))
-  );
+  const categoryOptions = ['전체', '사진', '일상', '개발', '디자인', '기타'].map(cat => ({ value: cat, label: cat }));
+  const categorySelect = createDropdownSelect(categoryOptions, '전체', (val) => {
+    // filter logic here
+  }, '전체');
   
   searchHeader.append(searchWrap, categorySelect);
   wrap.appendChild(searchHeader);
@@ -97,21 +99,13 @@ export function renderExplorePage(container) {
     
     const recentWrap = el('div', { className: 'flex-1 flex flex-col gap-4' });
     recentWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3' }, '최근 검색어'));
-    ['React 19', 'UI/UX 트렌드', '맛집 추천'].forEach(kw => {
-      recentWrap.appendChild(el('div', { className: 'flex items-center justify-between group cursor-pointer hover:bg-hover p-3 rounded-xl transition-colors' },
-        el('div', { className: 'flex items-center gap-3 text-tx-2 group-hover:text-tx font-medium', onclick: () => {
-          searchInput.value = kw;
-          renderSearchResults(kw);
-        }}, el('span', { innerHTML: icons.search(18) }), kw),
-        el('button', { className: 'text-tx-3 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity' }, el('span', { innerHTML: icons.x ? icons.x(18) : 'x' }))
-      ));
-    });
+    recentWrap.appendChild(el('div', { className: 'text-tx-3 text-sm py-4 text-center' }, '최근 검색 기록이 없습니다.'));
     
     const recWrap = el('div', { className: 'flex-1 flex flex-col gap-4' });
     recWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3' }, '추천 검색어'));
     const recGrid = el('div', { className: 'flex flex-wrap gap-2' });
     ['#프론트엔드', '#감성사진', '#카페투어', 'OOTD', '포트폴리오', 'AI 활용법'].forEach(kw => {
-      recGrid.appendChild(el('div', { className: 'chip bg-element hover:bg-hover cursor-pointer border border-base font-medium', textContent: kw, onclick: () => {
+      recGrid.appendChild(el('div', { className: 'chip bg-element hover:bg-hover cursor-pointer border border-base font-medium whitespace-nowrap', textContent: kw, onclick: () => {
         searchInput.value = kw;
         renderSearchResults(kw);
       }}));
@@ -198,8 +192,7 @@ export function renderProfilePage(container, { handle }) {
   
   const actions = el('div', { className: 'profile-actions ml-4' });
   if (isOwn) {
-    actions.appendChild(el('button', { className: 'btn btn-secondary btn-sm', onclick: () => window.navigateTo('settings/profile') }, '프로필 편집'));
-    actions.appendChild(el('button', { className: 'btn-icon-sm btn-ghost', onclick: () => window.navigateTo('settings') }, el('span', { innerHTML: icons.settings(20) })));
+    actions.appendChild(el('button', { className: 'btn-icon-sm btn-ghost', onclick: () => window.navigateTo('settings/profile') }, el('span', { innerHTML: icons.edit ? icons.edit(20) : icons.settings(20) })));
   } else if (currentUser) {
     const isFollowing = store.isFollowing(user.handle);
     const followBtn = el('button', { 
