@@ -1010,22 +1010,36 @@ export function renderCommentSection(postId) {
         };
       }
 
-      const item = el('div', { className: 'comment-item w-full' },
+      const authorProfileWrap = el('div', { className: 'flex items-center gap-3 cursor-pointer mb-2', onclick: () => window.navigateTo(`profile/${author.handle.substring(1)}`) },
         renderAvatar(author, 'av-sm'),
-        el('div', { className: 'comment-body w-full min-w-0' },
-          el('span', { className: 'comment-author cursor-pointer hover:underline mr-2', onclick: () => window.navigateTo(`profile/${author.handle.substring(1)}`) }, author.handle),
-          textSpan,
-          isLong ? el('div', {}, toggleMoreBtn) : null,
-          el('div', { className: 'comment-actions flex items-center gap-2 mt-1' },
-            el('span', { className: 'comment-time' }, timeAgo(c.createdAt) + (c.editedAt ? ' (수정됨)' : '')),
-            replyBtn,
-            isOwn ? moreWrap : null
+        el('div', { className: 'flex flex-col' },
+          el('div', { className: 'font-bold text-tx text-sm flex items-center gap-1' }, 
+            author.displayName, 
+            author.verified ? el('span', { className: 'text-brand', innerHTML: icons.verified(14) }) : ''
+          ),
+          el('div', { className: 'text-xs text-tx-2' }, author.handle)
+        )
+      );
+
+      const contentWrap = el('div', { className: 'comment-body w-full min-w-0' },
+        textSpan,
+        isLong ? el('div', {}, toggleMoreBtn) : null,
+        el('div', { className: 'comment-actions flex items-center gap-2 mt-2' },
+          el('span', { className: 'comment-time' }, timeAgo(c.createdAt) + (c.editedAt ? ' (수정됨)' : '')),
+          replyBtn,
+          isOwn ? moreWrap : null
+        )
+      );
+
+      const item = el('div', { className: 'comment-item w-full flex-col items-start gap-0' },
+        el('div', { className: 'flex items-start justify-between w-full' },
+          authorProfileWrap,
+          el('div', { className: `pt-1 flex items-center gap-1 cursor-pointer hover:text-tx transition-colors text-xs text-tx-3 ${isLiked ? 'text-brand' : ''}`, onclick: toggleCommentLike }, 
+            likeBtnSpan,
+            likeCountSpan
           )
         ),
-        el('div', { className: `pt-1 flex items-center gap-1 cursor-pointer hover:text-tx transition-colors text-xs text-tx-3 ${isLiked ? 'text-brand' : ''}`, onclick: toggleCommentLike }, 
-          likeBtnSpan,
-          likeCountSpan
-        )
+        contentWrap
       );
       
       itemWrapper.appendChild(item);
