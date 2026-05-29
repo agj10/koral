@@ -13,48 +13,6 @@ export function renderFeedPage(container, params = {}) {
     main.appendChild(renderStoryRow());
     const currentUser = store.getState().currentUser;
 
-    const quickCreate = el('div', { className: 'bg-element border border-base rounded-2xl p-4 mb-6 shadow-sm' },
-      createRichTextEditor({
-        id: 'feed_quick_create',
-        placeholder: '무슨 생각을 하고 계신가요? 코드를 공유하거나 이야기를 남겨보세요.',
-        submitLabel: '게시물 올리기',
-        minHeight: '80px',
-        showTitle: false,
-        onSubmit: (text) => {
-          if (!currentUser) {
-            toast('로그인이 필요합니다.', 'error');
-            window.navigateTo('login');
-            return;
-          }
-          const imgMatches = [...text.matchAll(/!\[.*?\]\((.*?)\)/g)];
-          const images = imgMatches.map(m => m[1]);
-          const plainText = text.replace(/<[^>]*>?/gm, ' ');
-          const tagMatches = [...plainText.matchAll(/(?:^|\s)#([가-힣a-zA-Z0-9_]+)/g)];
-          const tags = tagMatches.map(m => '#' + m[1]);
-
-          const post = store.createPost({ title: '', images, caption: text, location: '', tags });
-          if (post) {
-            toast('게시물이 등록되었습니다.', 'success');
-            renderFeedPage(container, params); // re-render feed
-          }
-        }
-      })
-    );
-    
-    if (!currentUser) {
-      const overlay = el('div', { 
-        style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, cursor: 'pointer' },
-        onclick: () => {
-          toast('로그인이 필요합니다.', 'error');
-          window.navigateTo('login');
-        }
-      });
-      quickCreate.style.position = 'relative';
-      quickCreate.appendChild(overlay);
-    }
-
-    main.appendChild(quickCreate);
-
     const posts = store.getFeed();
     if (posts.length === 0) {
       main.appendChild(el('div', { className: 'text-center flex flex-col items-center justify-center py-16 text-tx-3' },

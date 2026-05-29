@@ -15,7 +15,7 @@ class Store {
   }
 
   init() {
-    const saved = localStorage.getItem('koral_store');
+    const saved = localStorage.getItem('koral_data_v2');
     if (saved) {
       try {
         this.state = JSON.parse(saved);
@@ -59,7 +59,7 @@ class Store {
   }
 
   _save() {
-    localStorage.setItem('koral_store', JSON.stringify(this.state));
+    localStorage.setItem('koral_data_v2', JSON.stringify(this.state));
   }
 
   _seedData() {
