@@ -983,13 +983,40 @@ export function renderCommentSection(postId) {
         }
       });
 
+      const isLong = c.text.length > 150 || (c.text.match(/\n/g) || []).length > 3;
+      const textSpan = el('span', { className: 'comment-text w-full', innerHTML: renderMarkdown(c.text).replace(/^<p>/, '').replace(/<\/p>$/, '') });
+      const toggleMoreBtn = isLong ? el('button', { className: 'text-xs font-bold text-tx-3 hover:text-tx bg-transparent p-0 border-none cursor-pointer mt-1' }, '자세히 보기') : null;
+      
+      if (isLong) {
+        textSpan.style.display = '-webkit-box';
+        textSpan.style.webkitBoxOrient = 'vertical';
+        textSpan.style.overflow = 'hidden';
+        textSpan.style.webkitLineClamp = '3';
+        textSpan.style.wordBreak = 'break-word';
+        
+        let expanded = false;
+        toggleMoreBtn.onclick = (e) => {
+          e.stopPropagation();
+          expanded = !expanded;
+          if (expanded) {
+            textSpan.style.display = 'block';
+            textSpan.style.webkitLineClamp = 'unset';
+            toggleMoreBtn.textContent = '간단히 보기';
+          } else {
+            textSpan.style.display = '-webkit-box';
+            textSpan.style.webkitLineClamp = '3';
+            toggleMoreBtn.textContent = '자세히 보기';
+          }
+        };
+      }
+
       const item = el('div', { className: 'comment-item w-full' },
         renderAvatar(author, 'av-sm'),
-        el('div', { className: 'comment-body w-full' },
-          el('span', { className: 'comment-author cursor-pointer hover:underline', onclick: () => window.navigateTo(`profile/${author.handle.substring(1)}`) }, author.handle),
-          ' ',
-          el('span', { className: 'comment-text', innerHTML: renderMarkdown(c.text).replace(/^<p>/, '').replace(/<\/p>$/, '') }),
-          el('div', { className: 'comment-actions flex items-center gap-2' },
+        el('div', { className: 'comment-body w-full min-w-0' },
+          el('span', { className: 'comment-author cursor-pointer hover:underline mr-2', onclick: () => window.navigateTo(`profile/${author.handle.substring(1)}`) }, author.handle),
+          textSpan,
+          isLong ? el('div', {}, toggleMoreBtn) : null,
+          el('div', { className: 'comment-actions flex items-center gap-2 mt-1' },
             el('span', { className: 'comment-time' }, timeAgo(c.createdAt) + (c.editedAt ? ' (수정됨)' : '')),
             replyBtn,
             isOwn ? moreWrap : null

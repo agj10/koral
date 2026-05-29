@@ -18,7 +18,7 @@ function buildAppShell() {
     el('div', { className: 'sidebar-logo-text' }, 'koral')
   );
   
-  const navItems = el('div', { className: 'nav-items' });
+  const navItems = el('div', { className: 'nav-items', style: { flex: 1, display: 'flex', flexDirection: 'column' } });
   
   const createNavItem = (id, iconSvg, label, route) => {
     const item = el('a', { 
@@ -48,6 +48,9 @@ function buildAppShell() {
   );
   
   sidebar.append(logoWrap, navItems, bottomNavItems);
+  sidebar.style.display = 'flex';
+  sidebar.style.flexDirection = 'column';
+  sidebar.style.height = '100%';
   
   // Main Content
   mainContent = el('main', { className: 'main-content' });

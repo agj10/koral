@@ -104,8 +104,17 @@ class Store {
   }
 
   login(handleOrEmail, password) {
+    const isEmail = handleOrEmail.includes('@') && handleOrEmail.includes('.');
+    let queryHandle = handleOrEmail;
+    if (!isEmail && !queryHandle.startsWith('@')) {
+      queryHandle = '@' + queryHandle;
+    }
+    
     const user = this.state.users.find(u => 
-      (u.handle === handleOrEmail || u.email === handleOrEmail) && u.password === password
+      (u.handle.toLowerCase() === queryHandle.toLowerCase() || 
+       u.handle.toLowerCase() === handleOrEmail.toLowerCase() || 
+       u.email.toLowerCase() === handleOrEmail.toLowerCase()) && 
+      u.password === password
     );
     if (user) {
       this.state.currentUser = user;
