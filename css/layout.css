@@ -202,10 +202,14 @@
   width: 340px;
   flex-shrink: 0;
   position: sticky;
-  top: 0;
-  height: 100dvh;
-  border-left: 1px solid var(--border);
-  padding: var(--s8) var(--s6);
+  top: var(--s4);
+  height: calc(100vh - var(--s8));
+  background: color-mix(in srgb, var(--bg-s) 75%, transparent);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border);
+  border-radius: var(--r-2xl);
+  padding: var(--s6) var(--s4);
   overflow-y: auto;
 }
 

@@ -1,6 +1,7 @@
 import { icons } from './icons.js';
 import { el, $, $$, timeAgo, renderMarkdown, escapeHtml, getInitials, toast, showModal, confirmDialog, resizeImage, uid, debounce } from './utils.js';
 import { store } from './store.js';
+import { t } from './lang.js';
 import { createRichTextEditor } from './editor.js';
 
 export function renderAvatar(user, sizeClass = 'av-md', hasStoryRing = false) {
@@ -40,11 +41,11 @@ export function renderPostCard(post, options = {}) {
   },
     renderAvatar(author, 'av-md', true), // give story ring to everyone for aesthetic
     el('div', { className: 'post-author-info' },
-      el('div', { className: 'post-author-name' }, 
-        el('span', { innerHTML: renderMarkdown(author.displayName) }),
+      el('div', { className: 'post-author-name flex items-center gap-1 font-semibold text-tx' }, 
+        post.authorHandle,
         author.verified ? el('span', { className: 'verified', innerHTML: icons.verified(14) }) : null
       ),
-      el('div', { className: 'post-author-handle' }, post.location || post.authorHandle)
+      post.location ? el('div', { className: 'text-xs text-tx-3' }, post.location) : null
     )
   );
 
@@ -56,35 +57,35 @@ export function renderPostCard(post, options = {}) {
       const modal = showModal(editWrap, { large: true });
       editWrap.appendChild(createRichTextEditor({
         initialValue: post.caption,
-        submitLabel: '수정 완료',
+        submitLabel: t('editPost'),
         minHeight: '200px',
         onSubmit: (newText) => {
           const plainText = newText.replace(/<[^>]*>?/gm, ' ');
           const tagMatches = [...plainText.matchAll(/(?:^|\s)#([가-힣a-zA-Z0-9_]+)/g)];
           const tags = tagMatches.map(m => '#' + m[1]);
           store.editPost(post.id, newText, tags);
-          toast('수정되었습니다.', 'success');
+          toast(t('editSuccess'), 'success');
           modal.close();
           if (options.onNavigate) options.onNavigate('');
         }
       }));
-    }}, el('span', { innerHTML: icons.edit(16) }), '수정') : null,
+    }}, el('span', { innerHTML: icons.edit(16) }), t('edit')) : null,
     isOwn ? el('div', { className: 'dropdown-item danger', onclick: async () => {
       dropdownOpen = false; dropdown.classList.remove('open');
-      if (await confirmDialog('정말 이 리프를 삭제하시겠습니까?')) {
+      if (await confirmDialog(t('deleteConfirm'))) {
         store.deletePost(post.id);
-        toast('삭제되었습니다.', 'success');
+        toast(t('deleteSuccess'), 'success');
         if (options.onNavigate) options.onNavigate('');
       }
-    }}, el('span', { innerHTML: icons.trash(16) }), '삭제') : 
+    }}, el('span', { innerHTML: icons.trash(16) }), t('delete')) : 
     el('div', { className: 'dropdown-item danger', onclick: () => {
       dropdownOpen = false; dropdown.classList.remove('open');
-      toast('신고가 접수되었습니다.', 'success');
-    }}, '신고'),
+      toast(t('reportSuccess'), 'success');
+    }}, t('report')),
     el('div', { className: 'dropdown-item', onclick: () => {
       navigator.clipboard.writeText(window.location.origin + window.location.pathname + '#/post/' + post.id);
-      toast('링크가 복사되었습니다.', 'success');
-    }}, el('span', { innerHTML: icons.link(16) }), '링크 복사')
+      toast(t('linkCopied'), 'success');
+    }}, el('span', { innerHTML: icons.link(16) }), localStorage.getItem('koral_language') === 'en' ? 'Copy Link' : '링크 복사')
   );
   
   const moreWrap = el('div', { className: 'dropdown' }, moreBtn, dropdown);
@@ -110,7 +111,7 @@ export function renderPostCard(post, options = {}) {
   const actionRow = el('div', { className: 'post-actions' });
   
   const likeBtnSpan = el('span', { innerHTML: isLiked ? icons.heartFilled(24) : icons.heart(24) });
-  const likeCountSpan = el('span', { className: 'text-sm font-semibold ml-1', textContent: post.likes.length > 0 ? post.likes.length : '' });
+  const likeCountSpan = el('span', { className: 'text-sm font-semibold ml-1', textContent: post.likes.length });
   
   const likeBtn = el('button', { className: `post-action-btn flex items-center ${isLiked?'liked':''}` }, 
     likeBtnSpan,
@@ -128,7 +129,7 @@ export function renderPostCard(post, options = {}) {
     likeBtn.className = `post-action-btn flex items-center ${nowLiked?'liked':''}`;
     likeBtnSpan.innerHTML = nowLiked ? icons.heartFilled(24) : icons.heart(24);
     const newCount = store.getPost(post.id).likes.length;
-    likeCountSpan.textContent = newCount > 0 ? newCount : '';
+    likeCountSpan.textContent = newCount;
   };
 
   likeBtn.onclick = likePost;
@@ -172,13 +173,13 @@ export function renderPostCard(post, options = {}) {
   if (options.compact) {
     const commentWrap = el('div', { className: 'px-4 pb-4 border-t border-base' },
       createRichTextEditor({
-        placeholder: '댓글 남기기...',
-        submitLabel: '등록',
+        placeholder: t('addComment'),
+        submitLabel: t('registerBtn'),
         minHeight: '40px',
         onSubmit: (text) => {
-          if (!currentUser) return toast('로그인이 필요합니다.', 'error');
+          if (!currentUser) return toast(t('loginRequired'), 'error');
           store.addComment({ postId: post.id, parentId: null, text });
-          toast('댓글이 작성되었습니다', 'success');
+          toast(localStorage.getItem('koral_language') === 'en' ? 'Comment added successfully.' : '댓글이 작성되었습니다', 'success');
           if(options.onNavigate) options.onNavigate(`post/${post.id}`);
         }
       })
@@ -195,9 +196,11 @@ export function renderStoryRow() {
   
   if (currentUser) {
     row.appendChild(
-      el('div', { className: 'story-item', onclick: renderStoryCreator },
-        el('div', { className: 'story-add' }, '+'),
-        el('div', { className: 'story-name' }, '내 셸')
+      el('div', { className: 'story-item', onclick: () => window.navigateTo('create/story') },
+        el('div', { className: 'story-add' },
+          el('span', { innerHTML: icons.plusSquare(24) })
+        ),
+        el('div', { className: 'story-name' }, t('myShell'))
       )
     );
   }
@@ -225,12 +228,16 @@ export function renderStoryRow() {
   return row;
 }
 
-export function renderStoryCreator() {
+export function renderStoryCreator(targetContainer = null) {
   const currentUser = store.getState().currentUser;
-  if (!currentUser) return toast('로그인이 필요합니다.', 'error');
+  const currentLang = localStorage.getItem('koral_language') || 'ko';
   
-  const wrap = el('div', { className: 'p-4 flex flex-col gap-4', style: { width: '100%', maxWidth: '400px', margin: '0 auto' } });
-  wrap.appendChild(el('h2', { className: 'font-bold text-lg mb-2' }, '새 셸 만들기'));
+  if (!currentUser) return toast(t('loginRequired') || '로그인이 필요합니다.', 'error');
+  
+  const wrap = el('div', { className: 'p-6 flex flex-col gap-4 bg-element border border-base rounded-2xl shadow-sm', style: { width: '100%', maxWidth: '548px', margin: '0 auto' } });
+  if (!targetContainer) {
+    wrap.appendChild(el('h2', { className: 'font-bold text-lg mb-2 text-tx text-center border-b border-base pb-3' }, t('newShell')));
+  }
   
   let backgroundLayer = null;
   let textLayers = [];
@@ -238,8 +245,8 @@ export function renderStoryCreator() {
   let layerElements = {}; 
   
   const canvasArea = el('div', { 
-    className: 'relative w-full overflow-hidden bg-gray-100 rounded-lg border border-base flex items-center justify-center shadow-inner',
-    style: { aspectRatio: '1/1', touchAction: 'none', userSelect: 'none' }
+    className: 'relative overflow-hidden bg-gray-100 rounded-lg border border-base flex items-center justify-center shadow-inner',
+    style: { width: '500px', height: '500px', maxWidth: '100%', aspectRatio: '1/1', touchAction: 'none', userSelect: 'none', margin: '0 auto' }
   });
   
   canvasArea.onpointerdown = (e) => {
@@ -251,30 +258,31 @@ export function renderStoryCreator() {
     }
   };
   
+  const placeholderText = currentLang === 'ko' ? '이미지를 업로드해주세요' : currentLang === 'ja' ? '画像をアップロードしてください' : currentLang === 'zh' ? '请上传图片' : 'Please upload an image';
   const placeholder = el('div', { className: 'text-tx-3 flex flex-col items-center pointer-events-none' },
     el('span', { innerHTML: icons.image(32) }),
-    '이미지를 업로드해주세요'
+    placeholderText
   );
   canvasArea.appendChild(placeholder);
   
   const fileInput = el('input', { type: 'file', accept: 'image/*', className: 'hidden' });
   const uploadBtn = el('button', { className: 'btn btn-outline flex-1 flex items-center justify-center gap-2', onclick: () => fileInput.click() },
-    el('span', { innerHTML: icons.image(18) }), '사진 업로드'
+    el('span', { innerHTML: icons.image(18) }), t('uploadPhoto')
   );
   
   const addTextBtn = el('button', { className: 'btn btn-outline flex-1 flex items-center justify-center gap-2', disabled: true, onclick: () => {
     const textWrap = el('div', { className: 'p-4 flex flex-col gap-4' });
     const editor = createRichTextEditor({
       id: 'story_text_' + uid(),
-      placeholder: '셸 문구...',
+      placeholder: t('writeSomething'),
       showTitle: false,
       minHeight: '100px',
-      submitLabel: '텍스트 추가',
+      submitLabel: t('addText'),
       hideAdvanced: true,
       onSubmit: (html) => {
-        if (!html.trim()) return toast('내용을 입력하세요', 'error');
+        if (!html.trim()) return toast(currentLang === 'ko' ? '내용을 입력하세요' : 'Please enter content', 'error');
         const id = uid();
-        textLayers.push({ id, type: 'text', html, x: 200, y: 200, scale: 1, rotate: 0, width: 200, height: 50 });
+        textLayers.push({ id, type: 'text', html, x: 250, y: 250, scale: 1, rotate: 0, width: 250, height: 50 });
         activeLayerId = id;
         renderCanvas();
         textModal.close();
@@ -282,19 +290,19 @@ export function renderStoryCreator() {
     });
     textWrap.appendChild(editor);
     const textModal = showModal(textWrap);
-  }}, el('span', { innerHTML: icons.hash(18) }), '텍스트 추가');
+  }}, el('span', { innerHTML: icons.hash(18) }), t('addText'));
   
   fileInput.onchange = async (e) => {
     if (e.target.files && e.target.files[0]) {
       try {
         const src = await resizeImage(e.target.files[0], 1080);
-        backgroundLayer = { id: uid(), type: 'image', src, x: 200, y: 200, scale: 1, rotate: 0, width: 300, height: 300 };
+        backgroundLayer = { id: uid(), type: 'image', src, x: 250, y: 250, scale: 1, rotate: 0, width: 350, height: 350 };
         activeLayerId = backgroundLayer.id;
         placeholder.style.display = 'none';
         addTextBtn.disabled = false;
         renderCanvas();
       } catch (err) {
-        toast('이미지 업로드 실패', 'error');
+        toast(currentLang === 'ko' ? '이미지 업로드 실패' : 'Failed to upload image', 'error');
       }
     }
   };
@@ -345,7 +353,7 @@ export function renderStoryCreator() {
     
     const { layer, action, direction } = activeElement;
     const containerRect = canvasArea.getBoundingClientRect();
-    const scaleRatio = 400 / containerRect.width;
+    const scaleRatio = 500 / containerRect.width;
     
     if (action === 'move') {
       layer.x = initialX + dx * scaleRatio;
@@ -398,12 +406,12 @@ export function renderStoryCreator() {
   };
   
   const updateElementTransform = (container, layer) => {
-    container.style.left = (layer.x / 400 * 100) + '%';
-    container.style.top = (layer.y / 400 * 100) + '%';
+    container.style.left = (layer.x / 500 * 100) + '%';
+    container.style.top = (layer.y / 500 * 100) + '%';
     container.style.transform = `translate(-50%, -50%) rotate(${layer.rotate}deg) scale(${layer.scale})`;
-    container.style.width = layer.width + 'px';
+    container.style.width = (layer.width / 500 * 100) + '%';
     if (layer.type === 'image') {
-      container.style.height = layer.height + 'px';
+      container.style.height = (layer.height / 500 * 100) + '%';
     } else {
       container.style.height = 'auto';
     }
@@ -435,7 +443,6 @@ export function renderStoryCreator() {
       const rotHandleWrap = el('div', { 
         style: { position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } 
       });
-      // Append circle first (at the top), then line (at the bottom connecting to the box)
       rotHandleWrap.appendChild(el('div', { 
         dataset: { handle: 'true' },
         style: { width: '24px', height: '24px', backgroundColor: '#fff', border: `2px solid ${brandColor}`, borderRadius: '50%', cursor: 'crosshair', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' },
@@ -505,7 +512,7 @@ export function renderStoryCreator() {
   let modalRef = null;
   const footer = el('div', { className: 'flex justify-end gap-2 mt-4' });
   const submitBtn = el('button', { className: 'btn btn-primary w-full', onclick: () => {
-    if (!backgroundLayer) return toast('이미지를 필수로 업로드해야 합니다.', 'error');
+    if (!backgroundLayer) return toast(currentLang === 'ko' ? '이미지를 필수로 업로드해야 합니다.' : 'You must upload an image.', 'error');
     
     activeLayerId = null; 
     renderCanvas();
@@ -514,84 +521,122 @@ export function renderStoryCreator() {
     const toRelative = (layer) => ({
       type: layer.type, 
       content: layer.type === 'image' ? layer.src : layer.html, 
-      x: layer.x / 400, 
-      y: layer.y / 400, 
+      x: layer.x / 500, 
+      y: layer.y / 500, 
       scale: layer.scale, 
       rotate: layer.rotate,
-      width: layer.width / 400,
-      height: (layer.height || 0) / 400
+      width: layer.width / 500,
+      height: (layer.height || 0) / 500
     });
     
     layers.push(toRelative(backgroundLayer));
     textLayers.forEach(t => layers.push(toRelative(t)));
     
     store.addStory(layers);
-    toast('셸이 완성되었습니다.', 'success');
+    toast(currentLang === 'ko' ? '셸이 완성되었습니다.' : 'Shell created successfully.', 'success');
     cleanup();
     if (modalRef) modalRef.close();
     window.location.reload();
-  }}, '완성 및 업로드');
+  }}, t('finishUpload'));
   
   footer.appendChild(submitBtn);
   wrap.append(canvasArea, el('div', { className: 'flex gap-2 w-full mt-2' }, uploadBtn, addTextBtn), footer);
   
-  modalRef = showModal(wrap, { onClose: cleanup });
+  if (targetContainer) {
+    targetContainer.innerHTML = '';
+    const pageWrap = el('div', { className: 'page-container anim-fade flex flex-col items-center justify-center', style: { maxWidth: '768px' } });
+    const titleHeader = el('div', { className: 'mb-6 text-center w-full' },
+      el('h2', { className: 'text-2xl font-bold text-tx' }, t('newShell'))
+    );
+    pageWrap.append(titleHeader, wrap);
+    targetContainer.appendChild(pageWrap);
+  } else {
+    modalRef = showModal(wrap, { onClose: cleanup });
+  }
 }
 
 export function renderStoryViewer(startIndex, groupedStories) {
-  const group = groupedStories[startIndex];
-  if (!group || !group.stories || group.stories.length === 0) return;
+  const currentUser = store.getState().currentUser;
   
+  // Dynamic WebKit scrollbar hiding styles
+  let styleTag = document.getElementById('story-viewer-temp-styles');
+  if (!styleTag) {
+    styleTag = el('style', {
+      id: 'story-viewer-temp-styles',
+      textContent: `
+        .stories-scroll-container::-webkit-scrollbar {
+          display: none !important;
+        }
+      `
+    });
+    document.head.appendChild(styleTag);
+  }
+
+  // 1. Create a full-screen overlay
   const overlay = el('div', { 
-    className: 'fixed inset-0 bg-black/80 z-[9999] flex flex-col',
-    style: { 
-      overscrollBehavior: 'contain',
-      justifyContent: 'center', alignItems: 'center'
-    }
+    className: 'fixed inset-0 bg-black/95 z-[9999] flex flex-col justify-center items-center',
+    style: { overscrollBehavior: 'contain' }
   });
   
   // Prevent body scroll while viewing stories
   const originalBodyOverflow = document.body.style.overflow;
   document.body.style.overflow = 'hidden';
   
-  const closeBtn = el('button', { 
-    className: 'absolute top-3 right-3 text-white z-50 p-2 cursor-pointer bg-black/50 hover:bg-black/80 rounded-full transition-colors',
-    style: { border: 'none' },
-    onclick: () => {
-      document.body.style.overflow = originalBodyOverflow;
-      overlay.remove();
-      window.location.reload();
-    }
-  }, el('span', { innerHTML: icons.x(20) }));
-  
-  const scrollContainer = el('div', { 
-    className: 'relative flex flex-col bg-black shadow-2xl rounded-2xl overflow-hidden',
-    style: { 
-      width: '450px', height: '450px', maxWidth: '90vw', maxHeight: '90vw',
-      overflowY: 'auto', 
-      scrollSnapType: 'y mandatory', scrollbarWidth: 'none', msOverflowStyle: 'none',
-      border: '1px solid rgba(255,255,255,0.1)'
+  // 2. Create the scroll container with snap scrolling
+  const scrollContainer = el('div', {
+    className: 'w-full h-full overflow-y-scroll scroll-smooth stories-scroll-container',
+    style: {
+      scrollSnapType: 'y mandatory',
+      height: '100vh',
+      width: '100vw',
+      scrollbarWidth: 'none',
+      msOverflowStyle: 'none'
     }
   });
-  scrollContainer.innerHTML = '<style>.stories-scroll::-webkit-scrollbar { display: none; }</style>';
-  scrollContainer.classList.add('stories-scroll');
-  scrollContainer.appendChild(closeBtn);
   
-  group.stories.forEach((story, idx) => {
-    store.markStoryViewed(story.id);
+  // 3. Flatten all stories from all groups
+  const flatStories = [];
+  let initialActiveIndex = 0;
+  
+  groupedStories.forEach((group, gIdx) => {
+    const user = store.getUser(group.authorHandle) || { displayName: 'Unknown', handle: group.authorHandle };
+    group.stories.forEach((story, sIdx) => {
+      if (gIdx === startIndex && sIdx === 0) {
+        initialActiveIndex = flatStories.length;
+      }
+      flatStories.push({ story, user, group, gIdx, sIdx });
+    });
+  });
+  
+  // 4. Create slides for all flat stories
+  flatStories.forEach((item, index) => {
+    const { story, user } = item;
     
-    const storyBox = el('div', { 
-      className: 'relative w-full flex-shrink-0 bg-gray-900 overflow-hidden',
-      style: { height: '100%', scrollSnapAlign: 'start', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+    // Create the slide (100vh, 100vw, flex center, snap align start)
+    const slide = el('div', {
+      className: 'w-full h-screen relative flex items-center justify-center shrink-0 story-slide-wrap',
+      dataset: { storyId: story.id, index: index },
+      style: {
+        scrollSnapAlign: 'start',
+        height: '100vh',
+        width: '100vw'
+      }
     });
     
-    const virtualCanvas = el('div', {
-      className: 'relative',
-      style: {
-        width: '400px', height: '400px',
-        transform: 'scale(1.125)', // 450px / 400px
-        transformOrigin: 'center center'
+    // Centered 500x500 story box
+    const storyBox = el('div', { 
+      className: 'relative bg-black shadow-2xl rounded-2xl overflow-hidden',
+      style: { 
+        width: '500px', height: '500px', maxWidth: '90vw', maxHeight: '90vh',
+        border: '1px solid rgba(255,255,255,0.1)',
+        display: 'flex', alignItems: 'center', justify: 'center'
       }
+    });
+    
+    // Virtual 100% canvas inside story box
+    const virtualCanvas = el('div', {
+      className: 'relative w-full h-full',
+      style: { aspectRatio: '1/1' }
     });
     
     const layers = story.layers || [];
@@ -599,26 +644,23 @@ export function renderStoryViewer(startIndex, groupedStories) {
       const container = el('div', { 
         className: 'absolute flex items-center justify-center',
         style: { 
-          left: (layer.x * 400) + 'px', 
-          top: (layer.y * 400) + 'px', 
-          width: (layer.width * 400) + 'px',
+          left: (layer.x * 100) + '%', 
+          top: (layer.y * 100) + '%', 
+          width: (layer.width * 100) + '%',
           transformOrigin: 'center center',
           transform: `translate(-50%, -50%) rotate(${layer.rotate}deg) scale(${layer.scale})`
         }
       });
       if (layer.type === 'image') {
-        container.style.height = (layer.height * 400) + 'px';
-      }
-      
-      if (layer.type === 'image') {
+        container.style.height = (layer.height * 100) + '%';
         container.appendChild(el('img', { 
           src: layer.content, 
           style: { width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', borderRadius: '4px' } 
         }));
-      } else if (layer.type === 'text') {
+      } else {
         container.style.height = 'auto';
         const textWrap = el('div', { 
-          style: { width: '100%', height: '100%', fontSize: '20px', fontWeight: 'bold', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', wordBreak: 'break-word', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' } 
+          style: { width: '100%', height: '100%', fontSize: '20px', fontWeight: 'bold', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', wordBreak: 'break-word', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justify: 'center', pointerEvents: 'none' } 
         });
         textWrap.innerHTML = layer.content;
         container.appendChild(textWrap);
@@ -627,29 +669,131 @@ export function renderStoryViewer(startIndex, groupedStories) {
       virtualCanvas.appendChild(container);
     });
     
-    storyBox.appendChild(virtualCanvas);
-    scrollContainer.appendChild(storyBox);
+    // Like button & count
+    const storyLikes = story.likes || [];
+    const isStoryLiked = currentUser && storyLikes.includes(currentUser.handle);
+    const storyLikesCount = storyLikes.length;
+    
+    const storyLikeBtnSpan = el('span', { innerHTML: isStoryLiked ? icons.heartFilled(20) : icons.heart(20) });
+    const storyLikeCountSpan = el('span', { className: 'text-xs font-bold text-white ml-2', textContent: storyLikesCount });
+    
+    const storyLikeBtn = el('button', { 
+      className: 'flex items-center text-white bg-black/40 hover:bg-black/60 px-4 py-2 rounded-full cursor-pointer transition-colors border border-white/10 shadow-lg pointer-events-auto',
+      style: { 
+        position: 'absolute', bottom: '16px', right: '16px', zIndex: 100, 
+        color: isStoryLiked ? 'var(--brand-a, #ff7171)' : '#fff' 
+      },
+      onclick: (e) => {
+        e.stopPropagation();
+        if (!currentUser) return toast(t('loginRequired') || '로그인이 필요합니다', 'error');
+        const nowLiked = store.toggleStoryLike(story.id);
+        storyLikeBtn.style.color = nowLiked ? 'var(--brand-a, #ff7171)' : '#fff';
+        storyLikeBtnSpan.innerHTML = nowLiked ? icons.heartFilled(20) : icons.heart(20);
+        storyLikeCountSpan.textContent = store.getState().stories.find(s => s.id === story.id).likes.length;
+      }
+    }, storyLikeBtnSpan, storyLikeCountSpan);
+    
+    // Add header to show the author handle
+    const storyHeader = el('div', {
+      className: 'absolute top-4 left-4 flex items-center gap-2 z-10 bg-black/30 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/10',
+      style: { pointerEvents: 'auto', cursor: 'pointer' },
+      onclick: (e) => {
+        e.stopPropagation();
+        document.body.style.overflow = originalBodyOverflow;
+        overlay.remove();
+        window.navigateTo(`profile/${user.handle.substring(1)}`);
+      }
+    },
+      renderAvatar(user, 'av-xs', false),
+      el('span', { className: 'text-white font-semibold text-sm', textContent: user.handle })
+    );
+    
+    storyBox.append(storyHeader, virtualCanvas, storyLikeBtn);
+    slide.appendChild(storyBox);
+    scrollContainer.appendChild(slide);
   });
   
-  overlay.append(scrollContainer);
+  // 5. Add close button fixed in overlay
+  const closeBtn = el('button', { 
+    className: 'fixed top-4 right-4 text-white z-[10000] p-2 cursor-pointer bg-black/50 hover:bg-black/80 rounded-full transition-colors border border-white/10 flex items-center justify-center',
+    onclick: () => {
+      document.body.style.overflow = originalBodyOverflow;
+      overlay.remove();
+      
+      // In-place refresh of story rings to avoid reload flickering
+      const storyRow = document.querySelector('.stories-row');
+      if (storyRow) {
+        const parent = storyRow.parentElement;
+        if (parent) {
+          const newStoryRow = renderStoryRow();
+          parent.replaceChild(newStoryRow, storyRow);
+        }
+      }
+    }
+  }, el('span', { innerHTML: icons.x(20) }));
   
-  if (group.stories.length > 1) {
-    const hint = el('div', { className: 'absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm flex flex-col items-center gap-1 z-50 pointer-events-none anim-up' },
-      el('span', { innerHTML: icons.chevronDown(20) }),
-      '아래로 스크롤하여 더 보기'
-    );
-    scrollContainer.appendChild(hint);
-    scrollContainer.addEventListener('scroll', () => hint.style.opacity = '0', { once: true });
-  }
-  
+  overlay.append(scrollContainer, closeBtn);
   document.body.appendChild(overlay);
+  
+  // 6. Intersection Observer to mark stories as read when scrolled into view
+  const observerOptions = {
+    root: scrollContainer,
+    threshold: 0.6
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const slide = entry.target;
+        const storyId = slide.dataset.storyId;
+        if (currentUser) {
+          store.markStoryViewed(storyId);
+        }
+      }
+    });
+  }, observerOptions);
+  
+  const slides = scrollContainer.querySelectorAll('.story-slide-wrap');
+  slides.forEach(s => observer.observe(s));
+  
+  // Keyboard escape handler
+  const keyHandler = (e) => {
+    if (e.key === 'Escape') {
+      closeBtn.click();
+      document.removeEventListener('keydown', keyHandler);
+    }
+  };
+  document.addEventListener('keydown', keyHandler);
+  
+  // 7. Scroll smoothly to the clicked index
+  setTimeout(() => {
+    const targetSlide = scrollContainer.children[initialActiveIndex];
+    if (targetSlide) {
+      targetSlide.scrollIntoView({ behavior: 'auto' });
+    }
+  }, 50);
 }
 
 export function renderSuggestSidebar() {
   const currentUser = store.getState().currentUser;
   if (!currentUser) return el('div');
 
-  const container = el('div', { className: 'aside-content' });
+  const currentLang = localStorage.getItem('koral_language') || 'ko';
+  const recTitle = currentLang === 'ko' ? '회원님을 위한 추천' : currentLang === 'ja' ? 'おすすめのユーザー' : currentLang === 'zh' ? '为您推荐' : 'Suggestions for you';
+  const viewAll = currentLang === 'ko' ? '모두 보기' : currentLang === 'ja' ? 'すべて見る' : currentLang === 'zh' ? '查看全部' : 'See All';
+  const switchLabel = currentLang === 'ko' ? '계정 전환' : currentLang === 'ja' ? 'アカウント切り替え' : currentLang === 'zh' ? '切换账号' : 'Switch Account';
+  const logoutLabel = currentLang === 'ko' ? '로그아웃' : currentLang === 'ja' ? 'ログアウト' : currentLang === 'zh' ? '退出登录' : 'Log out';
+  const followingLabel = currentLang === 'ko' ? '팔로잉' : currentLang === 'ja' ? 'フォロー中' : currentLang === 'zh' ? '正在关注' : 'Following';
+  const followLabel = currentLang === 'ko' ? '팔로우' : currentLang === 'ja' ? 'フォロー' : currentLang === 'zh' ? '关注' : 'Follow';
+  const optionsTitle = currentLang === 'ko' ? '옵션' : currentLang === 'ja' ? 'オプション' : currentLang === 'zh' ? '选项' : 'Options';
+  const addAccountLabel = currentLang === 'ko' ? '기존 계정 추가' : currentLang === 'ja' ? '既存のアカウントを追加' : currentLang === 'zh' ? '添加已有账号' : 'Add Existing Account';
+  
+  const footerText = currentLang === 'ko' ? '소개 · 도움말 · 홍보 센터 · API · 채용 정보 · 개인정보처리방침 · 약관 · 위치 · 언어 · Meta Verified' :
+                     currentLang === 'ja' ? '基本情報 · ヘルプ · プレス · API · 求人 · プライバシー · 規約 · 位置 · 言語 · Meta Verified' :
+                     currentLang === 'zh' ? '关于 · 帮助 · 新闻 · API · 工作 · 隐私 · 条款 · 位置 · 语言 · Meta Verified' :
+                     'About · Help · Press · API · Jobs · Privacy · Terms · Locations · Language · Meta Verified';
+
+  const container = el('div', { className: 'aside-content flex flex-col', style: { display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 80px)' } });
   
   const asideSwitch = el('div', { 
     className: 'aside-switch cursor-pointer flex items-center justify-center p-2 rounded-lg hover:bg-hover transition-colors',
@@ -660,17 +804,17 @@ export function renderSuggestSidebar() {
     e.stopPropagation();
     
     const moreWrap = el('div', { className: 'p-2 w-full flex flex-col gap-1' });
-    moreWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx px-3 pt-2 pb-3 mb-1 border-b border-base' }, '옵션'));
+    moreWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx px-3 pt-2 pb-3 mb-1 border-b border-base' }, optionsTitle));
     
     const switchBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3', onclick: () => {
       modal.close();
       showSwitcherModal();
-    }}, el('span', { innerHTML: icons.user(18) }), '계정 전환');
+    }}, el('span', { innerHTML: icons.user(18) }), switchLabel);
     
     const logoutBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3 text-red-500 hover:bg-red-50', onclick: () => {
       store.logout();
       window.navigateTo('login');
-    }}, el('span', { innerHTML: icons.logout(18) }), '로그아웃');
+    }}, el('span', { innerHTML: icons.logout(18) }), logoutLabel);
     
     moreWrap.append(switchBtn, logoutBtn);
     const modal = showModal(moreWrap, { className: 'w-full max-w-sm' });
@@ -678,7 +822,7 @@ export function renderSuggestSidebar() {
 
   const showSwitcherModal = () => {
     const wrap = el('div', { className: 'p-2 w-full flex flex-col gap-1' });
-    wrap.appendChild(el('div', { className: 'font-bold text-lg text-tx px-3 pt-2 pb-3 mb-1 border-b border-base' }, '계정 전환'));
+    wrap.appendChild(el('div', { className: 'font-bold text-lg text-tx px-3 pt-2 pb-3 mb-1 border-b border-base' }, switchLabel));
     
     const otherUsers = store.getState().users.filter(u => u.id !== currentUser.id).slice(0, 2);
     otherUsers.forEach(u => {
@@ -697,7 +841,7 @@ export function renderSuggestSidebar() {
     const addBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3 mt-1 border-t border-base rounded-none text-brand', onclick: () => {
       store.logout();
       window.navigateTo('login');
-    } }, el('span', { innerHTML: icons.plusSquare(18) }), '기존 계정 추가');
+    } }, el('span', { innerHTML: icons.plusSquare(18) }), addAccountLabel);
     
     wrap.appendChild(addBtn);
     showModal(wrap, { className: 'w-full max-w-sm' });
@@ -716,8 +860,8 @@ export function renderSuggestSidebar() {
 
   const suggestBox = el('div', { className: 'suggest-card' },
     el('div', { className: 'suggest-header' },
-      el('h4', { textContent: '회원님을 위한 추천' }),
-      el('a', { textContent: '모두 보기', style: { cursor: 'pointer' } })
+      el('h4', { textContent: recTitle }),
+      el('a', { textContent: viewAll, style: { cursor: 'pointer' } })
     )
   );
 
@@ -727,23 +871,26 @@ export function renderSuggestSidebar() {
       renderAvatar(user, 'av-md', true),
       el('div', { className: 'suggest-user-info' },
         el('div', { className: 'suggest-user-name', onclick: () => window.navigateTo(`profile/${user.handle.substring(1)}`) }, user.handle),
-        el('div', { className: 'suggest-user-sub' }, '회원님을 위한 추천')
+        el('div', { className: 'suggest-user-sub' }, recTitle)
       ),
       el('button', { 
         className: 'btn-ghost btn-sm', 
         style: { color: 'var(--tx-br)', fontWeight: '600' },
         onclick: (e) => {
           store.toggleFollow(user.handle);
-          e.target.textContent = store.isFollowing(user.handle) ? '팔로잉' : '팔로우';
+          e.target.textContent = store.isFollowing(user.handle) ? followingLabel : followLabel;
           e.target.style.color = store.isFollowing(user.handle) ? 'var(--tx-3)' : 'var(--tx-br)';
         }
-      }, '팔로우')
+      }, store.isFollowing(user.handle) ? followingLabel : followLabel)
     );
     suggestBox.appendChild(item);
   });
 
-  const footer = el('div', { className: 'aside-footer' },
-    '소개 · 도움말 · 홍보 센터 · API · 채용 정보 · 개인정보처리방침 · 약관 · 위치 · 언어 · Meta Verified',
+  const footer = el('div', { 
+    className: 'aside-footer pt-6 text-xs text-tx-3',
+    style: { marginTop: 'auto' }
+  },
+    footerText,
     el('br'), el('br'),
     '© 2026 koral'
   );
@@ -853,7 +1000,7 @@ export function renderCommentSection(postId) {
       const likesCount = c.likes ? c.likes.length : 0;
       
       const likeBtnSpan = el('span', { innerHTML: isLiked ? icons.heartFilled(14) : icons.heart(14) });
-      const likeCountSpan = el('span', { textContent: likesCount > 0 ? likesCount : '' });
+      const likeCountSpan = el('span', { textContent: likesCount });
       
       const toggleCommentLike = (e) => {
         e.stopPropagation();
@@ -862,7 +1009,7 @@ export function renderCommentSection(postId) {
         const newCount = store.getState().comments.find(cm => cm.id === c.id).likes.length;
         likeBtnSpan.innerHTML = nowLiked ? icons.heartFilled(14) : icons.heart(14);
         e.currentTarget.classList.toggle('text-brand', nowLiked);
-        likeCountSpan.textContent = newCount > 0 ? newCount : '';
+        likeCountSpan.textContent = newCount;
       };
       
       const itemWrapper = el('div', { className: 'flex flex-col' });
@@ -975,10 +1122,9 @@ export function renderCommentSection(postId) {
         renderAvatar(author, 'av-sm'),
         el('div', { className: 'flex flex-col' },
           el('div', { className: 'font-bold text-tx text-sm flex items-center gap-1' }, 
-            author.displayName, 
+            author.handle, 
             author.verified ? el('span', { className: 'text-brand', innerHTML: icons.verified(14) }) : ''
-          ),
-          el('div', { className: 'text-xs text-tx-2' }, author.handle)
+          )
         )
       );
 
@@ -1081,7 +1227,10 @@ export function renderPostPreviewCard(post, options = {}) {
   const authorWrap = el('div', { className: 'flex items-center gap-2' },
     renderAvatar(author, 'av-sm'),
     el('div', { className: 'text-xs' },
-      el('div', { className: 'font-semibold text-tx' }, author.handle),
+      el('div', { className: 'font-semibold text-tx flex items-center gap-1' }, 
+        author.handle,
+        author.verified ? el('span', { className: 'verified text-brand', innerHTML: icons.verified(12) }) : null
+      ),
       el('div', { className: 'text-tx-3' }, timeAgo(post.createdAt))
     )
   );
@@ -1114,17 +1263,35 @@ export function renderPostPreviewCard(post, options = {}) {
     const topComment = comments.reduce((prev, current) => (prev.likes.length > current.likes.length) ? prev : current);
     const topAuthor = store.getUser(topComment.authorHandle);
     if (topAuthor) {
+      const isCommentLiked = currentUser && topComment.likes && topComment.likes.includes(currentUser.handle);
+      const commentLikeBtnSpan = el('span', { innerHTML: isCommentLiked ? icons.heartFilled(12) : icons.heart(12) });
+      const commentLikeCountSpan = el('span', { className: 'font-semibold ml-1', textContent: topComment.likes ? topComment.likes.length : 0 });
+      
+      const commentLikeBtn = el('button', { 
+        className: `flex items-center gap-1 text-xs cursor-pointer hover:scale-110 transition-transform bg-transparent border-none ${isCommentLiked ? 'text-brand' : 'text-tx-3'}`,
+        style: { padding: '2px 4px' },
+        onclick: (e) => {
+          e.stopPropagation(); // prevent navigation
+          if (!currentUser) return toast('로그인이 필요합니다', 'error');
+          const nowLiked = store.toggleCommentLike(topComment.id);
+          commentLikeBtn.className = `flex items-center gap-1 text-xs cursor-pointer hover:scale-110 transition-transform bg-transparent border-none ${nowLiked ? 'text-brand' : 'text-tx-3'}`;
+          commentLikeBtnSpan.innerHTML = nowLiked ? icons.heartFilled(12) : icons.heart(12);
+          const updatedComment = store.getState().comments.find(cm => cm.id === topComment.id);
+          commentLikeCountSpan.textContent = updatedComment.likes ? updatedComment.likes.length : 0;
+        }
+      }, commentLikeBtnSpan, commentLikeCountSpan);
+
       const commentWrap = el('div', { className: 'mt-4 p-3 bg-hover rounded-xl' },
         el('div', { className: 'flex items-center justify-between mb-1' },
           el('div', { className: 'flex items-center gap-2' },
             renderAvatar(topAuthor, 'av-xs'),
-            el('span', { className: 'font-semibold text-xs text-tx' }, topAuthor.displayName),
+            el('span', { className: 'font-semibold text-xs text-tx flex items-center gap-1' }, 
+              topAuthor.handle,
+              topAuthor.verified ? el('span', { className: 'verified text-brand', innerHTML: icons.verified(10) }) : null
+            ),
             el('span', { className: 'text-xs text-tx-3' }, timeAgo(topComment.createdAt))
           ),
-          el('div', { className: 'flex items-center gap-1 text-xs text-brand' },
-            el('span', { innerHTML: icons.heartFilled(12) }),
-            el('span', { className: 'font-semibold' }, topComment.likes.length)
-          )
+          commentLikeBtn
         ),
         el('div', { className: 'text-sm text-tx-2 clamp2 ml-8', innerHTML: renderMarkdown(topComment.text).replace(/^<p>/, '').replace(/<\/p>$/,'') })
       );

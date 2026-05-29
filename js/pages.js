@@ -1,6 +1,7 @@
 import { icons } from './icons.js';
 import { el, $, $$, timeAgo, renderMarkdown, escapeHtml, getInitials, toast, showModal, confirmDialog, resizeImage, uid, debounce } from './utils.js';
 import { store } from './store.js';
+import { t } from './lang.js';
 import { renderAvatar, renderPostCard, renderPostPreviewCard, renderStoryRow, renderSuggestSidebar, renderThemeSelector, renderCommentSection, createDropdownSelect } from './components.js';
 import { createRichTextEditor } from './editor.js';
 
@@ -17,8 +18,8 @@ export function renderFeedPage(container, params = {}) {
     if (posts.length === 0) {
       main.appendChild(el('div', { className: 'text-center flex flex-col items-center justify-center py-16 text-tx-3' },
         el('div', { className: 'mb-4', innerHTML: icons.image(48) }),
-        el('p', { className: 'text-lg font-semibold text-tx' }, '아직 리프가 없습니다.'),
-        el('p', { className: 'text-sm mt-2' }, '첫 번째 리프를 작성하거나 다른 사용자를 팔로우해 보세요.')
+        el('p', { className: 'text-lg font-semibold text-tx' }, t('noReefs')),
+        el('p', { className: 'text-sm mt-2' }, t('noReefsSub'))
       ));
     } else {
       const colsContainer = el('div', { className: 'flex gap-6 w-full items-start feed-cols-container' });
@@ -68,24 +69,26 @@ export function renderExplorePage(container) {
   
   const wrap = el('div', { className: 'page-container anim-fade flex flex-col gap-8 w-full max-w-5xl mx-auto' });
   
-  const searchHeader = el('div', { className: 'flex items-center gap-4 w-full' });
+  const searchHeader = el('div', { className: 'flex items-center gap-4 w-full flex-wrap' });
   
-  const searchWrap = el('div', { className: 'flex-1 relative' });
+  const searchWrap = el('div', { className: 'flex-1 min-w-[200px]', style: { position: 'relative' } });
   const searchInput = el('input', { 
     type: 'text', 
     className: 'input w-full py-3 rounded-2xl bg-element border-base text-lg font-semibold', 
     style: { paddingLeft: '48px' },
     placeholder: '검색어를 입력하세요...' 
   });
-  const searchIcon = el('div', { className: 'absolute left-4 top-1/2 -translate-y-1/2 text-tx-3', style: { display: 'flex', alignItems: 'center' }, innerHTML: icons.search(22) });
+  const searchIcon = el('div', { className: 'absolute text-tx-3', style: { left: '16px', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', pointerEvents: 'none' }, innerHTML: icons.search(22) });
   searchWrap.append(searchIcon, searchInput);
   
   const categoryOptions = ['전체', '사진', '일상', '개발', '디자인', '기타'].map(cat => ({ value: cat, label: cat }));
+  const categorySelectWrap = el('div', { className: 'w-[120px] flex-shrink-0' });
   const categorySelect = createDropdownSelect(categoryOptions, '전체', (val) => {
     // filter logic here
-  }, '전체');
+  }, '카테고리');
+  categorySelectWrap.appendChild(categorySelect);
   
-  searchHeader.append(searchWrap, categorySelect);
+  searchHeader.append(searchWrap, categorySelectWrap);
   wrap.appendChild(searchHeader);
 
   const contentArea = el('div', { className: 'w-full' });
@@ -95,22 +98,54 @@ export function renderExplorePage(container) {
     contentArea.innerHTML = '';
     const defWrap = el('div', { className: 'flex flex-col gap-10 w-full' });
     
-    const keywordsRow = el('div', { className: 'flex gap-12 w-full max-md:flex-col' });
+    const keywordsRow = el('div', { className: 'grid gap-6 w-full', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' } });
     
-    const recentWrap = el('div', { className: 'flex-1 flex flex-col gap-4' });
-    recentWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3' }, '최근 검색어'));
-    recentWrap.appendChild(el('div', { className: 'text-tx-3 text-sm py-4 text-center' }, '최근 검색 기록이 없습니다.'));
+    // Recent Searches
+    const recentWrap = el('div', { className: 'flex flex-col gap-4 w-full' });
+    recentWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3 flex justify-between items-center' }, 
+      '최근 검색어',
+      el('button', { className: 'text-sm text-tx-3 hover:text-tx', onclick: () => { localStorage.removeItem('koral_recent_searches'); renderDefaultView(); } }, '전체 삭제')
+    ));
     
-    const recWrap = el('div', { className: 'flex-1 flex flex-col gap-4' });
+    const savedRecent = JSON.parse(localStorage.getItem('koral_recent_searches') || '[]');
+    if (savedRecent.length === 0) {
+      recentWrap.appendChild(el('div', { className: 'text-tx-3 text-sm py-4 text-center' }, '최근 검색 기록이 없습니다.'));
+    } else {
+      const recentList = el('div', { className: 'flex flex-col' });
+      savedRecent.forEach(kw => {
+        const item = el('div', { className: 'flex items-center justify-between py-2 cursor-pointer hover:bg-hover px-2 -mx-2 rounded-lg group' });
+        item.onclick = () => {
+          searchInput.value = kw;
+          renderSearchResults(kw);
+        };
+        const textSpan = el('span', { className: 'text-tx' }, kw);
+        const delBtn = el('button', { 
+          className: 'text-tx-3 hover:text-brand p-1 opacity-0 group-hover:opacity-100 transition-opacity',
+          onclick: (e) => {
+            e.stopPropagation();
+            const newRecent = savedRecent.filter(k => k !== kw);
+            localStorage.setItem('koral_recent_searches', JSON.stringify(newRecent));
+            renderDefaultView();
+          }
+        }, el('span', { innerHTML: icons.x(16) }));
+        
+        item.append(textSpan, delBtn);
+        recentList.appendChild(item);
+      });
+      recentWrap.appendChild(recentList);
+    }
+    
+    // Recommended Searches
+    const recWrap = el('div', { className: 'flex flex-col gap-4 w-full' });
     recWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3' }, '추천 검색어'));
-    const recGrid = el('div', { className: 'flex flex-wrap gap-2' });
+    const recList = el('div', { className: 'flex flex-col gap-2' });
     ['#프론트엔드', '#감성사진', '#카페투어', 'OOTD', '포트폴리오', 'AI 활용법'].forEach(kw => {
-      recGrid.appendChild(el('div', { className: 'chip bg-element hover:bg-hover cursor-pointer border border-base font-medium whitespace-nowrap', textContent: kw, onclick: () => {
+      recList.appendChild(el('div', { className: 'flex items-center py-2 cursor-pointer hover:bg-hover px-2 -mx-2 rounded-lg text-tx font-medium', textContent: kw, onclick: () => {
         searchInput.value = kw;
         renderSearchResults(kw);
       }}));
     });
-    recWrap.appendChild(recGrid);
+    recWrap.appendChild(recList);
     
     keywordsRow.append(recentWrap, recWrap);
     defWrap.appendChild(keywordsRow);
@@ -128,12 +163,27 @@ export function renderExplorePage(container) {
   };
   
   const renderSearchResults = (query) => {
+    // Save to recent
+    let savedRecent = JSON.parse(localStorage.getItem('koral_recent_searches') || '[]');
+    savedRecent = savedRecent.filter(k => k !== query);
+    savedRecent.unshift(query);
+    if (savedRecent.length > 10) savedRecent.pop();
+    localStorage.setItem('koral_recent_searches', JSON.stringify(savedRecent));
+
     contentArea.innerHTML = '';
     const resWrap = el('div', { className: 'flex flex-col gap-6 w-full' });
     resWrap.appendChild(el('div', { className: 'font-bold text-xl text-tx border-b border-base pb-3' }, `'${query}' 검색 결과`));
     
     const grid = el('div', { className: 'grid gap-6 w-full', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' } });
-    posts.forEach(post => {
+    const lowerQuery = query.toLowerCase();
+    const filteredPosts = posts.filter(post => 
+      (post.title && post.title.toLowerCase().includes(lowerQuery)) ||
+      (post.caption && post.caption.toLowerCase().includes(lowerQuery)) ||
+      (post.tags && post.tags.some(tag => tag.toLowerCase().includes(lowerQuery))) ||
+      (post.authorHandle && post.authorHandle.toLowerCase().includes(lowerQuery))
+    );
+    
+    filteredPosts.forEach(post => {
       grid.appendChild(renderPostPreviewCard(post));
     });
     resWrap.appendChild(grid);
@@ -164,8 +214,8 @@ export function renderProfilePage(container, { handle }) {
   
   if (!user) {
     container.appendChild(el('div', { className: 'empty pt-20' },
-      el('h3', { textContent: '사용자를 찾을 수 없습니다.' }),
-      el('p', { textContent: '링크가 잘못되었거나 삭제된 계정입니다.' })
+      el('h3', { textContent: t('userNotFound') }),
+      el('p', { textContent: t('userNotFoundSub') })
     ));
     return;
   }
@@ -192,7 +242,7 @@ export function renderProfilePage(container, { handle }) {
   
   const actions = el('div', { className: 'profile-actions ml-4' });
   if (isOwn) {
-    actions.appendChild(el('button', { className: 'btn-icon-sm btn-ghost', onclick: () => window.navigateTo('settings/profile') }, el('span', { innerHTML: icons.edit ? icons.edit(20) : icons.settings(20) })));
+    actions.appendChild(el('button', { className: 'btn-icon btn-ghost', onclick: () => window.navigateTo('settings/profile'), title: '프로필 편집' }, el('span', { innerHTML: icons.edit(24) })));
   } else if (currentUser) {
     const isFollowing = store.isFollowing(user.handle);
     const followBtn = el('button', { 
@@ -201,16 +251,16 @@ export function renderProfilePage(container, { handle }) {
         store.toggleFollow(user.handle);
         window.navigateTo(`profile/${handle}`); // re-render
       }
-    }, isFollowing ? '팔로잉' : '팔로우');
+    }, isFollowing ? t('following') : t('follow'));
     actions.appendChild(followBtn);
-    actions.appendChild(el('button', { className: 'btn btn-secondary btn-sm', onclick: () => toast('메시지 기능 준비중') }, '메시지'));
+    actions.appendChild(el('button', { className: 'btn btn-secondary btn-sm', onclick: () => toast(t('messageFeatureReady')) }, t('message')));
   }
   row1.appendChild(actions);
   
   const stats = el('div', { className: 'profile-stats mb-4' },
-    el('div', { className: 'profile-stat' }, el('span', { className: 'font-semibold text-base' }, posts.length), ' 리프'),
-    el('div', { className: 'profile-stat', onclick: () => toast('팔로워 목록 준비중') }, el('span', { className: 'font-semibold text-base' }, user.followers?.length || 0), ' 팔로워'),
-    el('div', { className: 'profile-stat', onclick: () => toast('팔로잉 목록 준비중') }, el('span', { className: 'font-semibold text-base' }, user.following?.length || 0), ' 팔로우')
+    el('div', { className: 'profile-stat' }, el('span', { className: 'font-semibold text-base' }, posts.length), t('statReefs')),
+    el('div', { className: 'profile-stat', onclick: () => toast(t('featureReadyInfo')) }, el('span', { className: 'font-semibold text-base' }, user.followers?.length || 0), t('statFollowers')),
+    el('div', { className: 'profile-stat', onclick: () => toast(t('featureReadyInfo')) }, el('span', { className: 'font-semibold text-base' }, user.following?.length || 0), t('statFollowing'))
   );
   
   const nameBio = el('div', {},
@@ -229,49 +279,111 @@ export function renderProfilePage(container, { handle }) {
 
   const renderGrid = () => {
     gridContainer.innerHTML = '';
-    const displayPosts = activeTab === 'posts' ? posts : store.getState().posts.filter(p => p.bookmarks.includes(currentUser.handle)).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
     
-    if (displayPosts.length === 0) {
+    const userStories = store.getState().stories.filter(s => s.authorHandle === user.handle);
+    const combinedItems = [];
+    
+    if (activeTab === 'posts') {
+      posts.forEach(post => {
+        combinedItems.push({ type: 'post', data: post, date: new Date(post.createdAt) });
+      });
+      userStories.forEach(story => {
+        combinedItems.push({ type: 'story', data: story, date: new Date(story.createdAt) });
+      });
+      combinedItems.sort((a, b) => b.date - a.date);
+    } else {
+      const bookmarkedPosts = store.getState().posts.filter(p => p.bookmarks.includes(currentUser.handle)).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+      bookmarkedPosts.forEach(post => {
+        combinedItems.push({ type: 'post', data: post, date: new Date(post.createdAt) });
+      });
+    }
+    
+    const grid = el('div', { className: 'profile-grid' });
+    
+    // Add create button
+    if (activeTab === 'posts' && isOwn) {
+      grid.appendChild(el('div', {
+        className: 'profile-grid-cell flex flex-col items-center justify-center bg-element border-2 border-dashed border-base text-tx-3 hover:text-brand hover:border-brand transition-colors cursor-pointer',
+        onclick: () => window.navigateTo('create')
+      },
+        el('span', { innerHTML: icons.plusSquare(32) }),
+        el('span', { className: 'font-semibold mt-2' }, t('create'))
+      ));
+    }
+
+    if (combinedItems.length === 0 && (!isOwn || activeTab !== 'posts')) {
       gridContainer.appendChild(el('div', { className: 'empty py-16' },
         el('div', { className: 'empty-icon' }, activeTab === 'posts' ? '📸' : '🔖'),
-        el('h3', { textContent: activeTab === 'posts' ? '리프 없음' : '저장된 리프 없음' })
+        el('h3', { textContent: activeTab === 'posts' ? t('noReefsTitle') : t('noSavedReefsTitle') })
       ));
       return;
     }
-
-    const grid = el('div', { className: 'profile-grid' });
-    displayPosts.forEach(post => {
-      const cell = el('div', { className: 'profile-grid-cell', onclick: () => window.navigateTo(`post/${post.id}`) });
-      if (post.images && post.images.length) {
-        cell.appendChild(el('img', { src: post.images[0] }));
-      } else {
-        const tmp = document.createElement('div');
-        tmp.innerHTML = renderMarkdown(post.caption || '');
-        const firstImg = tmp.querySelector('img');
-        if (firstImg) {
-          cell.appendChild(el('img', { src: firstImg.src }));
+    
+    combinedItems.forEach(item => {
+      if (item.type === 'story') {
+        const story = item.data;
+        const cell = el('div', { 
+          className: 'profile-grid-cell group cursor-pointer relative', 
+          onclick: () => {
+            const groupedStories = [{ authorHandle: user.handle, stories: userStories }];
+            import('./components.js').then(m => m.renderStoryViewer(0, groupedStories));
+          } 
+        });
+        const bgLayer = story.layers?.find(l => l.type === 'image');
+        if (bgLayer) {
+          cell.appendChild(el('img', { src: bgLayer.content, className: 'w-full h-full object-cover group-hover:scale-105 transition-transform' }));
         } else {
-          cell.appendChild(el('div', { className: 'w-full h-full flex items-center justify-center bg-subtle p-4' },
-            el('p', { className: 'text-xs clamp3 text-center text-secondary' }, tmp.textContent || '')
-          ));
+          cell.appendChild(el('div', { className: 'w-full h-full bg-gradient-to-br from-brand/20 to-element group-hover:scale-105 transition-transform' }));
         }
+        
+        // Show likes count overlay on hover
+        const storyLikes = story.likes || [];
+        const isStoryLiked = currentUser && storyLikes.includes(currentUser.handle);
+        const storyLikeBtnSpan = el('span', { innerHTML: icons.heartFilled(20), style: { color: isStoryLiked ? 'var(--brand-a, #ff7171)' : '#fff' } });
+        
+        const storyOverlay = el('div', { className: 'profile-grid-cell-overlay flex justify-center items-center text-white font-bold text-lg' },
+          el('div', { className: 'flex items-center gap-2' }, 
+            storyLikeBtnSpan, 
+            el('span', { textContent: storyLikes.length })
+          )
+        );
+        
+        cell.appendChild(el('div', { className: 'absolute top-2 right-2 bg-black/60 px-2 py-1 rounded-full text-xs font-bold text-white z-10' }, t('shellLabel').split(' ')[0]));
+        cell.appendChild(storyOverlay);
+        grid.appendChild(cell);
+      } else {
+        const post = item.data;
+        const cell = el('div', { className: 'profile-grid-cell relative', onclick: () => window.navigateTo(`post/${post.id}`) });
+        if (post.images && post.images.length) {
+          cell.appendChild(el('img', { src: post.images[0] }));
+        } else {
+          const tmp = document.createElement('div');
+          tmp.innerHTML = renderMarkdown(post.caption || '');
+          const firstImg = tmp.querySelector('img');
+          if (firstImg) {
+            cell.appendChild(el('img', { src: firstImg.src }));
+          } else {
+            cell.appendChild(el('div', { className: 'w-full h-full flex items-center justify-center bg-subtle p-4' },
+              el('p', { className: 'text-xs clamp3 text-center text-secondary' }, tmp.textContent || '')
+            ));
+          }
+        }
+        const isLiked = currentUser && post.likes.includes(currentUser.handle);
+        const comments = store.getPostComments(post.id);
+        
+        const overlay = el('div', { className: 'profile-grid-cell-overlay flex gap-6 justify-center items-center text-white font-bold text-lg' },
+          el('div', { className: 'flex items-center gap-2' },
+            el('span', { innerHTML: icons.heartFilled(20), style: { color: isLiked ? 'var(--brand-a, #ff7171)' : '#fff' } }),
+            el('span', { textContent: post.likes.length })
+          ),
+          el('div', { className: 'flex items-center gap-2' },
+            el('span', { innerHTML: icons.comment(20) }),
+            el('span', { textContent: comments.length })
+          )
+        );
+        cell.appendChild(overlay);
+        grid.appendChild(cell);
       }
-      const isLiked = currentUser && post.likes.includes(currentUser.handle);
-      const likeBtnSpan = el('span', { innerHTML: isLiked ? icons.heartFilled(16) : icons.heart(16) });
-      const countNode = document.createTextNode(' ' + post.likes.length);
-      
-      const overlay = el('div', { className: 'profile-grid-cell-overlay flex justify-center items-center text-white' },
-        el('div', { className: `flex items-center gap-2 font-bold text-lg cursor-pointer hover:scale-110 transition-transform ${isLiked ? 'text-brand' : ''}`, onclick: (e) => {
-          e.stopPropagation();
-          if (!currentUser) return toast('로그인이 필요합니다', 'error');
-          const nowLiked = store.toggleLike(post.id);
-          likeBtnSpan.innerHTML = nowLiked ? icons.heartFilled(20) : icons.heart(20);
-          e.currentTarget.className = `flex items-center gap-2 font-bold text-lg cursor-pointer hover:scale-110 transition-transform ${nowLiked ? 'text-brand' : ''}`;
-          countNode.textContent = ' ' + store.getPost(post.id).likes.length;
-        } }, likeBtnSpan, countNode)
-      );
-      cell.appendChild(overlay);
-      grid.appendChild(cell);
     });
     gridContainer.appendChild(grid);
   };
@@ -281,8 +393,8 @@ export function renderProfilePage(container, { handle }) {
     if (tabSaved) tabSaved.className = `profile-tab ${activeTab === 'saved' ? 'active' : ''}`;
   };
 
-  const tabPosts = el('div', { className: 'profile-tab active', onclick: () => { activeTab = 'posts'; updateTabs(); renderGrid(); } }, el('span', { innerHTML: icons.grid(12) }), '리프');
-  const tabSaved = isOwn ? el('div', { className: 'profile-tab', onclick: () => { activeTab = 'saved'; updateTabs(); renderGrid(); } }, el('span', { innerHTML: icons.bookmark(12) }), '저장됨') : null;
+  const tabPosts = el('div', { className: 'profile-tab active', onclick: () => { activeTab = 'posts'; updateTabs(); renderGrid(); } }, el('span', { innerHTML: icons.grid(12) }), t('reefLabel').split(' ')[0]);
+  const tabSaved = isOwn ? el('div', { className: 'profile-tab', onclick: () => { activeTab = 'saved'; updateTabs(); renderGrid(); } }, el('span', { innerHTML: icons.bookmark(12) }), t('saved')) : null;
 
   const tabs = el('div', { className: 'profile-tabs' }, tabPosts, tabSaved);
   
@@ -299,7 +411,7 @@ export function renderPostPage(container, { postId }) {
     container.innerHTML = '';
     const post = store.getPost(postId);
     if (!post) {
-      container.appendChild(el('div', { className: 'empty pt-20' }, el('h3', { textContent: '리프를 찾을 수 없습니다.' })));
+      container.appendChild(el('div', { className: 'empty pt-20' }, el('h3', { textContent: t('notFound') })));
       return;
     }
     
@@ -308,7 +420,7 @@ export function renderPostPage(container, { postId }) {
     wrap.appendChild(renderPostCard(post, { compact: false, onNavigate: window.navigateTo }));
     
     const commentsWrap = el('div', { className: 'mt-6' });
-    commentsWrap.appendChild(el('h3', { className: 'text-lg font-semibold mb-4 px-2' }, '댓글'));
+    commentsWrap.appendChild(el('h3', { className: 'text-lg font-semibold mb-4 px-2' }, t('commentsTitle')));
     
     const commentSection = renderCommentSection(post.id);
     
@@ -318,12 +430,12 @@ export function renderPostPage(container, { postId }) {
         renderAvatar(currentUser, 'av-md'),
         el('div', { className: 'flex-1' }, 
           createRichTextEditor({
-            placeholder: '댓글 남기기...',
-            submitLabel: '등록',
+            placeholder: t('addComment'),
+            submitLabel: t('registerBtn'),
             minHeight: '60px',
             onSubmit: (text) => {
               store.addComment({ postId: post.id, parentId: null, text });
-              toast('댓글이 작성되었습니다', 'success');
+              toast(t('commentAdded'), 'success');
               if (commentSection._refreshComments) commentSection._refreshComments();
             }
           })
@@ -348,8 +460,8 @@ export function renderLoginPage(container) {
       el('div', { className: 'auth-orb auth-orb-1' }),
       el('div', { className: 'auth-orb auth-orb-2' }),
       el('div', { innerHTML: '<svg viewBox="0 0 100 100" fill="none" width="80" height="80"><defs><linearGradient id="alg3" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#f43f5e"/></linearGradient></defs><g fill="url(#alg3)" transform="translate(0, 4)"><rect x="10" y="48" width="80" height="24"/><rect x="50" y="48" width="40" height="24" transform="rotate(-60 50 60)"/><rect x="50" y="48" width="40" height="24" transform="rotate(-120 50 60)"/></g></svg>' }),
-      el('h1', { className: 'auth-banner-title' }, 'Welcome to', el('br'), 'koral'),
-      el('p', { className: 'auth-banner-sub' }, '개발자를 위한 마크다운 SNS. 멋진 코드와 일상을 공유하세요.')
+      el('h1', { className: 'auth-banner-title' }, t('welcomeBanner')),
+      el('p', { className: 'auth-banner-sub' }, t('welcomeSub'))
     ),
     el('div', { className: 'auth-form-side' },
       el('div', { className: 'auth-card' },
@@ -368,18 +480,18 @@ export function renderLoginPage(container) {
             toast(res.error, 'error');
           }
         }},
-          el('h2', { className: 'text-2xl font-bold mb-6 text-tx hidden md:block' }, '로그인'),
+          el('h2', { className: 'text-2xl font-bold mb-6 text-tx hidden md:block' }, t('login')),
           el('div', { className: 'input-group mb-4' },
-            el('input', { name: 'id', className: 'input', placeholder: '핸들 또는 이메일', required: true })
+            el('input', { name: 'id', className: 'input', placeholder: t('handleOrEmail'), required: true })
           ),
           el('div', { className: 'input-group mb-8' },
-            el('input', { name: 'pw', type: 'password', className: 'input', placeholder: '비밀번호', required: true })
+            el('input', { name: 'pw', type: 'password', className: 'input', placeholder: t('password'), required: true })
           ),
-          el('button', { type: 'submit', className: 'btn btn-primary w-full' }, '로그인')
+          el('button', { type: 'submit', className: 'btn btn-primary w-full' }, t('login'))
         ),
         el('div', { className: 'auth-footer mt-8 border-t border-base pt-6' },
-          '계정이 없으신가요? ',
-          el('a', { onclick: () => window.navigateTo('signup') }, '가입하기')
+          t('noAccount') + ' ',
+          el('a', { onclick: () => window.navigateTo('signup') }, t('signup'))
         )
       )
     )
@@ -395,16 +507,16 @@ export function renderSignupPage(container) {
       el('div', { className: 'auth-orb auth-orb-1' }),
       el('div', { className: 'auth-orb auth-orb-2' }),
       el('div', { innerHTML: '<svg viewBox="0 0 100 100" fill="none" width="80" height="80"><defs><linearGradient id="alg4" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#f43f5e"/></linearGradient></defs><g fill="url(#alg4)" transform="translate(0, 4)"><rect x="10" y="48" width="80" height="24"/><rect x="50" y="48" width="40" height="24" transform="rotate(-60 50 60)"/><rect x="50" y="48" width="40" height="24" transform="rotate(-120 50 60)"/></g></svg>' }),
-      el('h1', { className: 'auth-banner-title' }, 'Join', el('br'), 'koral'),
-      el('p', { className: 'auth-banner-sub' }, '개발자들의 공간에 합류하세요. 새로운 아이디어와 코드가 기다립니다.')
+      el('h1', { className: 'auth-banner-title' }, t('signupBanner')),
+      el('p', { className: 'auth-banner-sub' }, t('signupSub'))
     ),
     el('div', { className: 'auth-form-side' },
       el('div', { className: 'auth-card' },
         el('div', { className: 'auth-logo md:hidden mb-6 flex flex-col items-center' },
           el('div', { className: 'auth-logo-icon', innerHTML: '<svg viewBox="0 0 100 100" fill="none" width="48" height="48"><defs><linearGradient id="alg2" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#f43f5e"/></linearGradient></defs><g fill="url(#alg2)" transform="translate(0, 4)"><rect x="10" y="48" width="80" height="24"/><rect x="50" y="48" width="40" height="24" transform="rotate(-60 50 60)"/><rect x="50" y="48" width="40" height="24" transform="rotate(-120 50 60)"/></g></svg>' }),
-          el('h2', { className: 'text-lg font-semibold text-secondary px-4' }, '가입하세요')
+          el('h2', { className: 'text-lg font-semibold text-secondary px-4' }, t('signup'))
         ),
-        el('h2', { className: 'text-2xl font-bold mb-6 text-tx hidden md:block' }, '새 계정 만들기'),
+        el('h2', { className: 'text-2xl font-bold mb-6 text-tx hidden md:block' }, t('signupTitle')),
         el('form', { className: 'auth-form mt-4', onsubmit: (e) => {
           e.preventDefault();
           const t = e.target;
@@ -423,38 +535,49 @@ export function renderSignupPage(container) {
           else toast(res.error, 'error');
         }},
           el('div', { className: 'auth-avatar-upload mb-4' }), // will append preview
-          el('div', { className: 'input-group mb-3' }, el('input', { name: 'email', type: 'email', className: 'input', placeholder: '이메일 주소', required: true })),
-          el('div', { className: 'input-group mb-3' }, el('input', { name: 'displayName', className: 'input', placeholder: '닉네임', required: true })),
+          el('div', { className: 'input-group mb-3' }, el('input', { name: 'email', type: 'email', className: 'input', placeholder: t('emailPlaceholder'), required: true })),
+          el('div', { className: 'input-group mb-3' }, el('input', { name: 'displayName', className: 'input', placeholder: t('nicknamePlaceholder'), required: true })),
           el('div', { className: 'input-group mb-3' }, 
             el('div', { className: 'input-wrap' },
               el('div', { className: 'input-prefix' }, '@'),
-              el('input', { name: 'handle', className: 'input', placeholder: '핸들 입력', required: true })
+              el('input', { name: 'handle', className: 'input', placeholder: t('handlePlaceholder'), required: true })
             )
           ),
-          el('div', { className: 'input-group mb-6' }, el('input', { name: 'pw', type: 'password', className: 'input', placeholder: '비밀번호', required: true, minLength: 4 })),
+          el('div', { className: 'input-group mb-6' }, el('input', { name: 'pw', type: 'password', className: 'input', placeholder: t('password'), required: true, minLength: 4 })),
           el('label', { className: 'custom-checkbox mb-6' },
             el('input', { type: 'checkbox', required: true }),
             el('div', { className: 'checkbox-box' }),
-            el('div', { className: 'checkbox-text' }, 
-              '가입하면 koral의 ',
-              el('a', { 
-                className: 'text-tx-br font-semibold hover:underline', 
-                onclick: (e) => {
-                  e.preventDefault();
-                  showModal(el('div', { className: 'p-6' }, 
-                    el('h3', { className: 'text-xl font-bold mb-4' }, 'koral 서비스 약관'),
-                    el('p', { className: 'text-sm text-tx-2 leading-relaxed' }, 'koral은 개발자를 위한 마크다운 기반 SNS입니다. 건전한 코드 공유 문화를 위해 타인을 비방하거나 악의적인 코드를 공유하지 않을 것에 동의합니다. 사용자의 데이터는 안전하게 보관되며 맞춤형 피드 제공을 위해 쿠키가 사용될 수 있습니다.')
-                  ));
-                }
-              }, '약관'),
-              ', 데이터 정책 및 쿠키 정책에 동의하게 됩니다.'
-            )
+            (() => {
+              const checkboxText = el('div', { className: 'checkbox-text' });
+              const fullText = t('agreeTerms');
+              const termsWord = t('acceptTerms');
+              const parts = fullText.split(termsWord);
+              if (parts.length === 2) {
+                checkboxText.append(
+                  parts[0],
+                  el('a', { 
+                    className: 'text-tx-br font-semibold hover:underline', 
+                    onclick: (e) => {
+                      e.preventDefault();
+                      showModal(el('div', { className: 'p-6' }, 
+                        el('h3', { className: 'text-xl font-bold mb-4' }, t('acceptTerms') + ' koral'),
+                        el('p', { className: 'text-sm text-tx-2 leading-relaxed' }, 'koral은 개발자를 위한 마크다운 기반 SNS입니다. 건전한 코드 공유 문화를 위해 타인을 비방하거나 악의적인 코드를 공유하지 않을 것에 동의합니다. 사용자의 데이터는 안전하게 보관되며 맞춤형 피드 제공을 위해 쿠키가 사용될 수 있습니다.')
+                      ));
+                    }
+                  }, termsWord),
+                  parts[1]
+                );
+              } else {
+                checkboxText.textContent = fullText;
+              }
+              return checkboxText;
+            })()
           ),
-          el('button', { type: 'submit', className: 'btn btn-primary w-full' }, '가입')
+          el('button', { type: 'submit', className: 'btn btn-primary w-full' }, t('signup'))
         ),
         el('div', { className: 'auth-footer mt-6 border-t border-base pt-6' },
-          '계정이 있으신가요? ',
-          el('a', { onclick: () => window.navigateTo('login') }, '로그인')
+          t('haveAccount') + ' ',
+          el('a', { onclick: () => window.navigateTo('login') }, t('login'))
         )
       )
     )
@@ -479,7 +602,7 @@ export function renderSignupPage(container) {
   
   const uploadWrap = shell.querySelector('.auth-avatar-upload');
   uploadWrap.appendChild(preview);
-  uploadWrap.appendChild(el('span', { className: 'auth-avatar-label' }, '프로필 사진 추가'));
+  uploadWrap.appendChild(el('span', { className: 'auth-avatar-label' }, t('addAvatar')));
   
   container.appendChild(shell);
 }
@@ -491,53 +614,88 @@ export function renderLandingPage(container) {
       el('div', { className: 'orb-1' }), el('div', { className: 'orb-2' }), el('div', { className: 'orb-3' })
     ),
     el('div', { className: 'landing-logo', innerHTML: '<svg viewBox="0 0 100 100" fill="none" width="64" height="64"><defs><linearGradient id="llg" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#f43f5e"/></linearGradient></defs><g fill="url(#llg)" transform="translate(0, 4)"><rect x="10" y="48" width="80" height="24"/><rect x="50" y="48" width="40" height="24" transform="rotate(-60 50 60)"/><rect x="50" y="48" width="40" height="24" transform="rotate(-120 50 60)"/></g></svg>' }),
-    el('h1', { className: 'g-text' }, '코드와 일상을 공유하세요'),
-    el('p', { className: 'landing-sub' }, 'koral은 개발자를 위한 마크다운 중심 SNS입니다. 코드와 일상을 공유하세요.'),
+    el('h1', { className: 'g-text' }, t('welcomeBanner')),
+    el('p', { className: 'landing-sub' }, t('welcomeSub')),
     el('div', { className: 'landing-buttons' },
-      el('button', { className: 'btn btn-primary btn-lg', onclick: () => window.navigateTo('signup') }, '가입하기'),
-      el('button', { className: 'btn btn-secondary btn-lg', onclick: () => window.navigateTo('login') }, '로그인')
+      el('button', { className: 'btn btn-primary btn-lg', onclick: () => window.navigateTo('signup') }, t('signup')),
+      el('button', { className: 'btn btn-secondary btn-lg', onclick: () => window.navigateTo('login') }, t('login'))
     )
   );
   container.appendChild(landing);
 }
 
-export function renderCreatePage(container) {
+export function renderCreatePage(container, options = {}) {
+  if (options.subRoute === 'story') {
+    import('./components.js').then(m => m.renderStoryCreator(container));
+    return;
+  }
+
+  container.innerHTML = '';
+  const wrap = el('div', { className: 'page-container anim-fade flex flex-col items-start', style: { maxWidth: '768px' } });
+  
+  const header = el('div', { className: 'mb-8 text-left w-full' },
+    el('h2', { className: 'text-2xl font-bold text-tx mb-2 text-left' }, t('createTitle')),
+    el('p', { className: 'text-tx-3 text-left' }, t('createQuestion'))
+  );
+
+  const optionsWrap = el('div', { className: 'flex flex-col gap-4 w-full max-w-md' });
+
+  const createOption = (title, desc, icon, onClick) => {
+    return el('button', {
+      className: 'w-full flex items-center justify-start gap-6 p-6 bg-element border border-base rounded-2xl hover:bg-hover hover:border-brand transition-all group cursor-pointer text-left',
+      onclick: onClick
+    },
+      el('div', { className: 'w-16 h-16 shrink-0 rounded-full bg-brand/10 text-brand flex items-center justify-center group-hover:scale-110 transition-transform' },
+        el('span', { innerHTML: icon(32) })
+      ),
+      el('div', { className: 'flex-1 text-left' },
+        el('h3', { className: 'text-xl font-bold text-tx mb-1 text-left' }, title),
+        el('p', { className: 'text-sm text-tx-3 text-left' }, desc)
+      )
+    );
+  };
+
+  optionsWrap.append(
+    createOption(t('reefLabel'), t('reefDesc'), icons.grid, () => renderPostEditor(container)),
+    createOption(t('shellLabel'), t('shellDesc'), icons.image, () => {
+      import('./components.js').then(m => m.renderStoryCreator(container));
+    }),
+    createOption(t('devNoteLabel'), t('devNoteDesc'), icons.monitor, () => toast(t('featureReadyInfo'), 'info'))
+  );
+
+  wrap.append(header, optionsWrap);
+  container.appendChild(wrap);
+}
+
+function renderPostEditor(container) {
+  const currentLang = localStorage.getItem('koral_language') || 'ko';
   container.innerHTML = '';
   const wrap = el('div', { className: 'page-container anim-fade', style: { maxWidth: '768px' } });
-  
   const form = el('form', { className: 'w-full flex flex-col', onsubmit: (e) => e.preventDefault() });
-  
   const editorHeader = el('div', { className: 'mb-6 flex items-center justify-between' },
-    el('h2', { className: 'text-2xl font-bold text-tx' }, '새 리프 만들기')
+    el('h2', { className: 'text-2xl font-bold text-tx' }, t('newReef'))
   );
   
   const currentUser = store.getState().currentUser;
   const editorWrap = el('div', { className: 'mb-6' },
     createRichTextEditor({
       id: `create_post_${currentUser ? currentUser.id : 'guest'}`,
-      placeholder: '이야기를 나누어 보세요...',
-      submitLabel: '리프 올리기',
+      placeholder: t('writeSomething'),
+      submitLabel: t('reefUpload'),
       minHeight: '400px',
       showTitle: true,
       onSubmit: (text, title) => {
         const imgMatches = [...text.matchAll(/!\[.*?\]\((.*?)\)/g)];
         const images = imgMatches.map(m => m[1]);
-        
         const plainText = text.replace(/<[^>]*>?/gm, ' ');
         const tagMatches = [...plainText.matchAll(/(?:^|\s)#([가-힣a-zA-Z0-9_]+)/g)];
         const tags = tagMatches.map(m => '#' + m[1]);
 
-        const post = store.createPost({
-          title,
-          images,
-          caption: text,
-          location: '',
-          tags
-        });
+        const post = store.createPost({ title, images, caption: text, location: '', tags });
         if (post) {
-          toast('리프가 생성되었습니다.', 'success');
+          toast(currentLang === 'ko' ? '리프가 생성되었습니다.' : 'Reef created successfully.', 'success');
           localStorage.removeItem(`koral_editor_draft_create_post_${currentUser ? currentUser.id : 'guest'}`);
-          window.navigateTo('post', { postId: post.id });
+          window.navigateTo('post/' + post.id);
         }
       }
     })
@@ -552,12 +710,13 @@ function renderSettingsLayout(container, activeTab, mainContentEl) {
   container.innerHTML = '';
   const wrap = el('div', { className: 'page-container anim-fade', style: { maxWidth: '768px' } });
   
-  wrap.appendChild(el('h2', { className: 'text-2xl font-bold mb-6 text-tx' }, '설정'));
+  wrap.appendChild(el('h2', { className: 'text-2xl font-bold mb-6 text-tx' }, t('settings')));
   
   const links = [
-    { id: 'profile', icon: icons.user, label: '프로필 편집', route: 'settings/profile' },
-    { id: 'security', icon: icons.lock, label: '계정 보안', route: 'settings/security' },
-    { id: 'theme', icon: icons.sun, label: '테마', route: 'settings/theme' }
+    { id: 'profile', icon: icons.user, label: t('editProfile'), route: 'settings/profile' },
+    { id: 'security', icon: icons.lock, label: t('security'), route: 'settings/security' },
+    { id: 'theme', icon: icons.sun, label: t('theme'), route: 'settings/theme' },
+    { id: 'language', icon: icons.Aa, label: t('language'), route: 'settings/language' }
   ];
   
   const tabs = el('div', { className: 'profile-tabs mb-8' });
@@ -589,7 +748,7 @@ export function renderEditProfilePage(container) {
   if (!currentUser) return window.navigateTo('login');
 
   const content = el('div');
-  content.appendChild(el('h3', { className: 'text-2xl font-bold mb-8 text-tx' }, '프로필 편집'));
+  content.appendChild(el('h3', { className: 'text-2xl font-bold mb-8 text-tx' }, t('editProfile')));
   
   const form = el('form', { onsubmit: (e) => {
     e.preventDefault();
@@ -598,25 +757,25 @@ export function renderEditProfilePage(container) {
       bio: e.target.bio.value,
       website: e.target.website.value
     });
-    toast('프로필이 업데이트되었습니다.', 'success');
+    toast(localStorage.getItem('koral_language') === 'en' ? 'Profile updated successfully.' : '프로필이 업데이트되었습니다.', 'success');
     window.navigateTo(`profile/${currentUser.handle.substring(1)}`);
   }});
 
   form.append(
     el('div', { className: 'input-group mb-6' },
-      el('label', { className: 'input-label' }, '닉네임'),
+      el('label', { className: 'input-label' }, t('nickname')),
       el('input', { name: 'displayName', className: 'input input-lg', value: currentUser.displayName })
     ),
     el('div', { className: 'input-group mb-6' },
-      el('label', { className: 'input-label' }, '소개 (마크다운 지원)'),
+      el('label', { className: 'input-label' }, t('bio')),
       el('textarea', { name: 'bio', className: 'textarea', value: currentUser.bio || '', rows: 4 })
     ),
     el('div', { className: 'input-group mb-8' },
-      el('label', { className: 'input-label' }, '웹사이트'),
+      el('label', { className: 'input-label' }, t('website')),
       el('input', { name: 'website', className: 'input input-lg', value: currentUser.website || '', placeholder: 'https://' })
     ),
     el('div', { className: 'flex justify-end' },
-      el('button', { type: 'submit', className: 'btn btn-primary btn-lg shadow-md' }, '변경사항 저장')
+      el('button', { type: 'submit', className: 'btn btn-primary btn-lg shadow-md' }, t('saveChanges'))
     )
   );
   
@@ -780,4 +939,52 @@ export function renderSecurityPage(container) {
 
   content.appendChild(actionsWrap);
   renderSettingsLayout(container, 'security', content);
+}
+
+export function renderLanguageSettingsPage(container) {
+  const content = el('div');
+  content.appendChild(el('h3', { className: 'text-2xl font-bold mb-2 text-tx' }, t('language')));
+  content.appendChild(el('p', { className: 'text-tx-3 mb-8' }, t('languageSelectorDesc')));
+  
+  const containerSelect = el('div', { className: 'theme-options' });
+  
+  const currentLang = localStorage.getItem('koral_language') || 'ko';
+  
+  const languages = [
+    { id: 'ko', icon: '🇰🇷', label: '한국어', desc: 'Korean' },
+    { id: 'en', icon: '🇺🇸', label: 'English', desc: '영어' },
+    { id: 'ja', icon: '🇯🇵', label: '日本語', desc: '일본어' },
+    { id: 'zh', icon: '🇨🇳', label: '简体中文', desc: '중국어 간체' }
+  ];
+  
+  languages.forEach(lang => {
+    const isSel = currentLang === lang.id;
+    const card = el('div', { 
+      className: `theme-option ${isSel ? 'selected' : ''}`,
+      onclick: () => {
+        localStorage.setItem('koral_language', lang.id);
+        $$('.theme-option', containerSelect).forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        
+        let msg = '';
+        if (lang.id === 'ko') msg = '한국어로 변경되었습니다.';
+        else if (lang.id === 'en') msg = 'Language changed to English.';
+        else if (lang.id === 'ja') msg = '日本語に変更されました。';
+        else msg = '语言已更改为简体中文。';
+        toast(msg, 'success');
+        
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      }
+    },
+      el('div', { className: 'theme-option-icon' }, lang.icon),
+      el('div', { className: 'theme-option-label' }, lang.label),
+      el('div', { className: 'theme-option-sub' }, lang.desc)
+    );
+    containerSelect.appendChild(card);
+  });
+  
+  content.appendChild(containerSelect);
+  renderSettingsLayout(container, 'language', content);
 }

@@ -163,12 +163,15 @@ export function showModal(contentEl, options = {}) {
 
   const modal = el('div', { 
     className: modalClass.join(' '),
+    onmousedown: (e) => e.stopPropagation(),
     onclick: (e) => e.stopPropagation()
   }, contentEl);
 
   const backdrop = el('div', { 
     className: 'modal-backdrop',
-    onclick: close
+    onmousedown: (e) => {
+      if (e.target === backdrop) close();
+    }
   }, modal);
 
   const handleEscape = (e) => {
@@ -312,11 +315,49 @@ export function generatePlaceholderImage() {
 }
 
 export function createDropdownSelect(options, value, onChange, placeholder = '') {
-  const wrap = el('div', { className: 'custom-select-wrap relative inline-block text-left w-full' });
-  const selectedOpt = options.find(o => o.value === value) || options[0];
+  const wrap = el('div', { className: 'custom-select-wrap relative inline-block w-full' });
+  let selectedOpt = options.find(o => o.value === value) || options[0];
   const selectedText = el('span', { className: 'truncate', textContent: selectedOpt ? selectedOpt.label : placeholder });
-  const menu = el('div', { className: 'custom-select-menu hidden absolute top-full mt-2 left-0 min-w-[120px] bg-element border border-base rounded-2xl shadow-lg z-50 py-2 max-h-[300px] overflow-y-auto' });
-  const chevronSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
-  const header = el('div', { className: 'custom-select-header flex items-center justify-between gap-2 cursor-pointer px-4 py-3 rounded-2xl bg-element border border-base text-sm font-semibold min-w-[120px] h-full', onclick: (e) => { e.stopPropagation(); document.querySelectorAll('.custom-select-menu').forEach(m => { if (m !== menu) m.classList.add('hidden'); }); menu.classList.toggle('hidden'); } }, selectedText, el('div', { innerHTML: chevronSvg, className: 'text-tx-3 flex-shrink-0' }));
-  const renderOptions = () => { menu.innerHTML = ''; options.forEach(opt => { const isSelected = opt.value === value; const item = el('div', { className: 'custom-select-item px-4 py-3 cursor-pointer hover:bg-hover transition-colors text-sm' + (isSelected ? ' text-brand font-bold bg-brand/10' : ''), textContent: opt.label, onclick: (e) => { e.stopPropagation(); value = opt.value; selectedText.textContent = opt.label; renderOptions(); menu.classList.add('hidden'); if (onChange) onChange(value); } }); menu.appendChild(item); }); }; renderOptions(); wrap.append(header, menu); document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) menu.classList.add('hidden'); }); return wrap; }
+  
+  const header = el('div', { 
+    className: 'custom-select-header flex items-center justify-between gap-2 cursor-pointer px-4 py-3 rounded-2xl bg-element border border-base text-sm font-semibold min-w-[120px] h-full w-full', 
+    onclick: (e) => { 
+      e.stopPropagation(); 
+      openModalSelect(options, value, (newVal, newLabel) => {
+        value = newVal;
+        selectedText.textContent = newLabel;
+        if (onChange) onChange(value);
+      }, placeholder || '선택');
+    } 
+  }, selectedText, el('div', { innerHTML: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`, className: 'text-tx-3 flex-shrink-0' }));
+  
+  wrap.appendChild(header);
+  return wrap;
+}
+
+function openModalSelect(options, currentValue, onSelect, titleText) {
+  let modalInstance = null;
+  
+  const listWrap = el('div', { className: 'flex flex-col w-full max-h-[60vh] overflow-y-auto p-2 gap-1' });
+  
+  options.forEach(opt => {
+    const isSelected = opt.value === currentValue;
+    const item = el('div', { 
+      className: 'px-4 py-3 cursor-pointer hover:bg-hover transition-colors text-left rounded-xl' + (isSelected ? ' text-brand font-bold bg-brand/10' : ' text-tx font-medium'), 
+      textContent: opt.label, 
+      onclick: () => {
+        onSelect(opt.value, opt.label);
+        if (modalInstance) modalInstance.close();
+      } 
+    });
+    listWrap.appendChild(item);
+  });
+  
+  const content = el('div', { className: 'p-0 flex flex-col items-center w-[300px] max-w-[90vw] mx-auto bg-element rounded-2xl overflow-hidden shadow-lg' },
+    el('div', { className: 'font-bold text-lg p-4 border-b border-base w-full text-center' }, titleText),
+    listWrap
+  );
+  
+  modalInstance = showModal(content, { className: 'select-modal' });
+}
 

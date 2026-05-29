@@ -35,6 +35,11 @@ class Store {
           if (!p.tags) p.tags = [];
         });
         
+        this.state.stories.forEach(s => {
+          if (!s.likes) s.likes = [];
+          if (!s.viewers) s.viewers = [];
+        });
+        
         this.applyTheme(this.state.theme);
       } catch (e) {
         console.error('Failed to load store', e);
@@ -511,11 +516,35 @@ class Store {
       layers: layers || [],
       createdAt: now.toISOString(),
       expiresAt: expiresAt.toISOString(),
-      viewers: []
+      viewers: [],
+      likes: []
     };
     this.state.stories.push(story);
     this._notify();
     return story;
+  }
+
+  toggleStoryLike(storyId) {
+    if (!this.state.currentUser) return false;
+    const story = this.state.stories.find(s => s.id === storyId);
+    if (!story) return false;
+    
+    story.likes = story.likes || [];
+    const handle = this.state.currentUser.handle;
+    const idx = story.likes.indexOf(handle);
+    let liked = false;
+    
+    if (idx !== -1) {
+      story.likes.splice(idx, 1);
+    } else {
+      story.likes.push(handle);
+      liked = true;
+      if (story.authorHandle !== handle) {
+        this.addNotification({ type: 'like', fromHandle: handle, toHandle: story.authorHandle, postId: null });
+      }
+    }
+    this._notify();
+    return liked;
   }
 
   getGroupedStories() {

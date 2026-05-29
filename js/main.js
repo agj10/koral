@@ -1,7 +1,8 @@
 import { icons } from './icons.js';
 import { el, $, $$ } from './utils.js';
 import { store } from './store.js';
-import { renderFeedPage, renderExplorePage, renderProfilePage, renderPostPage, renderSettingsPage, renderEditProfilePage, renderThemeSettingsPage, renderSecurityPage, renderLoginPage, renderSignupPage, renderLandingPage, renderCreatePage } from './pages.js';
+import { t } from './lang.js';
+import { renderFeedPage, renderExplorePage, renderProfilePage, renderPostPage, renderSettingsPage, renderEditProfilePage, renderThemeSettingsPage, renderSecurityPage, renderLanguageSettingsPage, renderLoginPage, renderSignupPage, renderLandingPage, renderCreatePage } from './pages.js';
 
 let appRoot, shell, mainContent;
 
@@ -35,13 +36,14 @@ function buildAppShell() {
   const currentUser = store.getState().currentUser;
   
   navItems.append(
-    createNavItem('explore', icons.compass(24), '탐색', 'explore'),
-    currentUser ? createNavItem('profile', icons.user(24), '프로필', `profile/${currentUser.handle.substring(1)}`) : '',
-    createNavItem('create', icons.plusSquare(24), '만들기', 'create')
+    createNavItem('home', icons.home(24), t('home'), 'feed'),
+    createNavItem('explore', icons.compass(24), t('explore'), 'explore'),
+    currentUser ? createNavItem('profile', icons.user(24), t('profile'), `profile/${currentUser.handle.substring(1)}`) : '',
+    createNavItem('create', icons.plusSquare(24), t('create'), 'create')
   );
   
   const bottomNavItems = el('div', { className: 'mt-auto mb-4', style: { display: 'flex', flexDirection: 'column' } },
-    createNavItem('settings', icons.settings(24), '설정', 'settings')
+    createNavItem('settings', icons.settings(24), t('settings'), 'settings')
   );
   
   sidebar.append(logoWrap, navItems, bottomNavItems);
@@ -52,6 +54,7 @@ function buildAppShell() {
   // Mobile Bottom Nav
   const mobileNav = el('nav', { className: 'bottom-nav' },
     el('div', { className: 'bottom-nav-items' },
+      createNavItem('m-home', icons.home(24), '', 'feed'),
       createNavItem('m-explore', icons.compass(24), '', 'explore'),
       currentUser ? createNavItem('m-profile', icons.user(24), '', `profile/${currentUser.handle.substring(1)}`) : '',
       createNavItem('m-create', icons.plusSquare(24), '', 'create')
@@ -128,7 +131,7 @@ function router() {
       renderExplorePage(mainContent);
       break;
     case 'create':
-      renderCreatePage(mainContent);
+      renderCreatePage(mainContent, { subRoute: param });
       break;
     case 'profile':
       renderProfilePage(mainContent, { handle: param });
@@ -140,10 +143,11 @@ function router() {
       if (param === 'profile') renderEditProfilePage(mainContent);
       else if (param === 'theme') renderThemeSettingsPage(mainContent);
       else if (param === 'security') renderSecurityPage(mainContent);
+      else if (param === 'language') renderLanguageSettingsPage(mainContent);
       else renderSettingsPage(mainContent);
       break;
     case 'tag':
-      mainContent.innerHTML = `<div class="p-8 text-center text-xl font-bold">#${param} 태그 검색 결과</div>`;
+      mainContent.innerHTML = `<div class="p-8 text-center text-xl font-bold">#${param} ${t('searchResultsFor')}</div>`;
       break;
     default:
       renderFeedPage(mainContent);

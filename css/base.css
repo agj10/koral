@@ -144,6 +144,7 @@ blockquote{border-left:3px solid var(--border-br);padding-left:var(--s4);color:v
 .pt-20 { padding-top: 5rem; }
 
 .text-center { text-align: center; }
+.text-left { text-align: left; }
 .text-xs { font-size: var(--text-xs); }
 .text-sm { font-size: var(--text-sm); }
 .text-base { font-size: var(--text-base); }
