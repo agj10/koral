@@ -8,6 +8,7 @@ class Store {
       posts: [],
       comments: [],
       notifications: [],
+      stories: [],
       theme: 'system'
     };
     this.subscribers = new Set();
@@ -25,6 +26,7 @@ class Store {
         if (!this.state.posts) this.state.posts = [];
         if (!this.state.comments) this.state.comments = [];
         if (!this.state.notifications) this.state.notifications = [];
+        if (!this.state.stories) this.state.stories = [];
         
         // Sanitize data to prevent crashes
         this.state.posts.forEach(p => {
@@ -71,6 +73,7 @@ class Store {
       posts: [],
       comments: [],
       notifications: [],
+      stories: [],
       theme: defaultTheme
     };
     
@@ -466,6 +469,67 @@ class Store {
   getUnreadCount() {
     if (!this.state.currentUser) return 0;
     return this.state.notifications.filter(n => n.toHandle === this.state.currentUser.handle && !n.read).length;
+  }
+
+  // --- Stories ---
+  addStory(layers) {
+    if (!this.state.currentUser) return null;
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours later
+    const story = {
+      id: uid(),
+      authorHandle: this.state.currentUser.handle,
+      layers: layers || [],
+      createdAt: now.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+      viewers: []
+    };
+    this.state.stories.push(story);
+    this._notify();
+    return story;
+  }
+
+  getGroupedStories() {
+    const now = new Date().getTime();
+    
+    // 1. Filter active stories
+    const activeStories = this.state.stories.filter(s => new Date(s.expiresAt).getTime() > now);
+    
+    // 2. Group by author
+    const map = new Map();
+    activeStories.forEach(s => {
+      if (!map.has(s.authorHandle)) map.set(s.authorHandle, []);
+      map.get(s.authorHandle).push(s);
+    });
+    
+    // 3. Format result and sort stories by time
+    const result = [];
+    map.forEach((stories, handle) => {
+      stories.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      result.push({ authorHandle: handle, stories });
+    });
+    
+    // 4. Sort grouped stories so that current user is first, then others by most recent story
+    result.sort((a, b) => {
+      if (this.state.currentUser) {
+        if (a.authorHandle === this.state.currentUser.handle) return -1;
+        if (b.authorHandle === this.state.currentUser.handle) return 1;
+      }
+      const aLatest = new Date(a.stories[a.stories.length - 1].createdAt).getTime();
+      const bLatest = new Date(b.stories[b.stories.length - 1].createdAt).getTime();
+      return bLatest - aLatest;
+    });
+    
+    return result;
+  }
+
+  markStoryViewed(storyId) {
+    if (!this.state.currentUser) return;
+    const story = this.state.stories.find(s => s.id === storyId);
+    if (story && !story.viewers.includes(this.state.currentUser.handle)) {
+      story.viewers.push(this.state.currentUser.handle);
+      this._save(); // don't full _notify() just for a view update to avoid aggressive re-renders
+    }
   }
 
   // Theme

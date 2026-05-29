@@ -195,26 +195,448 @@ export function renderStoryRow() {
   
   if (currentUser) {
     row.appendChild(
-      el('div', { className: 'story-item' },
+      el('div', { className: 'story-item', onclick: renderStoryCreator },
         el('div', { className: 'story-add' }, '+'),
         el('div', { className: 'story-name' }, '내 스토리')
       )
     );
   }
 
-  // Sample stories from users
-  store.getState().users.filter(u => u.id !== (currentUser?.id)).slice(0, 8).forEach(user => {
-    const seen = Math.random() > 0.5;
-    const item = el('div', { className: 'story-item', onclick: () => toast('스토리 기능 준비중') },
-      el('div', { className: `story-ring ${seen?'seen':''}` },
-        el('div', { className: 'story-inner' }, el('img', { src: user.avatar || generatePlaceholderImage() }))
+  const groupedStories = store.getGroupedStories();
+
+  groupedStories.forEach((group, index) => {
+    const user = store.getUser(group.authorHandle);
+    if (!user) return;
+    
+    let allSeen = false;
+    if (currentUser) {
+      allSeen = group.stories.every(s => s.viewers.includes(currentUser.handle));
+    }
+    
+    const item = el('div', { className: 'story-item', onclick: () => renderStoryViewer(index, groupedStories) },
+      el('div', { className: `story-ring ${allSeen ? 'seen' : ''}` },
+        el('div', { className: 'story-inner' }, el('img', { src: user.avatar || '' }))
       ),
-      el('div', { className: `story-name truncate ${seen?'seen':''}` }, user.handle)
+      el('div', { className: `story-name truncate ${allSeen ? 'seen' : ''}` }, user.handle)
     );
     row.appendChild(item);
   });
 
   return row;
+}
+
+export function renderStoryCreator() {
+  const currentUser = store.getState().currentUser;
+  if (!currentUser) return toast('로그인이 필요합니다.', 'error');
+  
+  const wrap = el('div', { className: 'p-4 flex flex-col gap-4', style: { width: '100%', maxWidth: '400px', margin: '0 auto' } });
+  wrap.appendChild(el('h2', { className: 'font-bold text-lg mb-2' }, '새 스토리 만들기'));
+  
+  let backgroundLayer = null;
+  let textLayers = [];
+  let activeLayerId = null;
+  let layerElements = {}; 
+  
+  const canvasArea = el('div', { 
+    className: 'relative w-full overflow-hidden bg-gray-100 rounded-lg border border-base flex items-center justify-center shadow-inner',
+    style: { aspectRatio: '1/1', touchAction: 'none', userSelect: 'none' }
+  });
+  
+  canvasArea.onpointerdown = (e) => {
+    if (e.target === canvasArea || e.target.classList.contains('pointer-events-none')) {
+      if (activeLayerId !== null) {
+        activeLayerId = null;
+        renderCanvas();
+      }
+    }
+  };
+  
+  const placeholder = el('div', { className: 'text-tx-3 flex flex-col items-center pointer-events-none' },
+    el('span', { innerHTML: icons.image(32) }),
+    '이미지를 업로드해주세요'
+  );
+  canvasArea.appendChild(placeholder);
+  
+  const fileInput = el('input', { type: 'file', accept: 'image/*', className: 'hidden' });
+  const uploadBtn = el('button', { className: 'btn btn-outline flex-1 flex items-center justify-center gap-2', onclick: () => fileInput.click() },
+    el('span', { innerHTML: icons.image(18) }), '사진 업로드'
+  );
+  
+  const addTextBtn = el('button', { className: 'btn btn-outline flex-1 flex items-center justify-center gap-2', disabled: true, onclick: () => {
+    const textWrap = el('div', { className: 'p-4 flex flex-col gap-4' });
+    const editor = createRichTextEditor({
+      id: 'story_text_' + uid(),
+      placeholder: '스토리 문구...',
+      showTitle: false,
+      minHeight: '100px',
+      submitLabel: '텍스트 추가',
+      hideAdvanced: true,
+      onSubmit: (html) => {
+        if (!html.trim()) return toast('내용을 입력하세요', 'error');
+        const id = uid();
+        textLayers.push({ id, type: 'text', html, x: 200, y: 200, scale: 1, rotate: 0, width: 200, height: 50 });
+        activeLayerId = id;
+        renderCanvas();
+        textModal.close();
+      }
+    });
+    textWrap.appendChild(editor);
+    const textModal = showModal(textWrap);
+  }}, el('span', { innerHTML: icons.hash(18) }), '텍스트 추가');
+  
+  fileInput.onchange = async (e) => {
+    if (e.target.files && e.target.files[0]) {
+      try {
+        const src = await resizeImage(e.target.files[0], 1080);
+        backgroundLayer = { id: uid(), type: 'image', src, x: 200, y: 200, scale: 1, rotate: 0, width: 300, height: 300 };
+        activeLayerId = backgroundLayer.id;
+        placeholder.style.display = 'none';
+        addTextBtn.disabled = false;
+        renderCanvas();
+      } catch (err) {
+        toast('이미지 업로드 실패', 'error');
+      }
+    }
+  };
+  
+  let activeElement = null; 
+  let startX, startY;
+  let initialX, initialY, initialScale, initialRotate, initialWidth, initialHeight;
+  let initialCx, initialCy, initialPointerDist;
+  
+  const handlePointerDown = (e, layer, action, direction) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (activeLayerId !== layer.id) {
+      activeLayerId = layer.id;
+      renderCanvas();
+    }
+    
+    const el = layerElements[layer.id];
+    activeElement = { layer, el, action, direction };
+    
+    startX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+    startY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+    
+    initialX = layer.x;
+    initialY = layer.y;
+    initialScale = layer.scale;
+    initialRotate = layer.rotate;
+    initialWidth = layer.width;
+    initialHeight = layer.height;
+    
+    const rect = el.getBoundingClientRect();
+    initialCx = rect.left + rect.width / 2;
+    initialCy = rect.top + rect.height / 2;
+    
+    if (action === 'scale') {
+      initialPointerDist = Math.hypot(startX - initialCx, startY - initialCy);
+    }
+  };
+  
+  const handlePointerMove = (e) => {
+    if (!activeElement) return;
+    e.preventDefault();
+    const cx = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+    const cy = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+    const dx = cx - startX;
+    const dy = cy - startY;
+    
+    const { layer, action, direction } = activeElement;
+    const containerRect = canvasArea.getBoundingClientRect();
+    const scaleRatio = 400 / containerRect.width;
+    
+    if (action === 'move') {
+      layer.x = initialX + dx * scaleRatio;
+      layer.y = initialY + dy * scaleRatio;
+    } 
+    else if (action === 'rotate') {
+      const angle = Math.atan2(cy - initialCy, cx - initialCx) * 180 / Math.PI;
+      layer.rotate = angle + 90;
+    } 
+    else if (action === 'scale') {
+      const currentDist = Math.hypot(cx - initialCx, cy - initialCy);
+      if (initialPointerDist > 0) {
+        layer.scale = Math.max(0.1, initialScale * (currentDist / initialPointerDist));
+      }
+    } 
+    else if (action === 'crop') {
+      const radians = -initialRotate * Math.PI / 180;
+      const cos = Math.cos(radians);
+      const sin = Math.sin(radians);
+      const local_dx = dx * cos - dy * sin;
+      const local_dy = dx * sin + dy * cos;
+      
+      let dw = 0, dh = 0;
+      if (direction === 'e') dw = local_dx * scaleRatio;
+      if (direction === 'w') dw = -local_dx * scaleRatio;
+      if (direction === 's') dh = local_dy * scaleRatio;
+      if (direction === 'n') dh = -local_dy * scaleRatio;
+      
+      layer.width = Math.max(50, initialWidth + dw * 2);
+      if (layer.type === 'image') {
+        layer.height = Math.max(50, initialHeight + dh * 2);
+      }
+    }
+    
+    updateElementTransform(activeElement.el, layer);
+  };
+  
+  const handlePointerUp = () => {
+    activeElement = null;
+  };
+  
+  document.addEventListener('pointermove', handlePointerMove);
+  document.addEventListener('pointerup', handlePointerUp);
+  document.addEventListener('pointercancel', handlePointerUp);
+  
+  const cleanup = () => {
+    document.removeEventListener('pointermove', handlePointerMove);
+    document.removeEventListener('pointerup', handlePointerUp);
+    document.removeEventListener('pointercancel', handlePointerUp);
+  };
+  
+  const updateElementTransform = (container, layer) => {
+    container.style.left = (layer.x / 400 * 100) + '%';
+    container.style.top = (layer.y / 400 * 100) + '%';
+    container.style.transform = `translate(-50%, -50%) rotate(${layer.rotate}deg) scale(${layer.scale})`;
+    container.style.width = layer.width + 'px';
+    if (layer.type === 'image') {
+      container.style.height = layer.height + 'px';
+    } else {
+      container.style.height = 'auto';
+    }
+  };
+  
+  const createLayerDOM = (layer) => {
+    const isActive = activeLayerId === layer.id;
+    const brandColor = 'var(--brand-a, #ff7171)';
+    
+    const container = el('div', { 
+      className: 'absolute flex items-center justify-center',
+      style: { transformOrigin: 'center center', cursor: 'move', userSelect: 'none', border: isActive ? `2px solid ${brandColor}` : '2px solid transparent', boxShadow: isActive ? '0 0 0 1px rgba(255,255,255,0.3)' : 'none', boxSizing: 'border-box' }
+    });
+    
+    if (layer.type === 'image') {
+      container.appendChild(el('img', { 
+        src: layer.src, 
+        style: { width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', borderRadius: '4px' } 
+      }));
+    } else {
+      const textWrap = el('div', { 
+        style: { width: '100%', height: '100%', fontSize: '20px', fontWeight: 'bold', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', wordBreak: 'break-word', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }
+      });
+      textWrap.innerHTML = layer.html;
+      container.appendChild(textWrap);
+    }
+    
+    if (isActive) {
+      const rotHandleWrap = el('div', { 
+        style: { position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } 
+      });
+      // Append circle first (at the top), then line (at the bottom connecting to the box)
+      rotHandleWrap.appendChild(el('div', { 
+        dataset: { handle: 'true' },
+        style: { width: '24px', height: '24px', backgroundColor: '#fff', border: `2px solid ${brandColor}`, borderRadius: '50%', cursor: 'crosshair', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' },
+        onpointerdown: (e) => handlePointerDown(e, layer, 'rotate')
+      }, el('span', { innerHTML: icons.plusSquare(12), style: { color: brandColor, pointerEvents: 'none' } }))); 
+      rotHandleWrap.appendChild(el('div', { style: { width: '2px', height: '24px', backgroundColor: brandColor } }));
+      
+      const corners = [
+        { dir: 'nw', style: { top: '-6px', left: '-6px', cursor: 'nwse-resize' } },
+        { dir: 'ne', style: { top: '-6px', right: '-6px', cursor: 'nesw-resize' } },
+        { dir: 'sw', style: { bottom: '-6px', left: '-6px', cursor: 'nesw-resize' } },
+        { dir: 'se', style: { bottom: '-6px', right: '-6px', cursor: 'nwse-resize' } }
+      ];
+      corners.forEach(c => {
+        container.appendChild(el('div', {
+          dataset: { handle: 'true' },
+          style: { position: 'absolute', width: '12px', height: '12px', backgroundColor: '#fff', border: `2px solid ${brandColor}`, borderRadius: '50%', boxShadow: '0 2px 4px rgba(0,0,0,0.2)', zIndex: 10, ...c.style },
+          onpointerdown: (e) => handlePointerDown(e, layer, 'scale', c.dir)
+        }));
+      });
+      
+      const edges = [
+        { dir: 'n', style: { top: '-3px', left: '50%', transform: 'translateX(-50%)', width: '24px', height: '6px', cursor: 'ns-resize' } },
+        { dir: 's', style: { bottom: '-3px', left: '50%', transform: 'translateX(-50%)', width: '24px', height: '6px', cursor: 'ns-resize' } },
+        { dir: 'w', style: { left: '-3px', top: '50%', transform: 'translateY(-50%)', width: '6px', height: '24px', cursor: 'ew-resize' } },
+        { dir: 'e', style: { right: '-3px', top: '50%', transform: 'translateY(-50%)', width: '6px', height: '24px', cursor: 'ew-resize' } }
+      ];
+      edges.forEach(c => {
+        if (layer.type === 'text' && (c.dir === 'n' || c.dir === 's')) return;
+        container.appendChild(el('div', {
+          dataset: { handle: 'true' },
+          style: { position: 'absolute', backgroundColor: '#fff', border: `1px solid ${brandColor}`, borderRadius: '4px', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', zIndex: 10, ...c.style },
+          onpointerdown: (e) => handlePointerDown(e, layer, 'crop', c.dir)
+        }));
+      });
+      
+      container.appendChild(rotHandleWrap);
+    }
+    
+    container.onpointerdown = (e) => {
+      if (e.target === container || (container.contains(e.target) && !e.target.dataset.handle)) {
+        handlePointerDown(e, layer, 'move');
+      }
+    };
+    
+    updateElementTransform(container, layer);
+    return container;
+  };
+  
+  const renderCanvas = () => {
+    canvasArea.innerHTML = '';
+    layerElements = {};
+    if (backgroundLayer) {
+      const bgEl = createLayerDOM(backgroundLayer);
+      layerElements[backgroundLayer.id] = bgEl;
+      canvasArea.appendChild(bgEl);
+    } else {
+      canvasArea.appendChild(placeholder);
+    }
+    textLayers.forEach(layer => {
+      const textEl = createLayerDOM(layer);
+      layerElements[layer.id] = textEl;
+      canvasArea.appendChild(textEl);
+    });
+  };
+  
+  let modalRef = null;
+  const footer = el('div', { className: 'flex justify-end gap-2 mt-4' });
+  const submitBtn = el('button', { className: 'btn btn-primary w-full', onclick: () => {
+    if (!backgroundLayer) return toast('이미지를 필수로 업로드해야 합니다.', 'error');
+    
+    activeLayerId = null; 
+    renderCanvas();
+    
+    const layers = [];
+    const toRelative = (layer) => ({
+      type: layer.type, 
+      content: layer.type === 'image' ? layer.src : layer.html, 
+      x: layer.x / 400, 
+      y: layer.y / 400, 
+      scale: layer.scale, 
+      rotate: layer.rotate,
+      width: layer.width / 400,
+      height: (layer.height || 0) / 400
+    });
+    
+    layers.push(toRelative(backgroundLayer));
+    textLayers.forEach(t => layers.push(toRelative(t)));
+    
+    store.addStory(layers);
+    toast('스토리가 완성되었습니다.', 'success');
+    cleanup();
+    if (modalRef) modalRef.close();
+    window.location.reload();
+  }}, '완성 및 업로드');
+  
+  footer.appendChild(submitBtn);
+  wrap.append(canvasArea, el('div', { className: 'flex gap-2 w-full mt-2' }, uploadBtn, addTextBtn), footer);
+  
+  modalRef = showModal(wrap, { onClose: cleanup });
+}
+
+export function renderStoryViewer(startIndex, groupedStories) {
+  const group = groupedStories[startIndex];
+  if (!group || !group.stories || group.stories.length === 0) return;
+  
+  const overlay = el('div', { 
+    style: {
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 999999,
+      display: 'flex', flexDirection: 'column',
+      justifyContent: 'center', alignItems: 'center'
+    }
+  });
+  
+  const closeBtn = el('button', { 
+    className: 'absolute top-4 right-4 text-white z-50 p-3 cursor-pointer bg-black/50 hover:bg-black/80 rounded-full transition-colors',
+    style: { border: 'none' },
+    onclick: () => {
+      overlay.remove();
+      window.location.reload();
+    }
+  }, el('span', { innerHTML: icons.x(24) }));
+  
+  const scrollContainer = el('div', { 
+    className: 'relative w-full max-w-[400px] flex flex-col bg-black shadow-2xl rounded-lg overflow-hidden',
+    style: { 
+      aspectRatio: '1/1', overflowY: 'auto', 
+      scrollSnapType: 'y mandatory', scrollbarWidth: 'none', msOverflowStyle: 'none'
+    }
+  });
+  scrollContainer.innerHTML = '<style>.stories-scroll::-webkit-scrollbar { display: none; }</style>';
+  scrollContainer.classList.add('stories-scroll');
+  
+  group.stories.forEach((story, idx) => {
+    store.markStoryViewed(story.id);
+    
+    const storyBox = el('div', { 
+      className: 'relative w-full flex-shrink-0 bg-gray-900 overflow-hidden',
+      style: { height: '100%', scrollSnapAlign: 'start' }
+    });
+    
+    const author = store.getUser(group.authorHandle) || { displayName: 'Unknown', handle: group.authorHandle };
+    const header = el('div', { className: 'absolute top-0 left-0 right-0 p-4 z-40 flex items-center gap-3 text-white bg-gradient-to-b from-black/70 to-transparent pointer-events-none' });
+    header.append(
+      el('img', { src: author.avatar, className: 'w-10 h-10 rounded-full object-cover border-2 border-white/20' }),
+      el('div', { className: 'flex flex-col' },
+        el('span', { className: 'font-bold text-sm drop-shadow-md' }, author.handle),
+        el('span', { className: 'text-xs text-white/80 drop-shadow-md' }, timeAgo(story.createdAt))
+      )
+    );
+    storyBox.appendChild(header);
+    
+    const layers = story.layers || [];
+    layers.forEach(layer => {
+      const container = el('div', { 
+        className: 'absolute flex items-center justify-center',
+        style: { 
+          left: (layer.x * 100) + '%', 
+          top: (layer.y * 100) + '%', 
+          width: (layer.width * 100) + '%',
+          transformOrigin: 'center center',
+          transform: `translate(-50%, -50%) rotate(${layer.rotate}deg) scale(${layer.scale})`
+        }
+      });
+      if (layer.type === 'image') {
+        container.style.height = (layer.height * 100) + '%';
+      }
+      
+      if (layer.type === 'image') {
+        container.appendChild(el('img', { 
+          src: layer.content, 
+          style: { width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', borderRadius: '4px' } 
+        }));
+      } else if (layer.type === 'text') {
+        container.style.height = 'auto';
+        const textWrap = el('div', { 
+          style: { width: '100%', height: '100%', fontSize: '20px', fontWeight: 'bold', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', wordBreak: 'break-word', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' } 
+        });
+        textWrap.innerHTML = layer.content;
+        container.appendChild(textWrap);
+      }
+      
+      storyBox.appendChild(container);
+    });
+    
+    scrollContainer.appendChild(storyBox);
+  });
+  
+  overlay.append(closeBtn, scrollContainer);
+  
+  if (group.stories.length > 1) {
+    const hint = el('div', { className: 'absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm flex flex-col items-center gap-1 z-50 pointer-events-none anim-up' },
+      el('span', { innerHTML: icons.chevronDown(20) }),
+      '아래로 스크롤하여 더 보기'
+    );
+    scrollContainer.appendChild(hint);
+    scrollContainer.addEventListener('scroll', () => hint.style.opacity = '0', { once: true });
+  }
+  
+  document.body.appendChild(overlay);
 }
 
 export function renderSuggestSidebar() {

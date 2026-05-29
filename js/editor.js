@@ -484,18 +484,38 @@ export function createRichTextEditor(options) {
   });
 
   // --- External Drag & Drop ---
+  let isInternalDrag = false;
+  editorArea.addEventListener('dragstart', (e) => {
+    isInternalDrag = true;
+  });
+  editorArea.addEventListener('dragend', (e) => {
+    isInternalDrag = false;
+  });
+  
   editorArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    editorArea.classList.add('bg-hover');
+    if (isInternalDrag) return;
+    if (e.dataTransfer.types && e.dataTransfer.types.includes('Files')) {
+      e.preventDefault();
+      editorArea.classList.add('bg-hover');
+    }
   });
   editorArea.addEventListener('dragleave', () => {
     editorArea.classList.remove('bg-hover');
   });
   editorArea.addEventListener('drop', async (e) => {
-    e.preventDefault();
-    editorArea.classList.remove('bg-hover');
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      await handleFiles(Array.from(e.dataTransfer.files));
+    if (isInternalDrag) {
+      isInternalDrag = false;
+      return;
+    }
+    if (e.dataTransfer.types && e.dataTransfer.types.includes('Files')) {
+      e.preventDefault();
+      editorArea.classList.remove('bg-hover');
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        await handleFiles(Array.from(e.dataTransfer.files));
+      }
+    } else {
+      // Allow native drop for internal text/image movement
+      editorArea.classList.remove('bg-hover');
     }
   });
 
@@ -623,7 +643,6 @@ export function createRichTextEditor(options) {
       justifyFull: document.queryCommandState('justifyFull')
     };
     
-    // Toggle active classes
     const toggle = (btn, isActive) => {
       if (!btn) return;
       if (isActive) btn.classList.add('bg-hover', 'text-brand');
@@ -638,6 +657,24 @@ export function createRichTextEditor(options) {
     toggle(btns.center, states.justifyCenter);
     toggle(btns.right, states.justifyRight);
     toggle(btns.justify, states.justifyFull);
+    
+    try {
+      const fontSize = document.queryCommandValue('fontSize');
+      if (fontSize) sizeSelect.value = fontSize;
+      
+      const fontName = document.queryCommandValue('fontName');
+      if (fontName) {
+        const name = fontName.replace(/['"]/g, '');
+        if (Array.from(fontSelect.options).some(o => o.value.toLowerCase() === name.toLowerCase())) {
+          fontSelect.value = name;
+        }
+      }
+      
+      const foreColor = document.queryCommandValue('foreColor');
+      if (foreColor && foreColor !== 'false') {
+        colorBtn.firstChild.style.color = foreColor;
+      }
+    } catch (e) {}
   }
   editorArea.addEventListener('keyup', updateToolbarState);
   editorArea.addEventListener('mouseup', updateToolbarState);
@@ -647,13 +684,21 @@ export function createRichTextEditor(options) {
   const toolbar = el('div', { className: 'editor-toolbar flex items-center gap-1 border-b border-base p-2 bg-element overflow-x-auto rounded-t-2xl' },
     sizeSelect, fontSelect, colorBtnWrap,
     divider(),
-    btns.bold, btns.italic, btns.underline, btns.strike,
-    divider(),
-    btns.left, btns.center, btns.right, btns.justify,
-    divider(),
-    btns.link, btns.file,
-    fileInput
+    btns.bold, btns.italic, btns.underline, btns.strike
   );
+
+  if (!options.hideAdvanced) {
+    toolbar.append(
+      divider(),
+      btns.left, btns.center, btns.right, btns.justify,
+      divider(),
+      btns.link, btns.file,
+      fileInput
+    );
+  }
+  
+  container.appendChild(toolbar);
+  container.appendChild(editorArea);
   
   const footer = el('div', { className: 'flex items-center justify-end p-3 bg-element border-t border-base gap-2' },
     el('button', { type: 'button', className: 'btn btn-ghost px-4', onclick: () => {
