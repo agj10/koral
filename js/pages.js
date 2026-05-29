@@ -44,9 +44,9 @@ export function renderFeedPage(container, params = {}) {
       });
 
       colsContainer.append(
-        createCol('사용자 맞춤 알고리즘', 'user', c1),
-        createCol('현재 화제가 되는 리프', 'hash', c2),
-        createCol('새로운 영감 발견', 'compass', c3)
+        createCol('나만의 맞춤 해류', 'user', c1),
+        createCol('연안 관광', 'hash', c2),
+        createCol('수중 탐사', 'compass', c3)
       );
       main.appendChild(colsContainer);
     }
