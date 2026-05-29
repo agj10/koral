@@ -272,11 +272,10 @@
   position: relative; z-index: 1;
 }
 .landing h1 {
-  font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800;
-  line-height: 1.15; max-width: 600px;
+  font-size: clamp(1.4rem, 5vw, 3.5rem); font-weight: 800;
+  line-height: 1.15;
+  white-space: nowrap;
   position: relative; z-index: 1;
-  word-break: keep-all;
-  overflow-wrap: break-word;
 }
 .landing-sub {
   font-size: var(--text-lg); color: var(--tx-3);

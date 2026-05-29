@@ -270,14 +270,13 @@
     text-align: center;
   }
   .auth-banner-title {
-    font-size: clamp(2.5rem, 4vw, 4rem);
+    font-size: clamp(1.8rem, 4vw, 4rem);
     font-weight: 800;
     line-height: 1.1;
     margin-top: var(--s6);
+    white-space: nowrap;
     position: relative;
     z-index: 1;
-    word-break: keep-all;
-    overflow-wrap: break-word;
   }
   .auth-banner-sub {
     font-size: var(--text-lg);
