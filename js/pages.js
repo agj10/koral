@@ -28,7 +28,8 @@ export function renderFeedPage(container, params = {}) {
           }
           const imgMatches = [...text.matchAll(/!\[.*?\]\((.*?)\)/g)];
           const images = imgMatches.map(m => m[1]);
-          const tagMatches = [...text.matchAll(/(?:^|[^"':;#a-zA-Z0-9_])#([가-힣a-zA-Z0-9_]+)/g)];
+          const plainText = text.replace(/<[^>]*>?/gm, ' ');
+          const tagMatches = [...plainText.matchAll(/(?:^|\s)#([가-힣a-zA-Z0-9_]+)/g)];
           const tags = tagMatches.map(m => '#' + m[1]);
 
           const post = store.createPost({ title: '', images, caption: text, location: '', tags });
@@ -468,7 +469,8 @@ export function renderCreatePage(container) {
         const imgMatches = [...text.matchAll(/!\[.*?\]\((.*?)\)/g)];
         const images = imgMatches.map(m => m[1]);
         
-        const tagMatches = [...text.matchAll(/(?:^|[^"':;#a-zA-Z0-9_])#([가-힣a-zA-Z0-9_]+)/g)];
+        const plainText = text.replace(/<[^>]*>?/gm, ' ');
+        const tagMatches = [...plainText.matchAll(/(?:^|\s)#([가-힣a-zA-Z0-9_]+)/g)];
         const tags = tagMatches.map(m => '#' + m[1]);
 
         const post = store.createPost({

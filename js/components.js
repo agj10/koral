@@ -59,7 +59,8 @@ export function renderPostCard(post, options = {}) {
         submitLabel: '수정 완료',
         minHeight: '200px',
         onSubmit: (newText) => {
-          const tagMatches = [...newText.matchAll(/(?:^|[^"':;#a-zA-Z0-9_])#([가-힣a-zA-Z0-9_]+)/g)];
+          const plainText = newText.replace(/<[^>]*>?/gm, ' ');
+          const tagMatches = [...plainText.matchAll(/(?:^|\s)#([가-힣a-zA-Z0-9_]+)/g)];
           const tags = tagMatches.map(m => '#' + m[1]);
           store.editPost(post.id, newText, tags);
           toast('수정되었습니다.', 'success');
@@ -228,7 +229,18 @@ export function renderSuggestSidebar() {
   }, el('span', { innerHTML: icons.more(20) }));
   
   // Floating menus — appended to body so they never affect layout
-  const menuStyle = 'position:fixed;width:16rem;background:var(--bg-el);border:1px solid var(--border);border-radius:var(--r-2xl);box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);display:none;flex-direction:column;overflow:hidden;z-index:99999;';
+  const menuStyle = {
+    position: 'fixed',
+    width: '16rem',
+    background: 'var(--bg-el)',
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--r-2xl)',
+    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+    display: 'none',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    zIndex: '99999'
+  };
   const moreDropdown = el('div', { style: menuStyle });
   const switcherDropdown = el('div', { style: menuStyle });
   document.body.append(moreDropdown, switcherDropdown);
