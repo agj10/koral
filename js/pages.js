@@ -17,8 +17,8 @@ export function renderFeedPage(container, params = {}) {
     if (posts.length === 0) {
       main.appendChild(el('div', { className: 'text-center flex flex-col items-center justify-center py-16 text-tx-3' },
         el('div', { className: 'mb-4', innerHTML: icons.image(48) }),
-        el('p', { className: 'text-lg font-semibold text-tx' }, '아직 리프(Reef)가 없습니다.'),
-        el('p', { className: 'text-sm mt-2' }, '첫 번째 리프(Reef)를 작성하거나 다른 사용자를 팔로우해 보세요.')
+        el('p', { className: 'text-lg font-semibold text-tx' }, '아직 리프가 없습니다.'),
+        el('p', { className: 'text-sm mt-2' }, '첫 번째 리프를 작성하거나 다른 사용자를 팔로우해 보세요.')
       ));
     } else {
       const grid = el('div', { className: 'grid gap-6 w-full', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' } });
@@ -203,7 +203,7 @@ export function renderPostPage(container, { postId }) {
     container.innerHTML = '';
     const post = store.getPost(postId);
     if (!post) {
-      container.appendChild(el('div', { className: 'empty pt-20' }, el('h3', { textContent: '리프(Reef)를 찾을 수 없습니다.' })));
+      container.appendChild(el('div', { className: 'empty pt-20' }, el('h3', { textContent: '리프를 찾을 수 없습니다.' })));
       return;
     }
     
@@ -412,14 +412,14 @@ export function renderCreatePage(container) {
   const form = el('form', { className: 'w-full flex flex-col', onsubmit: (e) => e.preventDefault() });
   
   const editorHeader = el('div', { className: 'mb-6 flex items-center justify-between' },
-    el('h2', { className: 'text-2xl font-bold text-tx' }, '새 리프(Reef) 만들기')
+    el('h2', { className: 'text-2xl font-bold text-tx' }, '새 리프 만들기')
   );
   
   const currentUser = store.getState().currentUser;
   const editorWrap = el('div', { className: 'mb-6' },
     createRichTextEditor({
       id: `create_post_${currentUser ? currentUser.id : 'guest'}`,
-      placeholder: '이야기를 나누어 보세요... (이미지를 바로 복사/붙여넣기 하거나 아이콘을 눌러 첨부하세요)',
+      placeholder: '이야기를 나누어 보세요...',
       submitLabel: '리프 올리기',
       minHeight: '400px',
       showTitle: true,
@@ -439,7 +439,7 @@ export function renderCreatePage(container) {
           tags
         });
         if (post) {
-          toast('리프(Reef)가 생성되었습니다.', 'success');
+          toast('리프가 생성되었습니다.', 'success');
           localStorage.removeItem(`koral_editor_draft_create_post_${currentUser ? currentUser.id : 'guest'}`);
           window.navigateTo('post', { postId: post.id });
         }

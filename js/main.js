@@ -43,15 +43,11 @@ function buildAppShell() {
     navItems.appendChild(createNavItem('profile', icons.user(24), '프로필', `profile/${currentUser.handle.substring(1)}`));
   }
   
-  const bottomNavItems = el('div', { className: 'nav-items mt-auto mb-4' },
+  const bottomNavItems = el('div', { className: 'mt-auto mb-4', style: { display: 'flex', flexDirection: 'column' } },
     createNavItem('settings', icons.settings(24), '설정', 'settings')
   );
   
   sidebar.append(logoWrap, navItems, bottomNavItems);
-  sidebar.style.display = 'flex';
-  sidebar.style.flexDirection = 'column';
-  sidebar.style.height = '100dvh'; // Use 100dvh instead of 100%
-  sidebar.style.justifyContent = 'space-between'; // Ensure separation
   
   // Main Content
   mainContent = el('main', { className: 'main-content' });

@@ -71,7 +71,7 @@ export function renderPostCard(post, options = {}) {
     }}, el('span', { innerHTML: icons.edit(16) }), '수정') : null,
     isOwn ? el('div', { className: 'dropdown-item danger', onclick: async () => {
       dropdownOpen = false; dropdown.classList.remove('open');
-      if (await confirmDialog('정말 이 리프(Reef)를 삭제하시겠습니까?')) {
+      if (await confirmDialog('정말 이 리프를 삭제하시겠습니까?')) {
         store.deletePost(post.id);
         toast('삭제되었습니다.', 'success');
         if (options.onNavigate) options.onNavigate('');
@@ -197,7 +197,7 @@ export function renderStoryRow() {
     row.appendChild(
       el('div', { className: 'story-item', onclick: renderStoryCreator },
         el('div', { className: 'story-add' }, '+'),
-        el('div', { className: 'story-name' }, '내 셸(Shell)')
+        el('div', { className: 'story-name' }, '내 셸')
       )
     );
   }
@@ -230,7 +230,7 @@ export function renderStoryCreator() {
   if (!currentUser) return toast('로그인이 필요합니다.', 'error');
   
   const wrap = el('div', { className: 'p-4 flex flex-col gap-4', style: { width: '100%', maxWidth: '400px', margin: '0 auto' } });
-  wrap.appendChild(el('h2', { className: 'font-bold text-lg mb-2' }, '새 셸(Shell) 만들기'));
+  wrap.appendChild(el('h2', { className: 'font-bold text-lg mb-2' }, '새 셸 만들기'));
   
   let backgroundLayer = null;
   let textLayers = [];
