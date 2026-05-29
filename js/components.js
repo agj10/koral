@@ -71,7 +71,7 @@ export function renderPostCard(post, options = {}) {
     }}, el('span', { innerHTML: icons.edit(16) }), '수정') : null,
     isOwn ? el('div', { className: 'dropdown-item danger', onclick: async () => {
       dropdownOpen = false; dropdown.classList.remove('open');
-      if (await confirmDialog('정말 이 게시물을 삭제하시겠습니까?')) {
+      if (await confirmDialog('정말 이 리프(Reef)를 삭제하시겠습니까?')) {
         store.deletePost(post.id);
         toast('삭제되었습니다.', 'success');
         if (options.onNavigate) options.onNavigate('');
@@ -173,7 +173,7 @@ export function renderPostCard(post, options = {}) {
     const commentWrap = el('div', { className: 'px-4 pb-4 border-t border-base' },
       createRichTextEditor({
         placeholder: '댓글 남기기...',
-        submitLabel: '게시',
+        submitLabel: '등록',
         minHeight: '40px',
         onSubmit: (text) => {
           if (!currentUser) return toast('로그인이 필요합니다.', 'error');
@@ -197,7 +197,7 @@ export function renderStoryRow() {
     row.appendChild(
       el('div', { className: 'story-item', onclick: renderStoryCreator },
         el('div', { className: 'story-add' }, '+'),
-        el('div', { className: 'story-name' }, '내 스토리')
+        el('div', { className: 'story-name' }, '내 셸(Shell)')
       )
     );
   }
@@ -230,7 +230,7 @@ export function renderStoryCreator() {
   if (!currentUser) return toast('로그인이 필요합니다.', 'error');
   
   const wrap = el('div', { className: 'p-4 flex flex-col gap-4', style: { width: '100%', maxWidth: '400px', margin: '0 auto' } });
-  wrap.appendChild(el('h2', { className: 'font-bold text-lg mb-2' }, '새 스토리 만들기'));
+  wrap.appendChild(el('h2', { className: 'font-bold text-lg mb-2' }, '새 셸(Shell) 만들기'));
   
   let backgroundLayer = null;
   let textLayers = [];
@@ -266,7 +266,7 @@ export function renderStoryCreator() {
     const textWrap = el('div', { className: 'p-4 flex flex-col gap-4' });
     const editor = createRichTextEditor({
       id: 'story_text_' + uid(),
-      placeholder: '스토리 문구...',
+      placeholder: '셸 문구...',
       showTitle: false,
       minHeight: '100px',
       submitLabel: '텍스트 추가',
@@ -526,7 +526,7 @@ export function renderStoryCreator() {
     textLayers.forEach(t => layers.push(toRelative(t)));
     
     store.addStory(layers);
-    toast('스토리가 완성되었습니다.', 'success');
+    toast('셸이 완성되었습니다.', 'success');
     cleanup();
     if (modalRef) modalRef.close();
     window.location.reload();

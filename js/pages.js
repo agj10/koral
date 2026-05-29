@@ -17,8 +17,8 @@ export function renderFeedPage(container, params = {}) {
     if (posts.length === 0) {
       main.appendChild(el('div', { className: 'text-center flex flex-col items-center justify-center py-16 text-tx-3' },
         el('div', { className: 'mb-4', innerHTML: icons.image(48) }),
-        el('p', { className: 'text-lg font-semibold text-tx' }, '아직 게시물이 없습니다.'),
-        el('p', { className: 'text-sm mt-2' }, '첫 번째 게시물을 작성하거나 다른 사용자를 팔로우해 보세요.')
+        el('p', { className: 'text-lg font-semibold text-tx' }, '아직 리프(Reef)가 없습니다.'),
+        el('p', { className: 'text-sm mt-2' }, '첫 번째 리프(Reef)를 작성하거나 다른 사용자를 팔로우해 보세요.')
       ));
     } else {
       const grid = el('div', { className: 'grid gap-6 w-full', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' } });
@@ -112,7 +112,7 @@ export function renderProfilePage(container, { handle }) {
   row1.appendChild(actions);
   
   const stats = el('div', { className: 'profile-stats mb-4' },
-    el('div', { className: 'profile-stat' }, el('span', { className: 'font-semibold text-base' }, posts.length), ' 게시물'),
+    el('div', { className: 'profile-stat' }, el('span', { className: 'font-semibold text-base' }, posts.length), ' 리프'),
     el('div', { className: 'profile-stat', onclick: () => toast('팔로워 목록 준비중') }, el('span', { className: 'font-semibold text-base' }, user.followers?.length || 0), ' 팔로워'),
     el('div', { className: 'profile-stat', onclick: () => toast('팔로잉 목록 준비중') }, el('span', { className: 'font-semibold text-base' }, user.following?.length || 0), ' 팔로우')
   );
@@ -138,7 +138,7 @@ export function renderProfilePage(container, { handle }) {
     if (displayPosts.length === 0) {
       gridContainer.appendChild(el('div', { className: 'empty py-16' },
         el('div', { className: 'empty-icon' }, activeTab === 'posts' ? '📸' : '🔖'),
-        el('h3', { textContent: activeTab === 'posts' ? '게시물 없음' : '저장된 게시물 없음' })
+        el('h3', { textContent: activeTab === 'posts' ? '리프 없음' : '저장된 리프 없음' })
       ));
       return;
     }
@@ -185,7 +185,7 @@ export function renderProfilePage(container, { handle }) {
     if (tabSaved) tabSaved.className = `profile-tab ${activeTab === 'saved' ? 'active' : ''}`;
   };
 
-  const tabPosts = el('div', { className: 'profile-tab active', onclick: () => { activeTab = 'posts'; updateTabs(); renderGrid(); } }, el('span', { innerHTML: icons.grid(12) }), '게시물');
+  const tabPosts = el('div', { className: 'profile-tab active', onclick: () => { activeTab = 'posts'; updateTabs(); renderGrid(); } }, el('span', { innerHTML: icons.grid(12) }), '리프');
   const tabSaved = isOwn ? el('div', { className: 'profile-tab', onclick: () => { activeTab = 'saved'; updateTabs(); renderGrid(); } }, el('span', { innerHTML: icons.bookmark(12) }), '저장됨') : null;
 
   const tabs = el('div', { className: 'profile-tabs' }, tabPosts, tabSaved);
@@ -203,7 +203,7 @@ export function renderPostPage(container, { postId }) {
     container.innerHTML = '';
     const post = store.getPost(postId);
     if (!post) {
-      container.appendChild(el('div', { className: 'empty pt-20' }, el('h3', { textContent: '게시물을 찾을 수 없습니다.' })));
+      container.appendChild(el('div', { className: 'empty pt-20' }, el('h3', { textContent: '리프(Reef)를 찾을 수 없습니다.' })));
       return;
     }
     
@@ -223,7 +223,7 @@ export function renderPostPage(container, { postId }) {
         el('div', { className: 'flex-1' }, 
           createRichTextEditor({
             placeholder: '댓글 남기기...',
-            submitLabel: '게시',
+            submitLabel: '등록',
             minHeight: '60px',
             onSubmit: (text) => {
               store.addComment({ postId: post.id, parentId: null, text });
@@ -412,7 +412,7 @@ export function renderCreatePage(container) {
   const form = el('form', { className: 'w-full flex flex-col', onsubmit: (e) => e.preventDefault() });
   
   const editorHeader = el('div', { className: 'mb-6 flex items-center justify-between' },
-    el('h2', { className: 'text-2xl font-bold text-tx' }, '새 게시물 작성')
+    el('h2', { className: 'text-2xl font-bold text-tx' }, '새 리프(Reef) 만들기')
   );
   
   const currentUser = store.getState().currentUser;
@@ -420,7 +420,7 @@ export function renderCreatePage(container) {
     createRichTextEditor({
       id: `create_post_${currentUser ? currentUser.id : 'guest'}`,
       placeholder: '이야기를 나누어 보세요... (이미지를 바로 복사/붙여넣기 하거나 아이콘을 눌러 첨부하세요)',
-      submitLabel: '게시물 올리기',
+      submitLabel: '리프 올리기',
       minHeight: '400px',
       showTitle: true,
       onSubmit: (text, title) => {
@@ -439,7 +439,7 @@ export function renderCreatePage(container) {
           tags
         });
         if (post) {
-          toast('게시물이 등록되었습니다.', 'success');
+          toast('리프(Reef)가 생성되었습니다.', 'success');
           localStorage.removeItem(`koral_editor_draft_create_post_${currentUser ? currentUser.id : 'guest'}`);
           window.navigateTo('post', { postId: post.id });
         }
