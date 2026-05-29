@@ -498,21 +498,14 @@
     display: none !important;
   }
 
-  /* Lay out nav-items horizontally */
+  /* Use display: contents to promote nav items to direct children of sidebar-nav for perfect spacing */
   .nav-items {
-    flex-direction: row !important;
-    gap: var(--s2) !important;
-    flex: 1 !important;
-    justify-content: space-around !important;
-    margin: 0 !important;
+    display: contents !important;
   }
 
-  /* Lay out settings horizontally next to other items */
+  /* Lay out settings horizontally next to other items using display: contents */
   .sidebar-nav > .mt-auto {
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-    display: flex !important;
-    flex-direction: row !important;
+    display: contents !important;
   }
 
   /* Hide all item text labels, only show icons */
