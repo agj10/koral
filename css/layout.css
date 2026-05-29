@@ -440,10 +440,34 @@
   .sidebar-nav .nav-section-title,
   .sidebar-nav .nav-item-badge { opacity: 0; pointer-events: none; }
   .main-content { margin-left: 72px; }
+
+  /* Center the logo icon perfectly when collapsed on narrow screens */
+  .sidebar-nav .sidebar-logo-icon {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  .sidebar-nav .sidebar-logo-icon svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
 }
+
+/* Center the logo icon perfectly when collapsed manually on desktop */
+.sidebar-nav.collapsed .sidebar-logo-icon {
+  width: 24px !important;
+  height: 24px !important;
+}
+.sidebar-nav.collapsed .sidebar-logo-icon svg {
+  width: 24px !important;
+  height: 24px !important;
+}
+
 @media (max-width: 640px) {
   .sidebar-nav { display: none; }
-  .main-content { margin-left: 0; }
+  .main-content {
+    margin-left: 0;
+    padding-bottom: 96px !important; /* prevent overlap with floating bottom nav */
+  }
   .bottom-nav { display: flex; }
 }
 
@@ -451,29 +475,44 @@
 .bottom-nav {
   display: none;
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--bg-s);
-  border-top: 1px solid var(--border);
+  bottom: var(--s4);
+  left: var(--s4);
+  right: var(--s4);
+  background: color-mix(in srgb, var(--bg-s) 80%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
   padding: var(--s2) 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   z-index: var(--z-nav);
+  animation: slideUp .3s var(--t-bounce);
 }
 .bottom-nav-items {
   display: flex;
   justify-content: space-around;
   align-items: center;
+  width: 100%;
 }
-.bottom-nav-item {
+.bottom-nav .nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: var(--s2) var(--s3);
-  cursor: pointer;
-  color: var(--tx-3);
-  font-size: 9px;
-  transition: color var(--t-fast);
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--tx-2);
+  transition: background var(--t-fast), color var(--t-fast), transform var(--t-fast);
 }
-.bottom-nav-item.active { color: var(--tx-br); }
-.bottom-nav-item svg { width: 24px; height: 24px; }
+.bottom-nav .nav-item:hover,
+.bottom-nav .nav-item.active {
+  background: var(--bg-active);
+  color: var(--tx-br);
+  transform: translateY(-2px);
+}
+.bottom-nav .nav-item svg {
+  width: 24px;
+  height: 24px;
+}
