@@ -86,8 +86,12 @@ export function el(tag, attrs = {}, ...children) {
         element.dataset[dataKey] = dataVal;
       }
     } else if (key === 'style') {
-      for (const [styleKey, styleVal] of Object.entries(value)) {
-        element.style[styleKey] = styleVal;
+      if (typeof value === 'string') {
+        element.style.cssText = value;
+      } else {
+        for (const [styleKey, styleVal] of Object.entries(value)) {
+          element.style[styleKey] = styleVal;
+        }
       }
     } else if (key.startsWith('on') && typeof value === 'function') {
       element.addEventListener(key.substring(2).toLowerCase(), value);

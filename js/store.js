@@ -20,14 +20,18 @@ class Store {
       try {
         this.state = JSON.parse(saved);
         
+        // Ensure core arrays exist
+        if (!this.state.users) this.state.users = [];
+        if (!this.state.posts) this.state.posts = [];
+        if (!this.state.comments) this.state.comments = [];
+        if (!this.state.notifications) this.state.notifications = [];
+        
         // Sanitize data to prevent crashes
-        if (this.state.posts) {
-          this.state.posts.forEach(p => {
-            if (!p.likes) p.likes = [];
-            if (!p.bookmarks) p.bookmarks = [];
-            if (!p.tags) p.tags = [];
-          });
-        }
+        this.state.posts.forEach(p => {
+          if (!p.likes) p.likes = [];
+          if (!p.bookmarks) p.bookmarks = [];
+          if (!p.tags) p.tags = [];
+        });
         
         this.applyTheme(this.state.theme);
       } catch (e) {
@@ -214,6 +218,15 @@ class Store {
     this._notify();
   }
 
+  editPost(postId, caption, tags) {
+    const post = this.state.posts.find(p => p.id === postId);
+    if (post && post.authorHandle === this.state.currentUser?.handle) {
+      post.caption = caption;
+      post.tags = tags;
+      this._notify();
+    }
+  }
+
   toggleLike(postId) {
     if (!this.state.currentUser) return false;
     const post = this.state.posts.find(p => p.id === postId);
@@ -334,6 +347,15 @@ class Store {
   deleteComment(commentId) {
     this.state.comments = this.state.comments.filter(c => c.id !== commentId && c.parentId !== commentId);
     this._notify();
+  }
+
+  editComment(commentId, newText) {
+    const comment = this.state.comments.find(c => c.id === commentId);
+    if (comment && comment.authorHandle === this.state.currentUser?.handle) {
+      comment.text = newText;
+      comment.editedAt = new Date().toISOString();
+      this._notify();
+    }
   }
 
   getPostComments(postId) {

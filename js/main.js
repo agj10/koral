@@ -99,6 +99,8 @@ function router() {
   }
   currentPath = hash;
   
+  store.subscribers = [];
+  
   const parts = hash.split('/').filter(Boolean);
   const route = parts[0] || '';
   const param = parts[1] || '';
@@ -145,7 +147,6 @@ function router() {
       else renderSettingsPage(mainContent);
       break;
     case 'tag':
-      // Simplified: reuse feed layout or explore grid
       mainContent.innerHTML = `<div class="p-8 text-center text-xl font-bold">#${param} 태그 검색 결과</div>`;
       break;
     default:

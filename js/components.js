@@ -50,7 +50,26 @@ export function renderPostCard(post, options = {}) {
 
   const moreBtn = el('button', { className: 'btn-icon-sm btn-ghost' }, el('span', { innerHTML: icons.more(20) }));
   const dropdown = el('div', { className: 'dropdown-menu' },
+    isOwn ? el('div', { className: 'dropdown-item', onclick: () => {
+      dropdownOpen = false; dropdown.classList.remove('open');
+      const editWrap = el('div', { className: 'p-4' });
+      const modal = showModal(editWrap, { large: true });
+      editWrap.appendChild(createRichTextEditor({
+        initialValue: post.caption,
+        submitLabel: '수정 완료',
+        minHeight: '200px',
+        onSubmit: (newText) => {
+          const tagMatches = [...newText.matchAll(/(?:^|[^"':;#a-zA-Z0-9_])#([가-힣a-zA-Z0-9_]+)/g)];
+          const tags = tagMatches.map(m => '#' + m[1]);
+          store.editPost(post.id, newText, tags);
+          toast('수정되었습니다.', 'success');
+          modal.close();
+          if (options.onNavigate) options.onNavigate('');
+        }
+      }));
+    }}, el('span', { innerHTML: icons.edit(16) }), '수정') : null,
     isOwn ? el('div', { className: 'dropdown-item danger', onclick: async () => {
+      dropdownOpen = false; dropdown.classList.remove('open');
       if (await confirmDialog('정말 이 게시물을 삭제하시겠습니까?')) {
         store.deletePost(post.id);
         toast('삭제되었습니다.', 'success');
@@ -58,6 +77,7 @@ export function renderPostCard(post, options = {}) {
       }
     }}, el('span', { innerHTML: icons.trash(16) }), '삭제') : 
     el('div', { className: 'dropdown-item danger', onclick: () => {
+      dropdownOpen = false; dropdown.classList.remove('open');
       toast('신고가 접수되었습니다.', 'success');
     }}, '신고'),
     el('div', { className: 'dropdown-item', onclick: () => {
@@ -484,15 +504,66 @@ export function renderCommentSection(postId) {
         itemWrapper.insertBefore(replyEditorWrap, repliesContainer);
       }}, '답글 달기');
 
+      const isOwn = currentUser && c.authorHandle === currentUser.handle;
+      const moreDropdown = el('div', { className: 'dropdown-menu', style: { width: '120px' } },
+        el('div', { className: 'dropdown-item', onclick: () => {
+          moreWrap.querySelector('.dropdown-menu').classList.remove('open');
+          const existing = itemWrapper.querySelector('.reply-editor-wrap');
+          if (existing) existing.remove();
+          
+          const editWrap = el('div', { className: 'reply-editor-wrap mt-2' });
+          editWrap.appendChild(
+            createRichTextEditor({
+              initialValue: c.text,
+              submitLabel: '수정 완료',
+              minHeight: '40px',
+              onSubmit: (text) => {
+                store.editComment(c.id, text);
+                toast('수정되었습니다.', 'success');
+                refreshComments();
+              }
+            })
+          );
+          itemWrapper.insertBefore(editWrap, repliesContainer);
+        }}, el('span', { innerHTML: icons.edit(14) }), '수정'),
+        el('div', { className: 'dropdown-item danger', onclick: async () => {
+          moreWrap.querySelector('.dropdown-menu').classList.remove('open');
+          if (await confirmDialog('이 댓글을 삭제하시겠습니까?')) {
+            store.deleteComment(c.id);
+            toast('삭제되었습니다.', 'success');
+            refreshComments();
+          }
+        }}, el('span', { innerHTML: icons.trash(14) }), '삭제')
+      );
+      
+      const moreBtn = el('span', { className: 'comment-action cursor-pointer hover:text-tx px-1' }, el('span', { innerHTML: icons.more(14) }));
+      const moreWrap = el('div', { className: 'dropdown inline-block ml-2 relative' }, moreBtn, moreDropdown);
+      
+      let dropdownOpen = false;
+      moreBtn.onclick = (e) => {
+        e.stopPropagation();
+        dropdownOpen = !dropdownOpen;
+        moreDropdown.classList.toggle('open', dropdownOpen);
+      };
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', () => {
+        if (dropdownOpen) {
+          dropdownOpen = false;
+          moreDropdown.classList.remove('open');
+        }
+      });
+
       const item = el('div', { className: 'comment-item w-full' },
         renderAvatar(author, 'av-sm'),
         el('div', { className: 'comment-body w-full' },
           el('span', { className: 'comment-author cursor-pointer hover:underline', onclick: () => window.navigateTo(`profile/${author.handle.substring(1)}`) }, author.handle),
           ' ',
           el('span', { className: 'comment-text', innerHTML: renderMarkdown(c.text).replace(/^<p>/, '').replace(/<\/p>$/, '') }),
-          el('div', { className: 'comment-actions' },
-            el('span', { className: 'comment-time' }, timeAgo(c.createdAt)),
-            replyBtn
+          el('div', { className: 'comment-actions flex items-center gap-2' },
+            el('span', { className: 'comment-time' }, timeAgo(c.createdAt) + (c.editedAt ? ' (수정됨)' : '')),
+            replyBtn,
+            isOwn ? moreWrap : null
           )
         ),
         el('div', { className: `pt-1 flex items-center gap-1 cursor-pointer hover:text-tx transition-colors text-xs text-tx-3 ${isLiked ? 'text-brand' : ''}`, onclick: toggleCommentLike }, 
@@ -519,8 +590,8 @@ export function renderCommentSection(postId) {
             chevronIcon.style.transform = isHidden ? 'rotate(180deg)' : '';
           }
         });
-        const chevronIcon = el('span', { innerHTML: icons.chevronDown(12), style: 'transition:transform 0.2s ease;' });
-        toggleBtn.append(el('span', { style: 'width:24px;height:1px;background:var(--tx-3);display:inline-block;vertical-align:middle;' }), toggleLabel, chevronIcon);
+        const chevronIcon = el('span', { innerHTML: icons.chevronDown(12), style: { transition: 'transform 0.2s ease' } });
+        toggleBtn.append(el('span', { style: { width: '24px', height: '1px', background: 'var(--tx-3)', display: 'inline-block', verticalAlign: 'middle' } }), toggleLabel, chevronIcon);
         
         repliesContainer.appendChild(toggleBtn);
         repliesContainer.appendChild(repliesContent);

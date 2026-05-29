@@ -23,28 +23,23 @@ function hsvToHex(h, s, v) {
 }
 
 function createColorPickerPopup(onChange, onClose) {
-  const wrapper = el('div', { style: 'position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:99999;' });
-  const overlay = el('div', { style: 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);', onclick: () => {
+  const wrapper = el('div', { style: { position: 'fixed', top: '0', left: '0', right: '0', bottom: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: '99999' } });
+  const overlay = el('div', { style: { position: 'absolute', top: '0', left: '0', right: '0', bottom: '0', background: 'rgba(0,0,0,0.5)' }, onclick: () => {
     if(onClose) onClose();
   }});
   
   const popup = el('div', { 
-    style: 'position:relative;background:var(--bg-el);border:1px solid var(--border);border-radius:var(--r-2xl);padding:2rem;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);display:flex;align-items:center;gap:2rem;z-index:10;'
+    style: { position: 'relative', background: 'var(--bg-el)', border: '1px solid var(--border)', borderRadius: 'var(--r-2xl)', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', gap: '2rem', zIndex: '10' }
   });
 
   let h = 0, s = 100, v = 100;
   
   const hexInput = el('input', { className: 'input p-1 text-xs text-center flex-1', value: '#ff0000' });
-  const rInput = el('input', { type: 'number', className: 'input p-1 text-xs w-12 text-center', value: 255 });
-  const gInput = el('input', { type: 'number', className: 'input p-1 text-xs w-12 text-center', value: 0 });
-  const bInput = el('input', { type: 'number', className: 'input p-1 text-xs w-12 text-center', value: 0 });
   const colorPreview = el('div', { style: { width: '24px', height: '24px', borderRadius: '50%', background: '#ff0000', border: '1px solid var(--border)' } });
 
   function updateColor() {
     const hex = hsvToHex(h, s, v);
     hexInput.value = hex;
-    const rgb = hsvToRgb(h, s, v);
-    rInput.value = rgb[0]; gInput.value = rgb[1]; bInput.value = rgb[2];
     colorPreview.style.background = hex;
     onChange(hex);
   }
@@ -69,7 +64,6 @@ function createColorPickerPopup(onChange, onClose) {
     const x = e.clientX - r.left - cx;
     const y = e.clientY - r.top - cy;
     const dist = Math.sqrt(x*x + y*y);
-    // only update if clicking roughly within the ring
     if (dist > innerR - 10 && dist < outerR + 10) {
       let angle = Math.atan2(y, x) * 180 / Math.PI;
       if (angle < 0) angle += 360;
@@ -79,7 +73,6 @@ function createColorPickerPopup(onChange, onClose) {
   };
   wheelCanvas.onmousedown = (e) => { isDraggingWheel = true; handleWheel(e); };
   
-  // Clean up global listeners on close
   const onMove = (e) => { if (isDraggingWheel) handleWheel(e); };
   const onUp = () => { isDraggingWheel = false; };
   document.addEventListener('mousemove', onMove);
@@ -88,7 +81,7 @@ function createColorPickerPopup(onChange, onClose) {
   const sSlider = el('input', { type: 'range', min: 0, max: 100, value: 100, className: 'w-full', oninput: (e) => { s = e.target.value; updateColor(); } });
   const vSlider = el('input', { type: 'range', min: 0, max: 100, value: 100, className: 'w-full', oninput: (e) => { v = e.target.value; updateColor(); } });
   
-  const closeBtn = el('button', { style: 'position:absolute;top:1rem;right:1rem;color:var(--tx-3);cursor:pointer;background:none;border:none;', onclick: () => {
+  const closeBtn = el('button', { style: { position: 'absolute', top: '1rem', right: '1rem', color: 'var(--tx-3)', cursor: 'pointer', background: 'none', border: 'none' }, onclick: () => {
     document.removeEventListener('mousemove', onMove);
     document.removeEventListener('mouseup', onUp);
     if(onClose) onClose();
@@ -106,10 +99,6 @@ function createColorPickerPopup(onChange, onClose) {
       el('div', { className: 'flex items-center gap-3' }, 
         colorPreview, 
         el('div', { className: 'flex-1' }, hexInput)
-      ),
-      el('div', { className: 'flex items-center justify-between gap-1 text-tx' },
-        el('span', { className: 'text-xs font-semibold text-tx-3 mr-1' }, 'RGB'), 
-        rInput, gInput, bInput
       )
     )
   );
@@ -621,7 +610,7 @@ export function createRichTextEditor(options) {
     file: createBtn('paperclip', '미디어/파일 첨부', 'file', null, true)
   };
 
-  const updateToolbarState = () => {
+  function updateToolbarState() {
     const activeClass = 'bg-active text-brand';
     const states = {
       bold: document.queryCommandState('bold'),
@@ -636,6 +625,7 @@ export function createRichTextEditor(options) {
     
     // Toggle active classes
     const toggle = (btn, isActive) => {
+      if (!btn) return;
       if (isActive) btn.classList.add('bg-hover', 'text-brand');
       else btn.classList.remove('bg-hover', 'text-brand');
     };
@@ -648,7 +638,7 @@ export function createRichTextEditor(options) {
     toggle(btns.center, states.justifyCenter);
     toggle(btns.right, states.justifyRight);
     toggle(btns.justify, states.justifyFull);
-  };
+  }
   editorArea.addEventListener('keyup', updateToolbarState);
   editorArea.addEventListener('mouseup', updateToolbarState);
 

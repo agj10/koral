@@ -5,14 +5,14 @@ import { renderAvatar, renderPostCard, renderPostPreviewCard, renderStoryRow, re
 import { createRichTextEditor } from './editor.js';
 
 export function renderFeedPage(container, params = {}) {
-  container.innerHTML = '';
-  const feedLayout = el('div', { className: 'feed-layout anim-fade' });
-  
-  const main = el('div', { className: 'feed-main' });
-  main.appendChild(renderStoryRow());
-  const currentUser = store.getState().currentUser;
+  try {
+    container.innerHTML = '';
+    const feedLayout = el('div', { className: 'feed-layout anim-fade' });
+    
+    const main = el('div', { className: 'feed-main' });
+    main.appendChild(renderStoryRow());
+    const currentUser = store.getState().currentUser;
 
-  if (currentUser) {
     const quickCreate = el('div', { className: 'bg-element border border-base rounded-2xl p-4 mb-6 shadow-sm' },
       createRichTextEditor({
         id: 'feed_quick_create',
@@ -21,9 +21,14 @@ export function renderFeedPage(container, params = {}) {
         minHeight: '80px',
         showTitle: false,
         onSubmit: (text) => {
+          if (!currentUser) {
+            toast('로그인이 필요합니다.', 'error');
+            window.navigateTo('login');
+            return;
+          }
           const imgMatches = [...text.matchAll(/!\[.*?\]\((.*?)\)/g)];
           const images = imgMatches.map(m => m[1]);
-          const tagMatches = [...text.matchAll(/#([가-힣a-zA-Z0-9_]+)/g)];
+          const tagMatches = [...text.matchAll(/(?:^|[^"':;#a-zA-Z0-9_])#([가-힣a-zA-Z0-9_]+)/g)];
           const tags = tagMatches.map(m => '#' + m[1]);
 
           const post = store.createPost({ title: '', images, caption: text, location: '', tags });
@@ -34,29 +39,45 @@ export function renderFeedPage(container, params = {}) {
         }
       })
     );
-    main.appendChild(quickCreate);
-  }
+    
+    if (!currentUser) {
+      const overlay = el('div', { 
+        style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, cursor: 'pointer' },
+        onclick: () => {
+          toast('로그인이 필요합니다.', 'error');
+          window.navigateTo('login');
+        }
+      });
+      quickCreate.style.position = 'relative';
+      quickCreate.appendChild(overlay);
+    }
 
-  const posts = store.getFeed();
-  if (posts.length === 0) {
-    main.appendChild(el('div', { className: 'text-center flex flex-col items-center justify-center py-16 text-tx-3' },
-      el('div', { className: 'mb-4', innerHTML: icons.image(48) }),
-      el('p', { className: 'text-lg font-semibold text-tx' }, '아직 게시물이 없습니다.'),
-      el('p', { className: 'text-sm mt-2' }, '첫 번째 게시물을 작성하거나 다른 사용자를 팔로우해 보세요.')
-    ));
-  } else {
-    const grid = el('div', { className: 'grid gap-6', style: { display: 'flex', flexDirection: 'column' } });
-    posts.forEach(post => {
-      grid.appendChild(renderPostCard(post, { compact: false, onNavigate: window.navigateTo }));
-    });
-    main.appendChild(grid);
+    main.appendChild(quickCreate);
+
+    const posts = store.getFeed();
+    if (posts.length === 0) {
+      main.appendChild(el('div', { className: 'text-center flex flex-col items-center justify-center py-16 text-tx-3' },
+        el('div', { className: 'mb-4', innerHTML: icons.image(48) }),
+        el('p', { className: 'text-lg font-semibold text-tx' }, '아직 게시물이 없습니다.'),
+        el('p', { className: 'text-sm mt-2' }, '첫 번째 게시물을 작성하거나 다른 사용자를 팔로우해 보세요.')
+      ));
+    } else {
+      const grid = el('div', { className: 'grid gap-6', style: { display: 'flex', flexDirection: 'column' } });
+      posts.forEach(post => {
+        grid.appendChild(renderPostCard(post, { compact: false, onNavigate: window.navigateTo }));
+      });
+      main.appendChild(grid);
+    }
+    
+    const aside = el('div', { className: 'feed-aside' });
+    aside.appendChild(renderSuggestSidebar());
+    
+    feedLayout.append(main, aside);
+    container.appendChild(feedLayout);
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = `<div class="p-8 text-center text-red-500">피드 렌더링 에러: ${err.message}</div>`;
   }
-  
-  const aside = el('div', { className: 'feed-aside' });
-  aside.appendChild(renderSuggestSidebar());
-  
-  feedLayout.append(main, aside);
-  container.appendChild(feedLayout);
 }
 
 export function renderExplorePage(container) {
@@ -219,49 +240,50 @@ export function renderProfilePage(container, { handle }) {
 }
 
 export function renderPostPage(container, { postId }) {
-  container.innerHTML = '';
-  const post = store.getPost(postId);
-  if (!post) {
-    container.appendChild(el('div', { className: 'empty pt-20' }, el('h3', { textContent: '게시물을 찾을 수 없습니다.' })));
-    return;
+  try {
+    container.innerHTML = '';
+    const post = store.getPost(postId);
+    if (!post) {
+      container.appendChild(el('div', { className: 'empty pt-20' }, el('h3', { textContent: '게시물을 찾을 수 없습니다.' })));
+      return;
+    }
+    
+    const wrap = el('div', { className: 'page-container anim-fade', style: { maxWidth: '768px' } });
+    
+    wrap.appendChild(renderPostCard(post, { compact: false, onNavigate: window.navigateTo }));
+    
+    const commentsWrap = el('div', { className: 'mt-6' });
+    commentsWrap.appendChild(el('h3', { className: 'text-lg font-semibold mb-4 px-2' }, '댓글'));
+    
+    const commentSection = renderCommentSection(post.id);
+    
+    const currentUser = store.getState().currentUser;
+    if (currentUser) {
+      const inputWrap = el('div', { className: 'flex gap-3 mb-6 px-2 items-start' },
+        renderAvatar(currentUser, 'av-md'),
+        el('div', { className: 'flex-1' }, 
+          createRichTextEditor({
+            placeholder: '댓글 남기기...',
+            submitLabel: '게시',
+            minHeight: '60px',
+            onSubmit: (text) => {
+              store.addComment({ postId: post.id, parentId: null, text });
+              toast('댓글이 작성되었습니다', 'success');
+              if (commentSection._refreshComments) commentSection._refreshComments();
+            }
+          })
+        )
+      );
+      commentsWrap.appendChild(inputWrap);
+    }
+    
+    commentsWrap.appendChild(commentSection);
+    wrap.appendChild(commentsWrap);
+    container.appendChild(wrap);
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = `<div class="p-8 text-center text-red-500">포스트 렌더링 에러: ${err.message}</div>`;
   }
-  
-  const wrap = el('div', { className: 'page-container anim-fade', style: { maxWidth: '768px' } });
-  
-  // Post card
-  wrap.appendChild(renderPostCard(post, { compact: false, onNavigate: window.navigateTo }));
-  
-  // Comments
-  const commentsWrap = el('div', { className: 'mt-6' });
-  commentsWrap.appendChild(el('h3', { className: 'text-lg font-semibold mb-4 px-2' }, '댓글'));
-  
-  const commentSection = renderCommentSection(post.id);
-  
-  // Add comment
-  const currentUser = store.getState().currentUser;
-  if (currentUser) {
-    const inputWrap = el('div', { className: 'flex gap-3 mb-6 px-2 items-start' },
-      renderAvatar(currentUser, 'av-md'),
-      el('div', { className: 'flex-1' }, 
-        createRichTextEditor({
-          placeholder: '댓글 남기기...',
-          submitLabel: '게시',
-          minHeight: '60px',
-          onSubmit: (text) => {
-            store.addComment({ postId: post.id, parentId: null, text });
-            toast('댓글이 작성되었습니다', 'success');
-            if (commentSection._refreshComments) commentSection._refreshComments();
-          }
-        })
-      )
-    );
-    commentsWrap.appendChild(inputWrap);
-  }
-  
-  commentsWrap.appendChild(commentSection);
-  
-  wrap.appendChild(commentsWrap);
-  container.appendChild(wrap);
 }
 
 export function renderLoginPage(container) {
@@ -446,7 +468,7 @@ export function renderCreatePage(container) {
         const imgMatches = [...text.matchAll(/!\[.*?\]\((.*?)\)/g)];
         const images = imgMatches.map(m => m[1]);
         
-        const tagMatches = [...text.matchAll(/#([가-힣a-zA-Z0-9_]+)/g)];
+        const tagMatches = [...text.matchAll(/(?:^|[^"':;#a-zA-Z0-9_])#([가-힣a-zA-Z0-9_]+)/g)];
         const tags = tagMatches.map(m => '#' + m[1]);
 
         const post = store.createPost({
