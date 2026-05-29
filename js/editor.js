@@ -708,15 +708,23 @@ export function createRichTextEditor(options) {
         localStorage.removeItem(draftKey);
       }
     } }, '초기화'),
-    onSubmit ? el('button', { type: 'button', className: 'btn btn-primary px-6', onclick: () => {
+    onSubmit ? el('button', { type: 'button', className: 'btn btn-primary px-6', onclick: (e) => {
+      const btn = e.currentTarget;
+      if (btn.disabled) return;
       hideOverlay();
       const content = editorArea.innerHTML;
       if (!editorArea.textContent.trim() && !content.includes('<img') && !(titleInput && titleInput.value.trim())) return;
       
-      onSubmit(content, titleInput ? titleInput.value : '');
-      editorArea.innerHTML = '';
-      if (titleInput) titleInput.value = '';
-      localStorage.removeItem(draftKey);
+      btn.disabled = true;
+      try {
+        onSubmit(content, titleInput ? titleInput.value : '');
+        editorArea.innerHTML = '';
+        if (titleInput) titleInput.value = '';
+        localStorage.removeItem(draftKey);
+      } finally {
+        // Re-enable after a short delay in case of errors, or if modal stays open
+        setTimeout(() => btn.disabled = false, 1000);
+      }
     } }, submitLabel) : null
   );
 

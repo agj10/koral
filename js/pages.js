@@ -440,7 +440,8 @@ export function renderCreatePage(container) {
         });
         if (post) {
           toast('게시물이 등록되었습니다.', 'success');
-          window.navigateTo('');
+          localStorage.removeItem(`koral_editor_draft_create_post_${currentUser ? currentUser.id : 'guest'}`);
+          window.navigateTo('post', { postId: post.id });
         }
       }
     })

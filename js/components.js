@@ -543,28 +543,34 @@ export function renderStoryViewer(startIndex, groupedStories) {
   if (!group || !group.stories || group.stories.length === 0) return;
   
   const overlay = el('div', { 
-    style: {
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 999999,
-      display: 'flex', flexDirection: 'column',
+    className: 'fixed inset-0 bg-black/80 z-[9999] flex flex-col',
+    style: { 
+      overscrollBehavior: 'contain',
       justifyContent: 'center', alignItems: 'center'
     }
   });
+  
+  // Prevent body scroll while viewing stories
+  const originalBodyOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'hidden';
   
   const closeBtn = el('button', { 
     className: 'absolute top-4 right-4 text-white z-50 p-3 cursor-pointer bg-black/50 hover:bg-black/80 rounded-full transition-colors',
     style: { border: 'none' },
     onclick: () => {
+      document.body.style.overflow = originalBodyOverflow;
       overlay.remove();
       window.location.reload();
     }
   }, el('span', { innerHTML: icons.x(24) }));
   
   const scrollContainer = el('div', { 
-    className: 'relative w-full max-w-[400px] flex flex-col bg-black shadow-2xl rounded-lg overflow-hidden',
+    className: 'relative flex flex-col bg-black shadow-2xl rounded-2xl overflow-hidden',
     style: { 
-      aspectRatio: '1/1', overflowY: 'auto', 
-      scrollSnapType: 'y mandatory', scrollbarWidth: 'none', msOverflowStyle: 'none'
+      width: '450px', height: '450px', maxWidth: '90vw', maxHeight: '90vw',
+      overflowY: 'auto', 
+      scrollSnapType: 'y mandatory', scrollbarWidth: 'none', msOverflowStyle: 'none',
+      border: '1px solid rgba(255,255,255,0.1)'
     }
   });
   scrollContainer.innerHTML = '<style>.stories-scroll::-webkit-scrollbar { display: none; }</style>';
@@ -577,17 +583,6 @@ export function renderStoryViewer(startIndex, groupedStories) {
       className: 'relative w-full flex-shrink-0 bg-gray-900 overflow-hidden',
       style: { height: '100%', scrollSnapAlign: 'start' }
     });
-    
-    const author = store.getUser(group.authorHandle) || { displayName: 'Unknown', handle: group.authorHandle };
-    const header = el('div', { className: 'absolute top-0 left-0 right-0 p-4 z-40 flex items-center gap-3 text-white bg-gradient-to-b from-black/70 to-transparent pointer-events-none' });
-    header.append(
-      el('img', { src: author.avatar, className: 'w-10 h-10 rounded-full object-cover border-2 border-white/20' }),
-      el('div', { className: 'flex flex-col' },
-        el('span', { className: 'font-bold text-sm drop-shadow-md' }, author.handle),
-        el('span', { className: 'text-xs text-white/80 drop-shadow-md' }, timeAgo(story.createdAt))
-      )
-    );
-    storyBox.appendChild(header);
     
     const layers = story.layers || [];
     layers.forEach(layer => {
