@@ -198,17 +198,17 @@ class KoralWaves {
       // Submerged mode (post-login): Theme-colored waves on Coral Main Background
       waveColors = theme === 'dark' ? SUBMERGED_WAVES_DARK : SUBMERGED_WAVES_LIGHT;
 
-      // Paint highly saturated, rich coral-red main color gradients
+      // Paint highly saturated, rich coral-red main color gradients (REVERSED)
       if (theme === 'dark') {
         bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-        bgGradient.addColorStop(0, '#450a0a'); // Deep warm coral black for pristine readability
+        bgGradient.addColorStop(0, '#be123c'); // Glowing dark rose red at the top
         bgGradient.addColorStop(0.5, '#991b1b'); // Rich dark brand coral red
-        bgGradient.addColorStop(1, '#be123c'); // Glowing dark rose red at the bottom
+        bgGradient.addColorStop(1, '#450a0a'); // Deep warm coral black at the bottom
       } else {
         bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-        bgGradient.addColorStop(0, '#fca5a5'); // Rich coral pink
+        bgGradient.addColorStop(0, '#f43f5e'); // Brand rose red at the top
         bgGradient.addColorStop(0.5, '#ef4444'); // Main brand coral red
-        bgGradient.addColorStop(1, '#f43f5e'); // Brand rose red at the bottom
+        bgGradient.addColorStop(1, '#fca5a5'); // Rich coral pink at the bottom
       }
     }
     ctx.fillStyle = bgGradient;
