@@ -812,6 +812,7 @@ export function renderSuggestSidebar() {
     }}, el('span', { innerHTML: icons.user(18) }), switchLabel);
     
     const logoutBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3 text-red-500 hover:bg-red-50', onclick: () => {
+      modal.close();
       store.logout();
       window.navigateTo('login');
     }}, el('span', { innerHTML: icons.logout(18) }), logoutLabel);
@@ -839,12 +840,13 @@ export function renderSuggestSidebar() {
     });
     
     const addBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3 mt-1 border-t border-base rounded-none text-brand', onclick: () => {
+      switchModal.close();
       store.logout();
       window.navigateTo('login');
     } }, el('span', { innerHTML: icons.plusSquare(18) }), addAccountLabel);
     
     wrap.appendChild(addBtn);
-    showModal(wrap, { className: 'w-full max-w-sm' });
+    const switchModal = showModal(wrap, { className: 'w-full max-w-sm' });
   };
 
   const myProfile = el('div', { className: 'aside-profile flex items-center justify-between mb-6', style: { position: 'relative' } },

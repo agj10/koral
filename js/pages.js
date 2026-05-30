@@ -488,6 +488,53 @@ function createAuthLanguageBar() {
     }, `${l.flag} ${l.label}`);
     langBar.appendChild(btn);
   });
+
+  // Vertical divider
+  const divider = el('div', { 
+    style: { 
+      width: '1px', 
+      height: '16px', 
+      background: 'var(--border)', 
+      alignSelf: 'center', 
+      margin: '0 4px' 
+    } 
+  });
+  langBar.appendChild(divider);
+
+  // Theme Toggle Button
+  const isDark = document.body.classList.contains('theme-dark') || 
+    (store.getTheme() === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  
+  const themeBtn = el('button', {
+    className: 'px-2 py-1 flex items-center justify-center rounded-full transition-all cursor-pointer text-tx-2 hover:bg-hover hover:text-tx',
+    style: { border: 'none', background: 'transparent' },
+    onclick: () => {
+      const currentTheme = document.body.classList.contains('theme-dark') || 
+        (store.getTheme() === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        ? 'dark' : 'light';
+      
+      const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      store.setTheme(nextTheme);
+      
+      themeBtn.innerHTML = nextTheme === 'dark' ? icons.sun(16) : icons.moon(16);
+      
+      let msg = '';
+      if (localStorage.getItem('koral_language') === 'ko') {
+        msg = nextTheme === 'dark' ? '다크 모드로 변경되었습니다.' : '라이트 모드로 변경되었습니다.';
+      } else if (localStorage.getItem('koral_language') === 'ja') {
+        msg = nextTheme === 'dark' ? 'ダークモードに変更されました。' : 'ライトモードに変更されました。';
+      } else if (localStorage.getItem('koral_language') === 'zh') {
+        msg = nextTheme === 'dark' ? '已切换至深色模式。' : '已切换至浅色模式。';
+      } else {
+        msg = nextTheme === 'dark' ? 'Changed to Dark Mode.' : 'Changed to Light Mode.';
+      }
+      toast(msg, 'success');
+    }
+  });
+  
+  themeBtn.innerHTML = isDark ? icons.sun(16) : icons.moon(16);
+  langBar.appendChild(themeBtn);
+
   return langBar;
 }
 
