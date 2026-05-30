@@ -814,7 +814,7 @@ export function renderSuggestSidebar() {
     const logoutBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3 text-red-500 hover:bg-red-50', onclick: () => {
       modal.close();
       store.logout();
-      window.navigateTo('login');
+      window.navigateTo('');
     }}, el('span', { innerHTML: icons.logout(18) }), logoutLabel);
     
     moreWrap.append(switchBtn, logoutBtn);
@@ -842,7 +842,7 @@ export function renderSuggestSidebar() {
     const addBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3 mt-1 border-t border-base rounded-none text-brand', onclick: () => {
       switchModal.close();
       store.logout();
-      window.navigateTo('login');
+      window.navigateTo('');
     } }, el('span', { innerHTML: icons.plusSquare(18) }), addAccountLabel);
     
     wrap.appendChild(addBtn);
