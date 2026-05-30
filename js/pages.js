@@ -213,9 +213,10 @@ export function renderProfilePage(container, { handle }) {
   const currentUser = store.getState().currentUser;
   
   if (!user) {
-    container.appendChild(el('div', { className: 'empty pt-20' },
-      el('h3', { textContent: t('userNotFound') }),
-      el('p', { textContent: t('userNotFoundSub') })
+    container.appendChild(el('div', { className: 'empty', style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', textAlign: 'center' } },
+      el('div', { className: 'mb-6', innerHTML: '<svg viewBox="0 0 100 100" fill="none" width="80" height="80"><g fill="#ffffff" transform="translate(0, 4)"><rect x="10" y="48" width="80" height="24"/><rect x="50" y="48" width="40" height="24" transform="rotate(-60 50 60)"/><rect x="50" y="48" width="40" height="24" transform="rotate(-120 50 60)"/></g></svg>' }),
+      el('h3', { className: 'text-tx text-xl font-bold mb-2', textContent: t('userNotFound') }),
+      el('p', { className: 'text-tx-3 text-sm', textContent: t('userNotFoundSub') })
     ));
     return;
   }
@@ -284,6 +285,11 @@ export function renderProfilePage(container, { handle }) {
     const combinedItems = [];
     
     if (activeTab === 'posts') {
+      let drafts = [];
+      if (isOwn) {
+        drafts = store.getDrafts(user.handle);
+      }
+      
       posts.forEach(post => {
         combinedItems.push({ type: 'post', data: post, date: new Date(post.createdAt) });
       });
@@ -303,12 +309,46 @@ export function renderProfilePage(container, { handle }) {
     // Add create button
     if (activeTab === 'posts' && isOwn) {
       grid.appendChild(el('div', {
-        className: 'profile-grid-cell flex flex-col items-center justify-center bg-element border-2 border-dashed border-base text-tx-3 hover:text-brand hover:border-brand transition-colors cursor-pointer',
-        onclick: () => window.navigateTo('create')
+        className: 'profile-grid-cell flex flex-col items-center justify-center bg-element border-2 border-dashed border-base text-tx-3 hover:text-brand hover:border-brand cursor-pointer',
+        style: { transition: 'transform 0.3s ease, border-color 0.3s, color 0.3s' },
+        onclick: () => window.navigateTo('create'),
+        onmouseenter: (e) => e.currentTarget.style.transform = 'translateY(-4px)',
+        onmouseleave: (e) => e.currentTarget.style.transform = 'none'
       },
         el('span', { innerHTML: icons.plusSquare(32) }),
         el('span', { className: 'font-semibold mt-2' }, t('create'))
       ));
+      
+      // Render drafts
+      const drafts = store.getDrafts(user.handle);
+      drafts.forEach(draft => {
+        const cell = el('div', { 
+          className: 'profile-grid-cell relative group cursor-pointer border-2 border-brand/50', 
+          onclick: () => window.navigateTo(`create/draft/${draft.id}`) 
+        });
+        
+        cell.appendChild(el('div', { className: 'absolute top-2 left-2 bg-brand px-2 py-1 rounded-full text-xs font-bold text-white z-10' }, '작성 중'));
+        cell.appendChild(el('div', { className: 'absolute top-2 right-2 bg-black/60 px-2 py-1 rounded-full text-xs font-bold text-white z-10' }, draft.type === 'story' ? t('shellLabel').split(' ')[0] : t('reefLabel').split(' ')[0]));
+        
+        if (draft.type === 'story' && draft.data && draft.data.layers) {
+          const bgLayer = draft.data.layers.find(l => l.type === 'image');
+          if (bgLayer) {
+            cell.appendChild(el('img', { src: bgLayer.content, className: 'w-full h-full object-cover group-hover:scale-105 transition-transform opacity-70' }));
+          } else {
+            cell.appendChild(el('div', { className: 'w-full h-full bg-gradient-to-br from-brand/20 to-element group-hover:scale-105 transition-transform opacity-70' }));
+          }
+        } else if (draft.type === 'post') {
+          if (draft.data.images && draft.data.images.length) {
+            cell.appendChild(el('img', { src: draft.data.images[0], className: 'opacity-70 group-hover:scale-105 transition-transform w-full h-full object-cover' }));
+          } else {
+            cell.appendChild(el('div', { className: 'w-full h-full flex items-center justify-center bg-subtle p-4 opacity-70' }, 
+              el('p', { className: 'text-sm text-tx-2 line-clamp-3 text-center' }, draft.data.caption || '내용 없음')
+            ));
+          }
+        }
+        
+        grid.appendChild(cell);
+      });
     }
 
     if (combinedItems.length === 0 && (!isOwn || activeTab !== 'posts')) {
@@ -412,7 +452,10 @@ export function renderPostPage(container, { postId }) {
     container.innerHTML = '';
     const post = store.getPost(postId);
     if (!post) {
-      container.appendChild(el('div', { className: 'empty pt-20' }, el('h3', { textContent: t('notFound') })));
+      container.appendChild(el('div', { className: 'empty', style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', textAlign: 'center' } }, 
+        el('div', { className: 'mb-6', innerHTML: '<svg viewBox="0 0 100 100" fill="none" width="80" height="80"><g fill="#ffffff" transform="translate(0, 4)"><rect x="10" y="48" width="80" height="24"/><rect x="50" y="48" width="40" height="24" transform="rotate(-60 50 60)"/><rect x="50" y="48" width="40" height="24" transform="rotate(-120 50 60)"/></g></svg>' }),
+        el('h3', { className: 'text-tx text-xl font-bold mb-2', textContent: t('notFound') })
+      ));
       return;
     }
     
@@ -719,8 +762,12 @@ export function renderLandingPage(container) {
 }
 
 export function renderCreatePage(container, options = {}) {
-  if (options.subRoute === 'story') {
-    import('./components.js').then(m => m.renderStoryCreator(container));
+  if (options.subRoute === 'story' || (options.subRoute === 'draft' && store.getDraft(options.draftId)?.type === 'story')) {
+    import('./components.js').then(m => m.renderStoryCreator(container, options));
+    return;
+  }
+  if (options.subRoute === 'post' || (options.subRoute === 'draft' && store.getDraft(options.draftId)?.type === 'post')) {
+    renderPostEditor(container, options);
     return;
   }
 
@@ -752,10 +799,8 @@ export function renderCreatePage(container, options = {}) {
   };
 
   optionsWrap.append(
-    createOption(t('reefLabel'), t('reefDesc'), icons.grid, () => renderPostEditor(container)),
-    createOption(t('shellLabel'), t('shellDesc'), icons.image, () => {
-      import('./components.js').then(m => m.renderStoryCreator(container));
-    }),
+    createOption(t('reefLabel'), t('reefDesc'), icons.grid, () => window.navigateTo('create/post')),
+    createOption(t('shellLabel'), t('shellDesc'), icons.image, () => window.navigateTo('create/story')),
     createOption(t('devNoteLabel'), t('devNoteDesc'), icons.monitor, () => toast(t('featureReadyInfo'), 'info'))
   );
 
@@ -763,23 +808,41 @@ export function renderCreatePage(container, options = {}) {
   container.appendChild(wrap);
 }
 
-function renderPostEditor(container) {
+function renderPostEditor(container, options = {}) {
   const currentLang = localStorage.getItem('koral_language') || 'ko';
   container.innerHTML = '';
   const wrap = el('div', { className: 'page-container anim-fade', style: { maxWidth: '768px' } });
   const form = el('form', { className: 'w-full flex flex-col', onsubmit: (e) => e.preventDefault() });
   const editorHeader = el('div', { className: 'mb-6 flex items-center justify-between' },
-    el('h2', { className: 'text-2xl font-bold text-tx' }, t('newReef'))
+    el('h2', { className: 'text-2xl font-bold text-tx' }, options.draftId ? t('editDraft', '임시저장 편집') : t('newReef'))
   );
   
   const currentUser = store.getState().currentUser;
+  let initialValue = '';
+  let initialTitle = '';
+  
+  if (options.draftId) {
+    const draft = store.getDraft(options.draftId);
+    if (draft && draft.type === 'post') {
+      initialValue = draft.data.caption || '';
+      initialTitle = draft.data.title || '';
+    }
+  }
+
   const editorWrap = el('div', { className: 'mb-6' },
     createRichTextEditor({
-      id: `create_post_${currentUser ? currentUser.id : 'guest'}`,
+      id: options.draftId ? `draft_${options.draftId}` : `create_post_${currentUser ? currentUser.id : 'guest'}`,
       placeholder: t('writeSomething'),
       submitLabel: t('reefUpload'),
+      initialValue,
+      initialTitle,
       minHeight: '400px',
       showTitle: true,
+      onDraftSave: (text, title) => {
+        const postDraft = { title, caption: text };
+        store.saveDraft('post', postDraft, options.draftId);
+        toast(currentLang === 'ko' ? '임시저장 되었습니다.' : 'Draft saved.', 'success');
+      },
       onSubmit: (text, title) => {
         const imgMatches = [...text.matchAll(/!\[.*?\]\((.*?)\)/g)];
         const images = imgMatches.map(m => m[1]);
@@ -791,6 +854,9 @@ function renderPostEditor(container) {
         if (post) {
           toast(currentLang === 'ko' ? '리프가 생성되었습니다.' : 'Reef created successfully.', 'success');
           localStorage.removeItem(`koral_editor_draft_create_post_${currentUser ? currentUser.id : 'guest'}`);
+          if (options.draftId) {
+            store.deleteDraft(options.draftId);
+          }
           window.navigateTo('post/' + post.id);
         }
       }

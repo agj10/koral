@@ -27,6 +27,7 @@ class Store {
         if (!this.state.comments) this.state.comments = [];
         if (!this.state.notifications) this.state.notifications = [];
         if (!this.state.stories) this.state.stories = [];
+        if (!this.state.drafts) this.state.drafts = [];
         
         // Sanitize data to prevent crashes
         this.state.posts.forEach(p => {
@@ -66,7 +67,26 @@ class Store {
   }
 
   _save() {
-    localStorage.setItem('koral_data_v2', JSON.stringify(this.state));
+    try {
+      localStorage.setItem('koral_data_v2', JSON.stringify(this.state));
+    } catch (e) {
+      console.error('Failed to save to localStorage, it might be full. Clearing editor drafts to free space...', e);
+      try {
+        // Find and remove all koral_editor_draft_ keys which might be taking up space
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('koral_editor_draft_')) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        // Try saving again
+        localStorage.setItem('koral_data_v2', JSON.stringify(this.state));
+      } catch (retryError) {
+        console.error('Still failed to save after cleanup:', retryError);
+      }
+    }
   }
 
   _seedData() {
@@ -169,11 +189,24 @@ class Store {
     
     // Cleanup their data
     this.state.posts = this.state.posts.filter(p => p.authorHandle !== handle);
+    this.state.posts.forEach(p => {
+      p.likes = p.likes.filter(l => l !== handle);
+      p.bookmarks = p.bookmarks.filter(b => b !== handle);
+    });
     this.state.comments = this.state.comments.filter(c => c.authorHandle !== handle);
     this.state.notifications = this.state.notifications.filter(n => n.toHandle !== handle && n.fromHandle !== handle);
+    this.state.stories = this.state.stories.filter(s => s.authorHandle !== handle);
+    if (this.state.drafts) {
+      this.state.drafts = this.state.drafts.filter(d => d.authorHandle !== handle);
+    }
+    this.state.users.forEach(u => {
+      u.following = u.following.filter(f => f !== handle);
+      u.followers = u.followers.filter(f => f !== handle);
+    });
     
     this.state.currentUser = null;
     this._save();
+    this._notify();
     return { ok: true };
   }
 
@@ -333,6 +366,55 @@ class Store {
     return this.state.posts
       .filter(p => p.authorHandle === handle)
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+  
+  getDrafts(handle) {
+    if (!this.state.drafts) return [];
+    return this.state.drafts
+      .filter(d => d.authorHandle === handle)
+      .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+  }
+  
+  saveDraft(type, data, draftId = null) {
+    if (!this.state.currentUser) return null;
+    this.state.drafts = this.state.drafts || [];
+    
+    if (draftId) {
+      const draft = this.state.drafts.find(d => d.id === draftId);
+      if (draft && draft.authorHandle === this.state.currentUser.handle) {
+        draft.data = data;
+        draft.updatedAt = new Date().toISOString();
+        this._notify();
+        return draft;
+      }
+    }
+    
+    const newDraft = {
+      id: uid(),
+      type, // 'post' or 'story'
+      authorHandle: this.state.currentUser.handle,
+      data,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    this.state.drafts.push(newDraft);
+    this._notify();
+    return newDraft;
+  }
+  
+  getDraft(draftId) {
+    if (!this.state.drafts) return null;
+    return this.state.drafts.find(d => d.id === draftId);
+  }
+  
+  deleteDraft(draftId) {
+    if (!this.state.drafts) return;
+    const initialLength = this.state.drafts.length;
+    this.state.drafts = this.state.drafts.filter(d => d.id !== draftId);
+    if (this.state.drafts.length !== initialLength) {
+      this._notify();
+    }
   }
 
   getPostsByTag(tag) {

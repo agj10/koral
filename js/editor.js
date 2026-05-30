@@ -102,7 +102,7 @@ function showColorPickerModal(onChange, onClose) {
 }
 
 export function createRichTextEditor(options) {
-  const { id = 'default', placeholder = '내용을 입력하세요...', initialValue = '', initialTitle = '', onSubmit, submitLabel = '등록', minHeight = '100px', showTitle = false } = options;
+  const { id = 'default', placeholder = '내용을 입력하세요...', initialValue = '', initialTitle = '', onSubmit, onDraftSave, submitLabel = '등록', minHeight = '100px', showTitle = false } = options;
 
   const container = el('div', { className: 'rich-editor bg-subtle border border-base rounded-2xl flex flex-col w-full relative', style: { position: 'relative' } });
   
@@ -138,11 +138,6 @@ export function createRichTextEditor(options) {
   }
 
   let savedRange = null;
-
-  const saveDraft = () => {
-    localStorage.setItem(draftKey, editorArea.innerHTML);
-  };
-  editorArea.addEventListener('input', saveDraft);
 
   document.addEventListener('selectionchange', () => {
     const sel = document.getSelection();
@@ -558,7 +553,7 @@ export function createRichTextEditor(options) {
 
   // Toolbar Buttons
   const createBtn = (iconName, title, cmd, val=null, isAction=false) => {
-    const btn = el('button', { type: 'button', className: 'p-2 hover:bg-hover rounded-lg flex items-center justify-center transition-all text-tx hover:text-tx', title, onclick: () => {
+    const btn = el('button', { type: 'button', className: 'toolbar-btn hover-active p-2 hover:bg-hover rounded-lg flex items-center justify-center transition-all text-tx hover:text-tx', title, onclick: () => {
       if (isAction) {
         if (cmd === 'link') {
           const url = prompt('링크 URL을 입력하세요:', 'https://');
@@ -612,7 +607,7 @@ export function createRichTextEditor(options) {
 
   // Color Picker Popup Trigger
   const colorBtnWrap = el('div', { className: 'relative' });
-  const colorBtn = el('button', { type: 'button', className: 'p-2 hover:bg-hover rounded-lg flex items-center justify-center transition-all text-tx hover:text-tx', title: '글자 색상' }, 
+  const colorBtn = el('button', { type: 'button', className: 'toolbar-btn hover-active p-2 hover:bg-hover rounded-lg flex items-center justify-center transition-all text-tx hover:text-tx', title: '글자 색상' }, 
     el('span', { innerHTML: icons.palette ? icons.palette(20) : '색', style: { color: 'currentColor' } })
   );
   let colorPopup = null;
@@ -672,14 +667,12 @@ export function createRichTextEditor(options) {
     
     try {
       const fontSize = document.queryCommandValue('fontSize');
-      if (fontSize) sizeSelect.value = fontSize;
+      if (fontSize) sizeSelect.setValue(fontSize);
       
       const fontName = document.queryCommandValue('fontName');
       if (fontName) {
         const name = fontName.replace(/['"]/g, '');
-        if (Array.from(fontSelect.options).some(o => o.value.toLowerCase() === name.toLowerCase())) {
-          fontSelect.value = name;
-        }
+        fontSelect.setValue(name);
       }
       
       const foreColor = document.queryCommandValue('foreColor');
@@ -713,13 +706,11 @@ export function createRichTextEditor(options) {
   container.appendChild(editorArea);
   
   const footer = el('div', { className: 'flex items-center justify-end p-3 bg-element border-t border-base gap-2' },
-    el('button', { type: 'button', className: 'btn btn-ghost px-4', onclick: () => {
-      if (confirm('작성 중인 내용을 모두 초기화하시겠습니까?')) {
-        editorArea.innerHTML = '';
-        if (titleInput) titleInput.value = '';
-        localStorage.removeItem(draftKey);
-      }
-    } }, '초기화'),
+    onDraftSave ? el('button', { type: 'button', className: 'btn btn-outline px-6', onclick: () => {
+      const content = editorArea.innerHTML;
+      if (!editorArea.textContent.trim() && !content.includes('<img') && !(titleInput && titleInput.value.trim())) return;
+      onDraftSave(content, titleInput ? titleInput.value : '');
+    } }, '임시저장') : null,
     onSubmit ? el('button', { type: 'button', className: 'btn btn-primary px-6', onclick: (e) => {
       const btn = e.currentTarget;
       if (btn.disabled) return;

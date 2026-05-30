@@ -871,8 +871,14 @@
 .koral-waves-submerged .settings-header { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.2s; }
 .koral-waves-submerged .feed-page-title { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -2.2s; }
 .koral-waves-submerged .search-section-title { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.7s; }
-.koral-waves-submerged .settings-header h2 { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.2s; }
+.koral-waves-submerged .settings-page h2 { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.2s; }
 .koral-waves-submerged .comments-wrap h3 { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.3s; }
+.koral-waves-submerged .feed-main > .text-center { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -1.2s; }
+.koral-waves-submerged .explore-page .font-bold { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -2.5s; }
+.koral-waves-submerged .explore-page .text-tx-3.text-center { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -3.8s; }
+.koral-waves-submerged .empty { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -1.9s; }
+.koral-waves-submerged .create-page h2, .koral-waves-submerged .create-page p { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -0.5s; }
+.koral-waves-submerged .feed-aside { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.2s; }
 
 /* Apply individual out-of-phase buoyancy to children based on nth-child */
 .koral-waves-submerged .post-card:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -0.8s; }
@@ -904,6 +910,7 @@
 .koral-waves-submerged .btn-icon:nth-child(3n),
 .koral-waves-submerged .post-action-btn:nth-child(3n),
 .koral-waves-submerged .settings-item:nth-child(3n),
+.koral-waves-submerged .theme-option:nth-child(3n),
 .koral-waves-submerged .input:nth-child(3n),
 .koral-waves-submerged .textarea:nth-child(3n),
 .koral-waves-submerged .select:nth-child(3n),
@@ -920,6 +927,7 @@
 .koral-waves-submerged .btn-icon:nth-child(even),
 .koral-waves-submerged .post-action-btn:nth-child(even),
 .koral-waves-submerged .settings-item:nth-child(even),
+.koral-waves-submerged .theme-option:nth-child(even),
 .koral-waves-submerged .input:nth-child(even),
 .koral-waves-submerged .textarea:nth-child(even),
 .koral-waves-submerged .select:nth-child(even),
@@ -936,6 +944,7 @@
 .koral-waves-submerged .btn-icon:nth-child(odd),
 .koral-waves-submerged .post-action-btn:nth-child(odd),
 .koral-waves-submerged .settings-item:nth-child(odd),
+.koral-waves-submerged .theme-option:nth-child(odd),
 .koral-waves-submerged .input:nth-child(odd),
 .koral-waves-submerged .textarea:nth-child(odd),
 .koral-waves-submerged .select:nth-child(odd),

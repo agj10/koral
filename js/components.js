@@ -66,7 +66,8 @@ export function renderPostCard(post, options = {}) {
           store.editPost(post.id, newText, tags);
           toast(t('editSuccess'), 'success');
           modal.close();
-          if (options.onNavigate) options.onNavigate('');
+          // Force a router re-render of the current page so changes appear in real-time
+          window.dispatchEvent(new HashChangeEvent('hashchange'));
         }
       }));
     }}, el('span', { innerHTML: icons.edit(16) }), t('edit')) : null,
@@ -75,7 +76,11 @@ export function renderPostCard(post, options = {}) {
       if (await confirmDialog(t('deleteConfirm'))) {
         store.deletePost(post.id);
         toast(t('deleteSuccess'), 'success');
-        if (options.onNavigate) options.onNavigate('');
+        if (window.history.length > 2) {
+          window.history.back();
+        } else if (options.onNavigate) {
+          options.onNavigate('');
+        }
       }
     }}, el('span', { innerHTML: icons.trash(16) }), t('delete')) : 
     el('div', { className: 'dropdown-item danger', onclick: () => {
@@ -228,7 +233,7 @@ export function renderStoryRow() {
   return row;
 }
 
-export function renderStoryCreator(targetContainer = null) {
+export function renderStoryCreator(targetContainer = null, options = {}) {
   const currentUser = store.getState().currentUser;
   const currentLang = localStorage.getItem('koral_language') || 'ko';
   
@@ -236,13 +241,36 @@ export function renderStoryCreator(targetContainer = null) {
   
   const wrap = el('div', { className: 'p-6 flex flex-col gap-4 bg-element border border-base rounded-2xl shadow-sm', style: { width: '100%', maxWidth: '548px', margin: '0 auto' } });
   if (!targetContainer) {
-    wrap.appendChild(el('h2', { className: 'font-bold text-lg mb-2 text-tx text-center border-b border-base pb-3' }, t('newShell')));
+    wrap.appendChild(el('h2', { className: 'font-bold text-lg mb-2 text-tx text-center border-b border-base pb-3' }, options.draftId ? t('editDraft', '임시저장 편집') : t('newShell')));
   }
   
   let backgroundLayer = null;
   let textLayers = [];
   let activeLayerId = null;
   let layerElements = {}; 
+  
+  if (options.draftId) {
+    const draft = store.getDraft(options.draftId);
+    if (draft && draft.type === 'story' && draft.data && draft.data.layers) {
+      draft.data.layers.forEach(l => {
+        const absoluteLayer = {
+          id: uid(),
+          type: l.type,
+          x: l.x * 500,
+          y: l.y * 500,
+          scale: l.scale,
+          rotate: l.rotate,
+          width: l.width * 500,
+          height: l.height * 500
+        };
+        if (l.type === 'image') absoluteLayer.src = l.content;
+        else absoluteLayer.html = l.content;
+        
+        if (l.type === 'image') backgroundLayer = absoluteLayer;
+        else textLayers.push(absoluteLayer);
+      });
+    }
+  }
   
   const canvasArea = el('div', { 
     className: 'relative overflow-hidden bg-gray-100 rounded-lg border border-base flex items-center justify-center shadow-inner',
@@ -259,7 +287,7 @@ export function renderStoryCreator(targetContainer = null) {
   };
   
   const placeholderText = currentLang === 'ko' ? '이미지를 업로드해주세요' : currentLang === 'ja' ? '画像をアップロードしてください' : currentLang === 'zh' ? '请上传图片' : 'Please upload an image';
-  const placeholder = el('div', { className: 'text-tx-3 flex flex-col items-center pointer-events-none' },
+  const placeholder = el('div', { className: 'text-tx-3 flex flex-col items-center pointer-events-none', style: { display: backgroundLayer ? 'none' : 'flex' } },
     el('span', { innerHTML: icons.image(32) }),
     placeholderText
   );
@@ -423,7 +451,29 @@ export function renderStoryCreator(targetContainer = null) {
     
     const container = el('div', { 
       className: 'absolute flex items-center justify-center',
-      style: { transformOrigin: 'center center', cursor: 'move', userSelect: 'none', border: isActive ? `2px solid ${brandColor}` : '2px solid transparent', boxShadow: isActive ? '0 0 0 1px rgba(255,255,255,0.3)' : 'none', boxSizing: 'border-box' }
+      style: { transformOrigin: 'center center', cursor: 'move', userSelect: 'none', border: isActive ? `2px solid ${brandColor}` : '2px solid transparent', boxShadow: isActive ? '0 0 0 1px rgba(255,255,255,0.3)' : 'none', boxSizing: 'border-box' },
+      ondblclick: () => {
+        if (layer.type === 'text') {
+          const textWrap = el('div', { className: 'p-4 flex flex-col gap-4' });
+          const editor = createRichTextEditor({
+            id: 'story_text_edit_' + layer.id,
+            placeholder: t('writeSomething'),
+            showTitle: false,
+            initialValue: layer.html,
+            minHeight: '100px',
+            submitLabel: t('finishUpload', '완료'),
+            hideAdvanced: true,
+            onSubmit: (html) => {
+              if (!html.trim()) return toast(currentLang === 'ko' ? '내용을 입력하세요' : 'Please enter content', 'error');
+              layer.html = html;
+              renderCanvas();
+              textModal.close();
+            }
+          });
+          textWrap.appendChild(editor);
+          const textModal = showModal(textWrap);
+        }
+      }
     });
     
     if (layer.type === 'image') {
@@ -433,7 +483,7 @@ export function renderStoryCreator(targetContainer = null) {
       }));
     } else {
       const textWrap = el('div', { 
-        style: { width: '100%', height: '100%', fontSize: '20px', fontWeight: 'bold', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', wordBreak: 'break-word', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }
+        style: { width: '100%', height: '100%', fontSize: '20px', fontWeight: 'bold', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', wordBreak: 'normal', whiteSpace: 'pre-wrap', textAlign: 'center', pointerEvents: 'none', overflow: 'visible', display: 'block' }
       });
       textWrap.innerHTML = layer.html;
       container.appendChild(textWrap);
@@ -511,12 +561,8 @@ export function renderStoryCreator(targetContainer = null) {
   
   let modalRef = null;
   const footer = el('div', { className: 'flex justify-end gap-2 mt-4' });
-  const submitBtn = el('button', { className: 'btn btn-primary w-full', onclick: () => {
-    if (!backgroundLayer) return toast(currentLang === 'ko' ? '이미지를 필수로 업로드해야 합니다.' : 'You must upload an image.', 'error');
-    
-    activeLayerId = null; 
-    renderCanvas();
-    
+  
+  const getLayersToSave = () => {
     const layers = [];
     const toRelative = (layer) => ({
       type: layer.type, 
@@ -528,30 +574,51 @@ export function renderStoryCreator(targetContainer = null) {
       width: layer.width / 500,
       height: (layer.height || 0) / 500
     });
-    
-    layers.push(toRelative(backgroundLayer));
+    if (backgroundLayer) layers.push(toRelative(backgroundLayer));
     textLayers.forEach(t => layers.push(toRelative(t)));
+    return layers;
+  };
+
+  const draftBtn = el('button', { className: 'btn btn-outline flex-1', onclick: () => {
+    store.saveDraft('story', { layers: getLayersToSave() }, options.draftId);
+    toast(currentLang === 'ko' ? '임시저장 되었습니다.' : 'Draft saved.', 'success');
+  } }, '임시저장');
+
+  const submitBtn = el('button', { className: 'btn btn-primary flex-1', onclick: () => {
+    if (!backgroundLayer) return toast(currentLang === 'ko' ? '이미지를 필수로 업로드해야 합니다.' : 'You must upload an image.', 'error');
     
-    store.addStory(layers);
+    activeLayerId = null; 
+    renderCanvas();
+    
+    store.addStory(getLayersToSave());
+    if (options.draftId) {
+      store.deleteDraft(options.draftId);
+    }
     toast(currentLang === 'ko' ? '셸이 완성되었습니다.' : 'Shell created successfully.', 'success');
     cleanup();
     if (modalRef) modalRef.close();
     window.location.reload();
   }}, t('finishUpload'));
   
-  footer.appendChild(submitBtn);
+  footer.append(draftBtn, submitBtn);
   wrap.append(canvasArea, el('div', { className: 'flex gap-2 w-full mt-2' }, uploadBtn, addTextBtn), footer);
   
   if (targetContainer) {
     targetContainer.innerHTML = '';
     const pageWrap = el('div', { className: 'page-container anim-fade flex flex-col items-center justify-center', style: { maxWidth: '768px' } });
     const titleHeader = el('div', { className: 'mb-6 text-center w-full' },
-      el('h2', { className: 'text-2xl font-bold text-tx' }, t('newShell'))
+      el('h2', { className: 'text-2xl font-bold text-tx' }, options.draftId ? t('editDraft', '임시저장 편집') : t('newShell'))
     );
     pageWrap.append(titleHeader, wrap);
     targetContainer.appendChild(pageWrap);
   } else {
     modalRef = showModal(wrap, { onClose: cleanup });
+  }
+  
+  // Render initial state if draft loaded
+  if (backgroundLayer || textLayers.length > 0) {
+    addTextBtn.disabled = false;
+    renderCanvas();
   }
 }
 

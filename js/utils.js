@@ -323,7 +323,7 @@ export function createDropdownSelect(options, value, onChange, placeholder = '')
   const selectedText = el('span', { className: 'truncate', textContent: selectedOpt ? selectedOpt.label : placeholder });
   
   const header = el('div', { 
-    className: 'custom-select-header flex items-center justify-between gap-2 cursor-pointer px-4 py-3 rounded-2xl bg-element border border-base text-sm font-semibold min-w-[120px] h-full w-full', 
+    className: 'custom-select-header hover-active flex items-center justify-between gap-2 cursor-pointer px-4 py-3 rounded-2xl bg-element border border-base text-sm font-semibold min-w-[120px] h-full w-full', 
     onclick: (e) => { 
       e.stopPropagation(); 
       openModalSelect(options, value, (newVal, newLabel) => {
@@ -335,6 +335,14 @@ export function createDropdownSelect(options, value, onChange, placeholder = '')
   }, selectedText, el('div', { innerHTML: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`, className: 'text-tx-3 flex-shrink-0' }));
   
   wrap.appendChild(header);
+  
+  wrap.setValue = (newVal) => {
+    value = newVal;
+    const opt = options.find(o => String(o.value) === String(value));
+    selectedText.textContent = opt ? opt.label : placeholder;
+  };
+  wrap.getValue = () => value;
+  
   return wrap;
 }
 
@@ -346,7 +354,7 @@ function openModalSelect(options, currentValue, onSelect, titleText) {
   options.forEach(opt => {
     const isSelected = opt.value === currentValue;
     const item = el('div', { 
-      className: 'px-4 py-3 cursor-pointer hover:bg-hover transition-colors text-left rounded-xl' + (isSelected ? ' text-brand font-bold bg-brand/10' : ' text-tx font-medium'), 
+      className: 'toolbar-dropdown-item hover-active px-4 py-3 cursor-pointer hover:bg-hover transition-colors text-left rounded-xl' + (isSelected ? ' text-brand font-bold bg-brand/10' : ' text-tx font-medium'), 
       textContent: opt.label, 
       onclick: () => {
         onSelect(opt.value, opt.label);

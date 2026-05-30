@@ -39,7 +39,7 @@ function buildAppShell() {
   navItems.append(
     createNavItem('home', icons.home(24), t('home'), 'feed'),
     createNavItem('explore', icons.compass(24), t('explore'), 'explore'),
-    currentUser ? createNavItem('profile', icons.user(24), t('profile'), `profile/${currentUser.handle.substring(1)}`) : '',
+    currentUser ? createNavItem('profile', icons.user(24), t('profile'), `profile/${currentUser.handle.startsWith('@') ? currentUser.handle.substring(1) : currentUser.handle}`) : '',
     createNavItem('create', icons.plusSquare(24), t('create'), 'create')
   );
   
@@ -57,7 +57,7 @@ function buildAppShell() {
     el('div', { className: 'bottom-nav-items' },
       createNavItem('m-home', icons.home(24), '', 'feed'),
       createNavItem('m-explore', icons.compass(24), '', 'explore'),
-      currentUser ? createNavItem('m-profile', icons.user(24), '', `profile/${currentUser.handle.substring(1)}`) : '',
+      currentUser ? createNavItem('m-profile', icons.user(24), '', `profile/${currentUser.handle.startsWith('@') ? currentUser.handle.substring(1) : currentUser.handle}`) : '',
       createNavItem('m-create', icons.plusSquare(24), '', 'create')
     )
   );
@@ -99,8 +99,7 @@ function router() {
       sessionStorage.setItem(`scroll_${currentPath}`, window.scrollY);
     }
     currentPath = hash;
-    
-    store.subscribers = [];
+    store.subscribers.clear();
     
     const parts = hash.split('/').filter(Boolean);
     const route = parts[0] || '';
@@ -109,8 +108,11 @@ function router() {
     const currentUser = store.getState().currentUser;
     
     // Auto-login logic: redirect to feed if already logged in
-    if (currentUser && ['login', 'signup', ''].includes(route)) {
+    if (currentUser && ['login', 'signup'].includes(route)) {
       return window.navigateTo('feed');
+    }
+    if (currentUser && route === '') {
+      history.replaceState(null, '', '#feed');
     }
     
     // Routes not requiring auth — use surface wave mode (above water)
@@ -143,7 +145,7 @@ function router() {
         renderExplorePage(mainContent);
         break;
       case 'create':
-        renderCreatePage(mainContent, { subRoute: param });
+        renderCreatePage(mainContent, { subRoute: param, draftId: parts[2] });
         break;
       case 'profile':
         renderProfilePage(mainContent, { handle: param });
@@ -157,8 +159,11 @@ function router() {
         else if (param === 'security') renderSecurityPage(mainContent);
         else if (param === 'language') renderLanguageSettingsPage(mainContent);
         else {
-          // Direct redirect without creating secondary navigateTo trigger transitions
-          window.location.hash = 'settings/profile';
+          // Direct render without triggering double hash change transition
+          renderEditProfilePage(mainContent);
+          if (window.location.hash !== '#settings/profile') {
+            history.replaceState(null, '', '#settings/profile');
+          }
         }
         break;
       case 'tag':
@@ -196,11 +201,17 @@ window.navigateTo = function(path) {
 
   const isSettingsNav = normalizedCurrent.startsWith('settings') && normalizedNew.startsWith('settings');
   if (isSettingsNav) {
+    if (normalizedCurrent === normalizedNew) return; // Do nothing if same settings tab
     // Bypass full-page exit transition for settings sub-tabs to allow smooth inner transitions
     window.location.hash = path;
     return;
   }
   
+  if (normalizedCurrent.startsWith('profile') && normalizedNew.startsWith('profile')) {
+    if (normalizedCurrent === normalizedNew) return; // Do nothing if same profile tab
+    window.location.hash = path;
+    return;
+  }
   const currentContainer = document.querySelector('.main-content') || document.querySelector('#app');
   if (currentContainer) {
     currentContainer.classList.add('page-exit-active');
@@ -223,7 +234,7 @@ export function initApp() {
     window.addEventListener('hashchange', router);
     
     // Global Event Delegation for Premium Wobbly Hover-In and Hover-Out Decay
-    const interactiveSelectors = '.post-card, .btn, .nav-item, .story-item, .search-keyword-card, .suggest-card, .create-option-card, .profile-avatar-wrap, .profile-handle, .profile-name, .profile-bio, .profile-bio-link, .profile-stat, .chip, .settings-item, .input, .textarea, .select, .custom-select-header, .btn-text-link, .btn-icon, .post-action-btn, .profile-tab, .settings-back, .explore-search-input-wrap, .theme-option';
+    const interactiveSelectors = '.post-card, .btn, .nav-item, .story-item, .search-keyword-card, .suggest-card, .create-option-card, .profile-avatar-wrap, .profile-handle, .profile-name, .profile-bio, .profile-bio-link, .profile-stat, .chip, .settings-item, .input, .textarea, .select, .custom-select-header, .btn-text-link, .btn-icon, .post-action-btn, .profile-tab, .settings-back, .explore-search-input-wrap, .theme-option, .toolbar-btn, .toolbar-dropdown-item';
     
     document.body.addEventListener('mouseover', (e) => {
       if (!e.target || typeof e.target.closest !== 'function') return;
