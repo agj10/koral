@@ -70,14 +70,13 @@ const SUBMERGED_WAVES_LIGHT = [
 ];
 
 // Wave motion parameters (shared between modes)
-// Horizontal speed reduced ~60%, vertical float speed ~2.5x higher
 // Layers 1 and 3 move in REVERSE direction (negative wSpeed)
 const WAVE_PARAMS = [
-  { yOffset: 0,    wAmp: 0.022, wFreq: 0.008, wFreq2: 0.005, wSpeed:  0.0010, wSpeed2:  0.0006, wPhase: 0.0, wPhase2: 1.1, fAmp: 0.050, fSpeed: 0.0045, fPhase: 0.0 },
-  { yOffset: 0.09, wAmp: 0.019, wFreq: 0.006, wFreq2: 0.011, wSpeed: -0.0008, wSpeed2: -0.0007, wPhase: 1.2, wPhase2: 2.8, fAmp: 0.038, fSpeed: 0.0030, fPhase: 1.5 },
-  { yOffset: 0.18, wAmp: 0.025, wFreq: 0.010, wFreq2: 0.004, wSpeed:  0.0007, wSpeed2:  0.0005, wPhase: 2.5, wPhase2: 0.4, fAmp: 0.060, fSpeed: 0.0055, fPhase: 3.1 },
-  { yOffset: 0.27, wAmp: 0.018, wFreq: 0.007, wFreq2: 0.013, wSpeed: -0.0009, wSpeed2:  0.0006, wPhase: 0.7, wPhase2: 3.5, fAmp: 0.042, fSpeed: 0.0035, fPhase: 2.0 },
-  { yOffset: 0.35, wAmp: 0.021, wFreq: 0.009, wFreq2: 0.006, wSpeed:  0.0006, wSpeed2: -0.0005, wPhase: 3.8, wPhase2: 1.9, fAmp: 0.055, fSpeed: 0.0050, fPhase: 4.2 },
+  { yOffset: 0,    wAmp: 0.022, wFreq: 0.008, wFreq2: 0.005, wSpeed:  0.0018, wSpeed2:  0.0011, wPhase: 0.0, wPhase2: 1.1, fAmp: 0.065, fSpeed: 0.0022, fPhase: 0.0 },
+  { yOffset: 0.09, wAmp: 0.019, wFreq: 0.006, wFreq2: 0.011, wSpeed: -0.0014, wSpeed2: -0.0012, wPhase: 1.2, wPhase2: 2.8, fAmp: 0.050, fSpeed: 0.0016, fPhase: 1.5 },
+  { yOffset: 0.18, wAmp: 0.025, wFreq: 0.010, wFreq2: 0.004, wSpeed:  0.0012, wSpeed2:  0.0009, wPhase: 2.5, wPhase2: 0.4, fAmp: 0.075, fSpeed: 0.0028, fPhase: 3.1 },
+  { yOffset: 0.27, wAmp: 0.018, wFreq: 0.007, wFreq2: 0.013, wSpeed: -0.0016, wSpeed2:  0.0010, wPhase: 0.7, wPhase2: 3.5, fAmp: 0.055, fSpeed: 0.0018, fPhase: 2.0 },
+  { yOffset: 0.35, wAmp: 0.021, wFreq: 0.009, wFreq2: 0.006, wSpeed:  0.0010, wSpeed2: -0.0008, wPhase: 3.8, wPhase2: 1.9, fAmp: 0.070, fSpeed: 0.0025, fPhase: 4.2 },
 ];
 
 // ─── Wave Renderer Class ────────────────────────────────────
