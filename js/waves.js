@@ -50,24 +50,7 @@ const SURFACE_WAVES_LIGHT = [
   { hex: '#dc2626', alphaTop: 0.45, alphaBot: 0.68 },  // deeper
 ];
 
-// SUBMERGED MODE: Dark-toned waves on coral background
-// Dark theme — dark bg tones with reddish tint
-const SUBMERGED_WAVES_DARK = [
-  { hex: '#1f1315', alphaTop: 0.45, alphaBot: 0.65 },
-  { hex: '#1a0f11', alphaTop: 0.50, alphaBot: 0.70 },
-  { hex: '#150b0d', alphaTop: 0.55, alphaBot: 0.78 },
-  { hex: '#110809', alphaTop: 0.60, alphaBot: 0.85 },
-  { hex: '#0c0506', alphaTop: 0.68, alphaBot: 0.95 },
-];
-
-// Light theme — warm, vibrant coral/rose tones
-const SUBMERGED_WAVES_LIGHT = [
-  { hex: '#ffe4e6', alphaTop: 0.40, alphaBot: 0.60 }, // rose-100
-  { hex: '#fecdd3', alphaTop: 0.45, alphaBot: 0.68 }, // rose-200
-  { hex: '#fda4af', alphaTop: 0.50, alphaBot: 0.75 }, // rose-300
-  { hex: '#fb7185', alphaTop: 0.55, alphaBot: 0.80 }, // rose-400
-  { hex: '#ef4444', alphaTop: 0.60, alphaBot: 0.90 }, // brand-a (vibrant coral red!)
-];
+// (Submerged mode now uses SURFACE waves and bg configs directly to maintain identical premium look)
 
 // Wave motion parameters (shared between modes)
 // Layers 1 and 3 move in REVERSE direction (negative wSpeed)
@@ -177,68 +160,48 @@ class KoralWaves {
 
     ctx.clearRect(0, 0, W, H);
 
-    // Select wave colors based on mode and theme
-    let waveColors, bgGradient;
+    // Select wave colors based on theme (identical for both modes)
+    const waveColors = theme === 'dark' ? SURFACE_WAVES_DARK : SURFACE_WAVES_LIGHT;
+    let bgGradient;
 
-    if (mode === 'surface') {
-      waveColors = theme === 'dark' ? SURFACE_WAVES_DARK : SURFACE_WAVES_LIGHT;
-      // Paint the normal background + subtle gradient approaching waves
-      if (theme === 'dark') {
-        bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-        bgGradient.addColorStop(0, '#09090b');
-        bgGradient.addColorStop(0.7, '#0d0a0b');
-        bgGradient.addColorStop(1, '#150e0c');
-      } else {
-        bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-        bgGradient.addColorStop(0, '#fafafa');
-        bgGradient.addColorStop(0.7, '#faf5f3');
-        bgGradient.addColorStop(1, '#f8ede8');
-      }
-      ctx.fillStyle = bgGradient;
-      ctx.fillRect(0, 0, W, H);
+    // Paint the normal background + subtle gradient approaching waves (identical for both modes)
+    if (theme === 'dark') {
+      bgGradient = ctx.createLinearGradient(0, 0, 0, H);
+      bgGradient.addColorStop(0, '#09090b');
+      bgGradient.addColorStop(0.7, '#0d0a0b');
+      bgGradient.addColorStop(1, '#150e0c');
     } else {
-      // Submerged mode
-      waveColors = theme === 'dark' ? SUBMERGED_WAVES_DARK : SUBMERGED_WAVES_LIGHT;
-
-      // Paint coral background gradient
-      if (theme === 'dark') {
-        bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-        bgGradient.addColorStop(0, '#2a0f0a');
-        bgGradient.addColorStop(0.3, '#3d1810');
-        bgGradient.addColorStop(0.6, '#4a1f15');
-        bgGradient.addColorStop(1, '#1a0a06');
-      } else {
-        bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-        bgGradient.addColorStop(0, '#fff5f5'); // Clean warm white with subtle brand blush
-        bgGradient.addColorStop(0.3, '#ffe3e3'); // Soft brand red tint
-        bgGradient.addColorStop(0.6, '#ffd2d2'); // Warm light coral
-        bgGradient.addColorStop(1, '#ffb3b3'); // Rich coral blush blending with waves
-      }
-      ctx.fillStyle = bgGradient;
-      ctx.fillRect(0, 0, W, H);
+      bgGradient = ctx.createLinearGradient(0, 0, 0, H);
+      bgGradient.addColorStop(0, '#fafafa');
+      bgGradient.addColorStop(0.7, '#faf5f3');
+      bgGradient.addColorStop(1, '#f8ede8');
     }
+    ctx.fillStyle = bgGradient;
+    ctx.fillRect(0, 0, W, H);
 
     // Calculate wave region
     let waveStartY; // top of wave region
     if (mode === 'surface') {
-      // Waves occupy bottom 15% of screen
+      // Pre-login: waves occupy bottom 15% of screen
       waveStartY = H * 0.85;
     } else {
-      // Waves start from top 12% (fill 88% of screen)
-      waveStartY = H * 0.12;
+      // Post-login: raised water level (waves start at 15% from top, filling 85% of screen)
+      waveStartY = H * 0.15;
     }
-    const waveRegionHeight = H - waveStartY;
+
+    // Keep wave size, spacing, and floating amplitude EXACTLY identical between both modes
+    const waveScaleHeight = H * 0.15;
 
     // Draw each wave layer
     WAVE_PARAMS.forEach((wp, i) => {
       const wc = waveColors[i];
       const rgb = hexToRgb(wc.hex);
 
-      // Calculate y-position within wave region
-      const baseY = waveStartY + wp.yOffset * waveRegionHeight;
+      // Spacing baseY using waveScaleHeight so layers are spaced gently
+      const baseY = waveStartY + wp.yOffset * waveScaleHeight;
 
-      // Float (slow vertical oscillation)
-      const floatOffset = Math.sin(time * wp.fSpeed + wp.fPhase) * wp.fAmp * waveRegionHeight;
+      // Float vertical offset using waveScaleHeight so it is gentle and identical to pre-login
+      const floatOffset = Math.sin(time * wp.fSpeed + wp.fPhase) * wp.fAmp * waveScaleHeight;
 
       // Draw wave path
       const points = [];
