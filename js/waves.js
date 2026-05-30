@@ -50,7 +50,24 @@ const SURFACE_WAVES_LIGHT = [
   { hex: '#dc2626', alphaTop: 0.45, alphaBot: 0.68 },  // deeper
 ];
 
-// (Submerged mode now uses SURFACE waves and bg configs directly to maintain identical premium look)
+// SUBMERGED MODE: Theme-colored waves on Coral Main Background
+// Dark theme — mysterious translucent black waves
+const SUBMERGED_WAVES_DARK = [
+  { hex: '#09090b', alphaTop: 0.15, alphaBot: 0.35 },
+  { hex: '#000000', alphaTop: 0.20, alphaBot: 0.45 },
+  { hex: '#000000', alphaTop: 0.25, alphaBot: 0.55 },
+  { hex: '#000000', alphaTop: 0.30, alphaBot: 0.65 },
+  { hex: '#09090b', alphaTop: 0.35, alphaBot: 0.75 },
+];
+
+// Light theme — shimming translucent white waves
+const SUBMERGED_WAVES_LIGHT = [
+  { hex: '#ffffff', alphaTop: 0.18, alphaBot: 0.38 },
+  { hex: '#ffffff', alphaTop: 0.22, alphaBot: 0.48 },
+  { hex: '#ffffff', alphaTop: 0.26, alphaBot: 0.58 },
+  { hex: '#ffffff', alphaTop: 0.30, alphaBot: 0.68 },
+  { hex: '#ffffff', alphaTop: 0.35, alphaBot: 0.78 },
+];
 
 // Wave motion parameters (shared between modes)
 // Layers 1 and 3 move in REVERSE direction (negative wSpeed)
@@ -160,21 +177,41 @@ class KoralWaves {
 
     ctx.clearRect(0, 0, W, H);
 
-    // Select wave colors based on theme (identical for both modes)
-    const waveColors = theme === 'dark' ? SURFACE_WAVES_DARK : SURFACE_WAVES_LIGHT;
-    let bgGradient;
+    // Select wave colors and paint background based on mode and theme
+    let waveColors, bgGradient;
 
-    // Paint the normal background + subtle gradient approaching waves (identical for both modes)
-    if (theme === 'dark') {
-      bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-      bgGradient.addColorStop(0, '#09090b');
-      bgGradient.addColorStop(0.7, '#0d0a0b');
-      bgGradient.addColorStop(1, '#150e0c');
+    if (mode === 'surface') {
+      waveColors = theme === 'dark' ? SURFACE_WAVES_DARK : SURFACE_WAVES_LIGHT;
+      // Paint standard charcoal/off-white background
+      if (theme === 'dark') {
+        bgGradient = ctx.createLinearGradient(0, 0, 0, H);
+        bgGradient.addColorStop(0, '#09090b');
+        bgGradient.addColorStop(0.7, '#0d0a0b');
+        bgGradient.addColorStop(1, '#150e0c');
+      } else {
+        bgGradient = ctx.createLinearGradient(0, 0, 0, H);
+        bgGradient.addColorStop(0, '#fafafa');
+        bgGradient.addColorStop(0.7, '#faf5f3');
+        bgGradient.addColorStop(1, '#f8ede8');
+      }
     } else {
-      bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-      bgGradient.addColorStop(0, '#fafafa');
-      bgGradient.addColorStop(0.7, '#faf5f3');
-      bgGradient.addColorStop(1, '#f8ede8');
+      // Submerged mode (post-login): Theme-colored waves on Coral Main Background
+      waveColors = theme === 'dark' ? SUBMERGED_WAVES_DARK : SUBMERGED_WAVES_LIGHT;
+
+      // Paint gorgeous coral-red main color gradients
+      if (theme === 'dark') {
+        bgGradient = ctx.createLinearGradient(0, 0, 0, H);
+        bgGradient.addColorStop(0, '#1c0d0a'); // Dark coral black for readable light text
+        bgGradient.addColorStop(0.4, '#2d1410');
+        bgGradient.addColorStop(0.7, '#4c1c15'); // Deep glowing brand coral red
+        bgGradient.addColorStop(1, '#2b0f0a');
+      } else {
+        bgGradient = ctx.createLinearGradient(0, 0, 0, H);
+        bgGradient.addColorStop(0, '#fff0ed'); // Warm peach blush for readable dark text
+        bgGradient.addColorStop(0.4, '#ffdcd3');
+        bgGradient.addColorStop(0.7, '#fca5a5'); // Luminous light brand coral pink
+        bgGradient.addColorStop(1, '#f43f5e'); // Vivid brand rose red at the bottom
+      }
     }
     ctx.fillStyle = bgGradient;
     ctx.fillRect(0, 0, W, H);
