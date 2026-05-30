@@ -744,13 +744,13 @@
 
 /* ===== LIQUID ENVIRONMENT ANIMATIONS ===== */
 
-/* 1. Stately Floating in Water (Idle animation) */
+/* 1. Stately Floating in Water (Idle animation with slow rotation) */
 @keyframes floatWater {
   0%, 100% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(-1deg);
   }
   50% {
-    transform: translateY(-6px);
+    transform: translateY(-12px) rotate(1deg);
   }
 }
 
@@ -788,19 +788,22 @@
   animation-delay: -3.5s;
 }
 
-/* 2. Fluid Swaying Hover Wobble Animation */
+/* 2. Fluid Swaying Hover Wobble Animation - Slow, soft and wobbly */
 @keyframes wobbleHover {
   0% {
     transform: translateY(0) rotate(0deg);
   }
-  25% {
-    transform: translateY(-4px) rotate(-1.5deg); /* tilt left */
+  30% {
+    transform: translateY(-5px) rotate(-2deg); /* gentle left sway */
   }
-  60% {
-    transform: translateY(-8px) rotate(1.2deg);  /* tilt right */
+  65% {
+    transform: translateY(-9px) rotate(1.5deg); /* gentle right sway */
+  }
+  85% {
+    transform: translateY(-10px) rotate(-0.5deg); /* tiny stabilization */
   }
   100% {
-    transform: translateY(-8px) rotate(0deg);    /* stabilize straight & elevated */
+    transform: translateY(-10px) rotate(0deg);    /* stabilize straight & elevated */
   }
 }
 
@@ -812,23 +815,26 @@
 .card:hover,
 .profile-grid-cell:hover,
 .search-keyword-card:hover {
-  animation: wobbleHover 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  animation: wobbleHover 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   box-shadow: 0 16px 36px rgba(0,0,0,0.08) !important;
 }
 
-/* 3. Small-scale Button Hover Wobble Animation */
+/* 3. Small-scale Button Hover Wobble Animation - Slow and soft */
 @keyframes wobbleHoverBtn {
   0% {
     transform: translateY(0) rotate(0deg);
   }
-  25% {
-    transform: translateY(-1.5px) rotate(-1.2deg); /* tilt left */
+  30% {
+    transform: translateY(-2px) rotate(-1.5deg);
   }
-  60% {
-    transform: translateY(-3px) rotate(0.8deg);   /* tilt right */
+  65% {
+    transform: translateY(-4px) rotate(1deg);
+  }
+  85% {
+    transform: translateY(-4px) rotate(-0.3deg);
   }
   100% {
-    transform: translateY(-3px) rotate(0deg);     /* stabilize elevated */
+    transform: translateY(-4px) rotate(0deg);
   }
 }
 
@@ -863,7 +869,7 @@
 .btn-text-link:hover,
 .btn-icon:hover,
 .post-action-btn:hover {
-  animation: wobbleHoverBtn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  animation: wobbleHoverBtn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
 /* Active pressing state remains snappy */
