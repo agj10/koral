@@ -173,6 +173,16 @@ function router() {
 }
 
 window.navigateTo = function(path) {
+  const currentHash = window.location.hash.slice(1) || '';
+  
+  // Normalize feed and empty paths which are equivalent Home routes
+  const normalizedCurrent = (currentHash === 'feed' || currentHash === '') ? 'feed' : currentHash;
+  const normalizedNew = (path === 'feed' || path === '') ? 'feed' : path;
+  
+  if (normalizedCurrent === normalizedNew) {
+    return; // Do absolutely nothing if already on the target path
+  }
+  
   const currentContainer = document.querySelector('.main-content') || document.querySelector('#app');
   if (currentContainer) {
     currentContainer.classList.add('page-exit-active');
