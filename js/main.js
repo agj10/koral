@@ -214,47 +214,60 @@ window.navigateTo = function(path) {
 };
 
 export function initApp() {
-  appRoot = $('#app');
-  window.addEventListener('hashchange', router);
-  
-  // Global Event Delegation for Premium Wobbly Hover-In and Hover-Out Decay
-  const interactiveSelectors = '.post-card, .btn, .nav-item, .story-item, .search-keyword-card, .suggest-card, .create-option-card, .profile-avatar-wrap, .profile-handle, .profile-name, .profile-bio, .profile-bio-link, .profile-stat, .chip, .settings-item, .input, .textarea, .select, .custom-select-header, .btn-text-link, .btn-icon, .post-action-btn, .profile-tab, .settings-back, .explore-search-input-wrap, .theme-option';
-  
-  document.body.addEventListener('mouseover', (e) => {
-    let target = e.target.closest(interactiveSelectors);
-    if (target) {
-      const searchWrap = target.closest('.explore-search-input-wrap');
-      if (searchWrap) {
-        target = searchWrap;
-      }
-      // Ignore inner child transitions to prevent layout jitter and snapping
-      if (e.relatedTarget && target.contains(e.relatedTarget)) return;
-      target.classList.add('hover-active');
-      target.classList.remove('wobble-out-active');
+  try {
+    appRoot = document.getElementById('app') || document.body;
+    if (!appRoot) {
+      console.error("App root element not found!");
+      return;
     }
-  });
-  
-  document.body.addEventListener('mouseout', (e) => {
-    let target = e.target.closest(interactiveSelectors);
-    if (target) {
-      const searchWrap = target.closest('.explore-search-input-wrap');
-      if (searchWrap) {
-        target = searchWrap;
-      }
-      // Ignore inner child transitions to prevent layout jitter and snapping
-      if (e.relatedTarget && target.contains(e.relatedTarget)) return;
-      target.classList.remove('hover-active');
-      target.classList.add('wobble-out-active');
-      setTimeout(() => {
-        if (!target.classList.contains('hover-active')) {
-          target.classList.remove('wobble-out-active');
+    window.addEventListener('hashchange', router);
+    
+    // Global Event Delegation for Premium Wobbly Hover-In and Hover-Out Decay
+    const interactiveSelectors = '.post-card, .btn, .nav-item, .story-item, .search-keyword-card, .suggest-card, .create-option-card, .profile-avatar-wrap, .profile-handle, .profile-name, .profile-bio, .profile-bio-link, .profile-stat, .chip, .settings-item, .input, .textarea, .select, .custom-select-header, .btn-text-link, .btn-icon, .post-action-btn, .profile-tab, .settings-back, .explore-search-input-wrap, .theme-option';
+    
+    document.body.addEventListener('mouseover', (e) => {
+      if (!e.target || typeof e.target.closest !== 'function') return;
+      let target = e.target.closest(interactiveSelectors);
+      if (target) {
+        const searchWrap = target.closest('.explore-search-input-wrap');
+        if (searchWrap) {
+          target = searchWrap;
         }
-      }, 1200);
-    }
-  });
-
-  // Initial render
-  router();
+        // Ignore inner child transitions to prevent layout jitter and snapping
+        if (e.relatedTarget && target.contains(e.relatedTarget)) return;
+        target.classList.add('hover-active');
+        target.classList.remove('wobble-out-active');
+      }
+    });
+    
+    document.body.addEventListener('mouseout', (e) => {
+      if (!e.target || typeof e.target.closest !== 'function') return;
+      let target = e.target.closest(interactiveSelectors);
+      if (target) {
+        const searchWrap = target.closest('.explore-search-input-wrap');
+        if (searchWrap) {
+          target = searchWrap;
+        }
+        // Ignore inner child transitions to prevent layout jitter and snapping
+        if (e.relatedTarget && target.contains(e.relatedTarget)) return;
+        target.classList.remove('hover-active');
+        target.classList.add('wobble-out-active');
+        setTimeout(() => {
+          if (!target.classList.contains('hover-active')) {
+            target.classList.remove('wobble-out-active');
+          }
+        }, 1200);
+      }
+    });
+  
+    // Initial render
+    router();
+  } catch (err) {
+    console.error("Critical error during app initialization, clearing state and self-healing:", err);
+    localStorage.removeItem('koral_data_v2');
+    localStorage.removeItem('koral_recent_searches');
+    window.location.reload();
+  }
 }
 
 // Initialize the app immediately
