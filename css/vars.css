@@ -137,3 +137,45 @@
     --sb-thumb:#3f3f46;--code-bg:#27272a;--pre-bg:#0d0d0f;
   }
 }
+
+/* ==========================================================================
+   HIGH-CONTRAST SUBMERGED BRAND-TONED TEXT OVERRIDES
+   Ensures absolute text readability over the vivid coral backgrounds.
+   ========================================================================== */
+
+/* Submerged Light Theme Overrides (Rich Burgundy & Rose Tones) */
+.koral-waves-submerged.theme-light,
+.koral-waves-submerged [data-theme="light"],
+.koral-waves-submerged[data-theme="light"] {
+  --tx: #050101;       /* Extra dark burgundy-black for supreme contrast */
+  --tx-2: #450606;     /* Deep dark brand burgundy for secondary text */
+  --tx-3: #881337;     /* Rich brand rose red for tertiary/muted text */
+  --tx-muted: #9f1239; /* Muted brand red */
+}
+@media (prefers-color-scheme: light) {
+  .koral-waves-submerged.theme-system {
+    --tx: #050101;
+    --tx-2: #450606;
+    --tx-3: #881337;
+    --tx-muted: #9f1239;
+  }
+}
+
+/* Submerged Dark Theme Overrides (Soft Coral & Rose Blush Tones) */
+.koral-waves-submerged.theme-dark,
+.koral-waves-submerged [data-theme="dark"],
+.koral-waves-submerged[data-theme="dark"] {
+  --tx: #ffffff;       /* Crisp pure white for supreme contrast */
+  --tx-2: #ffe4e6;     /* Softest brand blush for secondary text */
+  --tx-3: #fecdd3;     /* Warm rose-200 for tertiary/muted text */
+  --tx-muted: #fda4af; /* Warm rose-300 for muted text */
+}
+@media (prefers-color-scheme: dark) {
+  .koral-waves-submerged.theme-system {
+    --tx: #ffffff;
+    --tx-2: #ffe4e6;
+    --tx-3: #fecdd3;
+    --tx-muted: #fda4af;
+  }
+}
+
