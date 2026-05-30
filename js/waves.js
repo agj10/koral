@@ -69,6 +69,44 @@ const SUBMERGED_WAVES_LIGHT = [
   { hex: '#ffffff', alphaTop: 0.35, alphaBot: 0.78 },
 ];
 
+// ─── Background Stop Color Configurations (RGB) ─────────────
+const BG_SURFACE_DARK = [
+  { r: 9, g: 9, b: 11 },   // #09090b
+  { r: 13, g: 10, b: 11 }, // #0d0a0b
+  { r: 21, g: 14, b: 12 }  // #150e0c
+];
+const BG_SURFACE_LIGHT = [
+  { r: 250, g: 250, b: 250 }, // #fafafa
+  { r: 250, g: 245, b: 243 }, // #faf5f3
+  { r: 248, g: 237, b: 232 }  // #f8ede8
+];
+const BG_SUBMERGED_DARK = [
+  { r: 190, g: 18, b: 60 },  // #be123c
+  { r: 153, g: 27, b: 27 },  // #991b1b
+  { r: 69, g: 10, b: 10 }    // #450a0a
+];
+const BG_SUBMERGED_LIGHT = [
+  { r: 244, g: 63, b: 94 },  // #f43f5e
+  { r: 239, g: 68, b: 68 },  // #ef4444
+  { r: 252, g: 165, b: 165 } // #fca5a5
+];
+
+// ─── Math & Color Interpolation Helpers ───────────────────────
+function lerp(start, end, amt) {
+  return start + (end - start) * amt;
+}
+
+function parseWaveConfig(wc) {
+  const rgb = hexToRgb(wc.hex);
+  return {
+    r: rgb.r,
+    g: rgb.g,
+    b: rgb.b,
+    aTop: wc.alphaTop,
+    aBot: wc.alphaBot
+  };
+}
+
 // Wave motion parameters (shared between modes)
 // Layers 1 and 3 move in REVERSE direction (negative wSpeed)
 const WAVE_PARAMS = [
@@ -98,41 +136,54 @@ class KoralWaves {
    * @param {'surface'|'submerged'} mode
    */
   init(mode = 'surface') {
-    // Skip if already running in the same mode
-    if (this.canvas && this.mode === mode && this.animId) return;
-    
+    const isNew = !this.canvas;
     this.mode = mode;
 
-    // Clean up previous instance
-    this.destroy();
+    if (isNew) {
+      // Create canvas
+      this.canvas = document.createElement('canvas');
+      this.canvas.className = 'koral-wave-canvas';
+      this.canvas.setAttribute('aria-hidden', 'true');
+      this.ctx = this.canvas.getContext('2d');
 
-    // Create canvas
-    this.canvas = document.createElement('canvas');
-    this.canvas.className = 'koral-wave-canvas';
-    this.canvas.setAttribute('aria-hidden', 'true');
-    this.ctx = this.canvas.getContext('2d');
+      // Insert canvas into body (before #app) so it persists across page navigations
+      const app = document.getElementById('app');
+      if (app) {
+        document.body.insertBefore(this.canvas, app);
+      } else {
+        document.body.insertBefore(this.canvas, document.body.firstChild);
+      }
 
-    // Insert canvas into body (before #app) so it persists across page navigations
-    const app = document.getElementById('app');
-    if (app) {
-      document.body.insertBefore(this.canvas, app);
-    } else {
-      document.body.insertBefore(this.canvas, document.body.firstChild);
+      // Size canvas
+      this._onResize();
+
+      // Listen for resize
+      window.addEventListener('resize', this._boundResize);
+
+      // Setup initial state immediately on first load
+      const theme = getEffectiveTheme();
+      const waveColors = mode === 'surface' 
+        ? (theme === 'dark' ? SURFACE_WAVES_DARK : SURFACE_WAVES_LIGHT)
+        : (theme === 'dark' ? SUBMERGED_WAVES_DARK : SUBMERGED_WAVES_LIGHT);
+      
+      const bgStops = mode === 'surface'
+        ? (theme === 'dark' ? BG_SURFACE_DARK : BG_SURFACE_LIGHT)
+        : (theme === 'dark' ? BG_SUBMERGED_DARK : BG_SUBMERGED_LIGHT);
+
+      this.currentWaveStartY = mode === 'surface' ? this.H * 0.85 : this.H * 0.15;
+      this.currentMidStopPos = mode === 'surface' ? 0.7 : 0.5;
+
+      this.currentBgStops = bgStops.map(stop => ({ ...stop }));
+      this.currentWaveColors = waveColors.map(wc => parseWaveConfig(wc));
+
+      // Start animation
+      this.lastTs = null;
+      this.animId = requestAnimationFrame(this._boundDraw);
     }
 
-    // Add mode class to body for CSS transparency overrides
+    // Toggle body classes for CSS transparency overrides
     document.body.classList.remove('koral-waves-surface', 'koral-waves-submerged');
     document.body.classList.add(`koral-waves-${mode}`);
-
-    // Size canvas
-    this._onResize();
-
-    // Listen for resize
-    window.addEventListener('resize', this._boundResize);
-
-    // Start animation
-    this.lastTs = null;
-    this.animId = requestAnimationFrame(this._boundDraw);
   }
 
   destroy() {
@@ -177,63 +228,61 @@ class KoralWaves {
 
     ctx.clearRect(0, 0, W, H);
 
-    // Select wave colors and paint background based on mode and theme
-    let waveColors, bgGradient;
+    // 1. Determine targets based on current mode and theme
+    const targetWaveStartY = mode === 'surface' ? H * 0.85 : H * 0.15;
+    const targetMidStopPos = mode === 'surface' ? 0.7 : 0.5;
 
-    if (mode === 'surface') {
-      waveColors = theme === 'dark' ? SURFACE_WAVES_DARK : SURFACE_WAVES_LIGHT;
-      // Paint standard charcoal/off-white background
-      if (theme === 'dark') {
-        bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-        bgGradient.addColorStop(0, '#09090b');
-        bgGradient.addColorStop(0.7, '#0d0a0b');
-        bgGradient.addColorStop(1, '#150e0c');
-      } else {
-        bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-        bgGradient.addColorStop(0, '#fafafa');
-        bgGradient.addColorStop(0.7, '#faf5f3');
-        bgGradient.addColorStop(1, '#f8ede8');
-      }
-    } else {
-      // Submerged mode (post-login): Theme-colored waves on Coral Main Background
-      waveColors = theme === 'dark' ? SUBMERGED_WAVES_DARK : SUBMERGED_WAVES_LIGHT;
+    const targetWaveColors = mode === 'surface'
+      ? (theme === 'dark' ? SURFACE_WAVES_DARK : SURFACE_WAVES_LIGHT)
+      : (theme === 'dark' ? SUBMERGED_WAVES_DARK : SUBMERGED_WAVES_LIGHT);
 
-      // Paint highly saturated, rich coral-red main color gradients (REVERSED)
-      if (theme === 'dark') {
-        bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-        bgGradient.addColorStop(0, '#be123c'); // Glowing dark rose red at the top
-        bgGradient.addColorStop(0.5, '#991b1b'); // Rich dark brand coral red
-        bgGradient.addColorStop(1, '#450a0a'); // Deep warm coral black at the bottom
-      } else {
-        bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-        bgGradient.addColorStop(0, '#f43f5e'); // Brand rose red at the top
-        bgGradient.addColorStop(0.5, '#ef4444'); // Main brand coral red
-        bgGradient.addColorStop(1, '#fca5a5'); // Rich coral pink at the bottom
-      }
+    const targetBgStops = mode === 'surface'
+      ? (theme === 'dark' ? BG_SURFACE_DARK : BG_SURFACE_LIGHT)
+      : (theme === 'dark' ? BG_SUBMERGED_DARK : BG_SUBMERGED_LIGHT);
+
+    // 2. Interpolate current values towards targets (Time-independent lerp)
+    const t = 1 - Math.exp(-0.005 * dt); // smooth ~300ms transition
+
+    this.currentWaveStartY = lerp(this.currentWaveStartY, targetWaveStartY, t);
+    this.currentMidStopPos = lerp(this.currentMidStopPos, targetMidStopPos, t);
+
+    // Lerp background stops
+    for (let j = 0; j < 3; j++) {
+      this.currentBgStops[j].r = lerp(this.currentBgStops[j].r, targetBgStops[j].r, t);
+      this.currentBgStops[j].g = lerp(this.currentBgStops[j].g, targetBgStops[j].g, t);
+      this.currentBgStops[j].b = lerp(this.currentBgStops[j].b, targetBgStops[j].b, t);
     }
+
+    // Lerp wave colors
+    for (let j = 0; j < 5; j++) {
+      const targetWc = parseWaveConfig(targetWaveColors[j]);
+      this.currentWaveColors[j].r = lerp(this.currentWaveColors[j].r, targetWc.r, t);
+      this.currentWaveColors[j].g = lerp(this.currentWaveColors[j].g, targetWc.g, t);
+      this.currentWaveColors[j].b = lerp(this.currentWaveColors[j].b, targetWc.b, t);
+      this.currentWaveColors[j].aTop = lerp(this.currentWaveColors[j].aTop, targetWc.aTop, t);
+      this.currentWaveColors[j].aBot = lerp(this.currentWaveColors[j].aBot, targetWc.aBot, t);
+    }
+
+    // 3. Paint Background Gradient using current morphed colors
+    const bgGradient = ctx.createLinearGradient(0, 0, 0, H);
+    const bg0 = this.currentBgStops[0];
+    const bg1 = this.currentBgStops[1];
+    const bg2 = this.currentBgStops[2];
+    bgGradient.addColorStop(0, `rgb(${Math.round(bg0.r)},${Math.round(bg0.g)},${Math.round(bg0.b)})`);
+    bgGradient.addColorStop(this.currentMidStopPos, `rgb(${Math.round(bg1.r)},${Math.round(bg1.g)},${Math.round(bg1.b)})`);
+    bgGradient.addColorStop(1, `rgb(${Math.round(bg2.r)},${Math.round(bg2.g)},${Math.round(bg2.b)})`);
     ctx.fillStyle = bgGradient;
     ctx.fillRect(0, 0, W, H);
-
-    // Calculate wave region
-    let waveStartY; // top of wave region
-    if (mode === 'surface') {
-      // Pre-login: waves occupy bottom 15% of screen
-      waveStartY = H * 0.85;
-    } else {
-      // Post-login: raised water level (waves start at 15% from top, filling 85% of screen)
-      waveStartY = H * 0.15;
-    }
 
     // Keep wave size, spacing, and floating amplitude EXACTLY identical between both modes
     const waveScaleHeight = H * 0.15;
 
-    // Draw each wave layer
+    // 4. Draw morphed wave layers
     WAVE_PARAMS.forEach((wp, i) => {
-      const wc = waveColors[i];
-      const rgb = hexToRgb(wc.hex);
+      const wc = this.currentWaveColors[i];
 
       // Spacing baseY using waveScaleHeight so layers are spaced gently
-      const baseY = waveStartY + wp.yOffset * waveScaleHeight;
+      const baseY = this.currentWaveStartY + wp.yOffset * waveScaleHeight;
 
       // Float vertical offset using waveScaleHeight so it is gentle and identical to pre-login
       const floatOffset = Math.sin(time * wp.fSpeed + wp.fPhase) * wp.fAmp * waveScaleHeight;
@@ -248,11 +297,11 @@ class KoralWaves {
         points.push({ x, y });
       }
 
-      // Gradient for this layer
+      // Gradient for this layer using current morphed colors
       const avgY = points.reduce((s, p) => s + p.y, 0) / points.length;
       const grad = ctx.createLinearGradient(0, avgY - 20, 0, H);
-      grad.addColorStop(0, `rgba(${rgb.r},${rgb.g},${rgb.b},${wc.alphaTop})`);
-      grad.addColorStop(1, `rgba(${rgb.r},${rgb.g},${rgb.b},${wc.alphaBot})`);
+      grad.addColorStop(0, `rgba(${Math.round(wc.r)},${Math.round(wc.g)},${Math.round(wc.b)},${wc.aTop})`);
+      grad.addColorStop(1, `rgba(${Math.round(wc.r)},${Math.round(wc.g)},${Math.round(wc.b)},${wc.aBot})`);
 
       ctx.beginPath();
       points.forEach((p, idx) => {
