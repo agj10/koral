@@ -190,11 +190,15 @@ export function initApp() {
   window.addEventListener('hashchange', router);
   
   // Global Event Delegation for Premium Wobbly Hover-In and Hover-Out Decay
-  const interactiveSelectors = '.post-card, .btn, .nav-item, .story-item, .search-keyword-card, .suggest-card, .create-option-card, .profile-avatar-wrap, .profile-handle, .profile-name, .profile-bio, .profile-bio-link, .profile-stat, .chip, .settings-item, .input, .textarea, .select, .custom-select-header, .btn-text-link, .btn-icon, .post-action-btn, .profile-tab, .settings-back';
+  const interactiveSelectors = '.post-card, .btn, .nav-item, .story-item, .search-keyword-card, .suggest-card, .create-option-card, .profile-avatar-wrap, .profile-handle, .profile-name, .profile-bio, .profile-bio-link, .profile-stat, .chip, .settings-item, .input, .textarea, .select, .custom-select-header, .btn-text-link, .btn-icon, .post-action-btn, .profile-tab, .settings-back, .explore-search-input-wrap';
   
   document.body.addEventListener('mouseover', (e) => {
-    const target = e.target.closest(interactiveSelectors);
+    let target = e.target.closest(interactiveSelectors);
     if (target) {
+      const searchWrap = target.closest('.explore-search-input-wrap');
+      if (searchWrap) {
+        target = searchWrap;
+      }
       // Ignore inner child transitions to prevent layout jitter and snapping
       if (e.relatedTarget && target.contains(e.relatedTarget)) return;
       target.classList.add('hover-active');
@@ -203,8 +207,12 @@ export function initApp() {
   });
   
   document.body.addEventListener('mouseout', (e) => {
-    const target = e.target.closest(interactiveSelectors);
+    let target = e.target.closest(interactiveSelectors);
     if (target) {
+      const searchWrap = target.closest('.explore-search-input-wrap');
+      if (searchWrap) {
+        target = searchWrap;
+      }
       // Ignore inner child transitions to prevent layout jitter and snapping
       if (e.relatedTarget && target.contains(e.relatedTarget)) return;
       target.classList.remove('hover-active');

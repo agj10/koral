@@ -555,7 +555,7 @@ export function renderStoryCreator(targetContainer = null) {
   }
 }
 
-export function renderStoryViewer(startIndex, groupedStories) {
+export function renderStoryViewer(startIndex, groupedStories, startStoryIndex = 0) {
   const currentUser = store.getState().currentUser;
   
   // Dynamic WebKit scrollbar hiding styles
@@ -572,26 +572,44 @@ export function renderStoryViewer(startIndex, groupedStories) {
     document.head.appendChild(styleTag);
   }
 
-  // 1. Create a full-screen overlay
+  // 1. Create a full-screen overlay with dark blur backdrop matching other popups (6px blur, rgba 0.65)
   const overlay = el('div', { 
-    className: 'fixed inset-0 bg-black/95 z-[9999] flex flex-col justify-center items-center',
-    style: { overscrollBehavior: 'contain' }
+    className: 'koral-story-viewer-overlay',
+    style: { 
+      position: 'fixed',
+      inset: '0',
+      backgroundColor: 'rgba(0, 0, 0, 0.65)',
+      backdropFilter: 'blur(6px)',
+      webkitBackdropFilter: 'blur(6px)',
+      zIndex: '9999999',
+      overscrollBehavior: 'contain'
+    }
   });
   
   // Prevent body scroll while viewing stories
   const originalBodyOverflow = document.body.style.overflow;
   document.body.style.overflow = 'hidden';
   
-  // 2. Create the scroll container with snap scrolling
-  const scrollContainer = el('div', {
-    className: 'w-full h-full overflow-y-scroll scroll-smooth stories-scroll-container',
-    style: {
-      scrollSnapType: 'y mandatory',
-      height: '100vh',
-      width: '100vw',
-      scrollbarWidth: 'none',
-      msOverflowStyle: 'none'
+  // Define standard close viewer function
+  const closeViewer = () => {
+    document.body.style.overflow = originalBodyOverflow;
+    overlay.remove();
+    document.removeEventListener('keydown', keyHandler);
+    
+    // In-place refresh of story rings to avoid reload flickering
+    const storyRow = document.querySelector('.stories-row');
+    if (storyRow) {
+      const parent = storyRow.parentElement;
+      if (parent) {
+        const newStoryRow = renderStoryRow();
+        parent.replaceChild(newStoryRow, storyRow);
+      }
     }
+  };
+  
+  // 2. Create the scroll container (without snap-active initially to prevent snap-back)
+  const scrollContainer = el('div', {
+    className: 'stories-scroll-container'
   });
   
   // 3. Flatten all stories from all groups
@@ -601,7 +619,7 @@ export function renderStoryViewer(startIndex, groupedStories) {
   groupedStories.forEach((group, gIdx) => {
     const user = store.getUser(group.authorHandle) || { displayName: 'Unknown', handle: group.authorHandle };
     group.stories.forEach((story, sIdx) => {
-      if (gIdx === startIndex && sIdx === 0) {
+      if (gIdx === startIndex && sIdx === startStoryIndex) {
         initialActiveIndex = flatStories.length;
       }
       flatStories.push({ story, user, group, gIdx, sIdx });
@@ -614,18 +632,13 @@ export function renderStoryViewer(startIndex, groupedStories) {
     
     // Create the slide (100vh, 100vw, flex center, snap align start)
     const slide = el('div', {
-      className: 'w-full h-screen relative flex items-center justify-center shrink-0 story-slide-wrap',
-      dataset: { storyId: story.id, index: index },
-      style: {
-        scrollSnapAlign: 'start',
-        height: '100vh',
-        width: '100vw'
-      }
+      className: 'story-slide-wrap',
+      dataset: { storyId: story.id, index: index }
     });
     
     // Centered 500x500 story box
     const storyBox = el('div', { 
-      className: 'relative bg-black shadow-2xl rounded-2xl overflow-hidden',
+      className: 'relative bg-black shadow-2xl rounded-2xl overflow-hidden story-viewer-box',
       style: { 
         width: '500px', height: '500px', maxWidth: '90vw', maxHeight: '90vh',
         border: '1px solid rgba(255,255,255,0.1)',
@@ -693,10 +706,15 @@ export function renderStoryViewer(startIndex, groupedStories) {
       }
     }, storyLikeBtnSpan, storyLikeCountSpan);
     
-    // Add header to show the author handle
+    // Add header to show the author handle at the bottom left (matching the heart button height)
     const storyHeader = el('div', {
-      className: 'absolute top-4 left-4 flex items-center gap-2 z-10 bg-black/30 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/10',
-      style: { pointerEvents: 'auto', cursor: 'pointer' },
+      className: 'absolute flex items-center gap-2 z-10 bg-black/30 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/10',
+      style: { 
+        bottom: '16px', 
+        left: '16px', 
+        pointerEvents: 'auto', 
+        cursor: 'pointer' 
+      },
       onclick: (e) => {
         e.stopPropagation();
         document.body.style.overflow = originalBodyOverflow;
@@ -710,29 +728,19 @@ export function renderStoryViewer(startIndex, groupedStories) {
     
     storyBox.append(storyHeader, virtualCanvas, storyLikeBtn);
     slide.appendChild(storyBox);
+    
+    // Click outside the story card to close the viewer
+    slide.onclick = (e) => {
+      if (!storyBox.contains(e.target)) {
+        closeViewer();
+      }
+    };
+    
     scrollContainer.appendChild(slide);
   });
   
-  // 5. Add close button fixed in overlay
-  const closeBtn = el('button', { 
-    className: 'fixed top-4 right-4 text-white z-[10000] p-2 cursor-pointer bg-black/50 hover:bg-black/80 rounded-full transition-colors border border-white/10 flex items-center justify-center',
-    onclick: () => {
-      document.body.style.overflow = originalBodyOverflow;
-      overlay.remove();
-      
-      // In-place refresh of story rings to avoid reload flickering
-      const storyRow = document.querySelector('.stories-row');
-      if (storyRow) {
-        const parent = storyRow.parentElement;
-        if (parent) {
-          const newStoryRow = renderStoryRow();
-          parent.replaceChild(newStoryRow, storyRow);
-        }
-      }
-    }
-  }, el('span', { innerHTML: icons.x(20) }));
-  
-  overlay.append(scrollContainer, closeBtn);
+  // 5. Append scroll container to overlay and attach to body
+  overlay.append(scrollContainer);
   document.body.appendChild(overlay);
   
   // 6. Intersection Observer to mark stories as read when scrolled into view
@@ -759,18 +767,21 @@ export function renderStoryViewer(startIndex, groupedStories) {
   // Keyboard escape handler
   const keyHandler = (e) => {
     if (e.key === 'Escape') {
-      closeBtn.click();
-      document.removeEventListener('keydown', keyHandler);
+      closeViewer();
     }
   };
   document.addEventListener('keydown', keyHandler);
   
-  // 7. Scroll smoothly to the clicked index
+  // 7. Scroll smoothly to the clicked index and then enable scroll snap to prevent snap-back bugs
   setTimeout(() => {
     const targetSlide = scrollContainer.children[initialActiveIndex];
     if (targetSlide) {
-      targetSlide.scrollIntoView({ behavior: 'auto' });
+      scrollContainer.scrollTop = targetSlide.offsetTop;
     }
+    // Re-enable scroll snapping after programmatic scroll has finished
+    setTimeout(() => {
+      scrollContainer.classList.add('snap-active');
+    }, 50);
   }, 50);
 }
 

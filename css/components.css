@@ -747,55 +747,55 @@
 /* 1. Contrasting Out-of-Phase Floating in Water (Idle buoyancy variations) */
 /* Idle water drifting driven by standard CSS translate and rotate, leaving transform free for hover interactive sways! */
 
-/* Variation 1: 10px Float, -0.35deg to 0.35deg sway (5.5s duration) - Rising Phase */
+/* Variation 1: 8px Float, -0.3deg to 0.3deg sway (5.5s duration) - Rising Phase */
 @keyframes floatWater1 {
   0%, 100% {
     translate: 0 0px;
-    rotate: -0.35deg;
+    rotate: -0.3deg;
   }
   50% {
-    translate: 0 -10px;
-    rotate: 0.35deg;
-  }
-}
-
-/* Variation 2: 12px Float, 0.25deg to -0.25deg sway (6.5s duration) - Completely Out-of-Phase Falling Phase */
-@keyframes floatWater2 {
-  0%, 100% {
-    translate: 0 -12px;
-    rotate: 0.25deg;
-  }
-  50% {
-    translate: 0 0px;
-    rotate: -0.25deg;
-  }
-}
-
-/* Variation 3: 11px Float, -0.4deg to 0.2deg sway (6.0s duration) - Asymmetric Phase */
-@keyframes floatWater3 {
-  0%, 100% {
-    translate: 0 -5px;
-    rotate: -0.4deg;
-  }
-  35% {
-    translate: 0 -11px;
-    rotate: 0.1deg;
-  }
-  70% {
-    translate: 0 -2px;
+    translate: 0 -8px;
     rotate: 0.3deg;
   }
 }
 
-/* Variation Fixed: 4px Calm Float, -0.15deg to 0.15deg sway (Gentle floating for fixed borders) */
+/* Variation 2: 8px Float, 0.3deg to -0.3deg sway (6.5s duration) - Completely Out-of-Phase Falling Phase */
+@keyframes floatWater2 {
+  0%, 100% {
+    translate: 0 -8px;
+    rotate: 0.3deg;
+  }
+  50% {
+    translate: 0 0px;
+    rotate: -0.3deg;
+  }
+}
+
+/* Variation 3: 8px Float, Asymmetric Phase but with exact same 8px/±0.3deg bounds */
+@keyframes floatWater3 {
+  0%, 100% {
+    translate: 0 -4px;
+    rotate: -0.1deg;
+  }
+  35% {
+    translate: 0 -8px;
+    rotate: 0.3deg;
+  }
+  70% {
+    translate: 0 0px;
+    rotate: -0.3deg;
+  }
+}
+
+/* Variation Fixed: Unified 8px Float, -0.3deg to 0.3deg sway (Gentle floating for fixed borders) */
 @keyframes floatWaterFixed {
   0%, 100% {
     translate: 0 0px;
-    rotate: -0.15deg;
+    rotate: -0.3deg;
   }
   50% {
-    translate: 0 -4px;
-    rotate: 0.15deg;
+    translate: 0 -8px;
+    rotate: 0.3deg;
   }
 }
 
@@ -850,7 +850,8 @@
 .koral-waves-submerged .suggest-card { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.2s; }
 .koral-waves-submerged .bottom-nav { --float-anim: floatWaterFixed 6.5s ease-in-out infinite; --float-delay: -1.2s; }
 .koral-waves-submerged .landing-sub { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -1.8s; }
-.koral-waves-submerged .explore-search-bar { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.8s; }
+.koral-waves-submerged .explore-search-input-wrap { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.8s; }
+.koral-waves-submerged .story-viewer-box { --float-anim: floatWater1 6.0s ease-in-out infinite; --float-delay: -1.5s; }
 .koral-waves-submerged .topbar { --float-anim: floatWaterFixed 6.5s ease-in-out infinite; --float-delay: -4.1s; }
 .koral-waves-submerged .profile-tabs { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -4.4s; }
 .koral-waves-submerged .trending-tag-name { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -1.3s; }
@@ -946,9 +947,9 @@
 .koral-waves-submerged .profile-stat:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.3s; }
 
 /* Apply the variables globally to all target elements */
-.koral-waves-submerged .auth-card, .koral-waves-submerged .sidebar-nav, .koral-waves-submerged .landing-logo, .koral-waves-submerged .create-header,
+.koral-waves-submerged .auth-card, .koral-waves-submerged .story-viewer-box, .koral-waves-submerged .sidebar-nav, .koral-waves-submerged .landing-logo, .koral-waves-submerged .create-header,
 .koral-waves-submerged .profile-avatar-wrap, .koral-waves-submerged .profile-name, .koral-waves-submerged .profile-bio, .koral-waves-submerged .profile-handle, .koral-waves-submerged .profile-bio-link, .koral-waves-submerged .notif-day-label, .koral-waves-submerged .create-page > .mb-8 p, .koral-waves-submerged .settings-page p,
-.koral-waves-submerged .suggest-card, .koral-waves-submerged .bottom-nav, .koral-waves-submerged .landing-sub, .koral-waves-submerged .explore-search-bar,
+.koral-waves-submerged .suggest-card, .koral-waves-submerged .bottom-nav, .koral-waves-submerged .landing-sub, .koral-waves-submerged .explore-search-input-wrap,
 .koral-waves-submerged .topbar, .koral-waves-submerged .profile-tabs, .koral-waves-submerged .profile-stat, .koral-waves-submerged .trending-tag-name, .koral-waves-submerged .trending-tag-count, .koral-waves-submerged .aside-profile-name, .koral-waves-submerged .aside-profile-handle,
 .koral-waves-submerged .auth-banner-side, .koral-waves-submerged .auth-language-bar, .koral-waves-submerged .g-text, .koral-waves-submerged .settings-header, .koral-waves-submerged .feed-page-title, .koral-waves-submerged .search-section-title,
 .koral-waves-submerged .settings-header h2, .koral-waves-submerged .comments-wrap h3, .koral-waves-submerged .post-card, .koral-waves-submerged .create-option-card, .koral-waves-submerged .search-keyword-card, .koral-waves-submerged .profile-grid-cell,
@@ -997,7 +998,8 @@
 .bento-main,
 .messages-sidebar,
 .messages-chat,
-.explore-search-bar,
+.explore-search-input-wrap,
+.story-viewer-box,
 .topbar,
 .create-header,
 .settings-header,
@@ -1077,6 +1079,7 @@
 .koral-waves-submerged .profile-avatar-wrap.hover-active,
 .koral-waves-submerged .avatar.hover-active,
 .koral-waves-submerged .settings-item.hover-active,
+.koral-waves-submerged .explore-search-input-wrap.hover-active,
 .koral-waves-submerged .input.hover-active,
 .koral-waves-submerged .textarea.hover-active,
 .koral-waves-submerged .select.hover-active,
@@ -1114,6 +1117,7 @@
 .koral-waves-submerged .profile-avatar-wrap.wobble-out-active,
 .koral-waves-submerged .avatar.wobble-out-active,
 .koral-waves-submerged .settings-item.wobble-out-active,
+.koral-waves-submerged .explore-search-input-wrap.wobble-out-active,
 .koral-waves-submerged .input.wobble-out-active,
 .koral-waves-submerged .textarea.wobble-out-active,
 .koral-waves-submerged .select.wobble-out-active,
@@ -1150,6 +1154,14 @@
 .post-action-btn:active {
   animation: none !important;
   transform: scale(0.96) !important;
+}
+
+/* Disable individual water buoyancy / active animations on explore search input so it locks with container */
+.koral-waves-submerged .explore-search-input-wrap .input,
+.koral-waves-submerged .explore-search-input-wrap .input.hover-active,
+.koral-waves-submerged .explore-search-input-wrap .input.wobble-out-active {
+  animation: none !important;
+  transform: none !important;
 }
 
 /* Custom styles for search terms */
@@ -1253,3 +1265,46 @@
   max-width: 340px; animation: floatInToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .toast.out { animation: sinkOutToast 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important; }
+
+/* Story Viewer Close Button Interactions */
+.story-viewer-close-btn {
+  transition: background-color 0.2s, transform 0.2s, border-color 0.2s !important;
+}
+.story-viewer-close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: scale(1.1) !important;
+}
+.story-viewer-close-btn:active {
+  transform: scale(0.92) !important;
+  background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Premium Story snap-scrolling layout locks */
+.stories-scroll-container {
+  height: 100vh !important;
+  width: 100vw !important;
+  overflow-y: scroll !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  position: absolute;
+  inset: 0;
+  scroll-behavior: auto;
+}
+.stories-scroll-container::-webkit-scrollbar {
+  display: none !important;
+}
+.stories-scroll-container.snap-active {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+.story-slide-wrap {
+  scroll-snap-align: start;
+  height: 100vh !important;
+  width: 100vw !important;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}

@@ -217,8 +217,7 @@ body {
   flex: 1;
   min-height: 100vh;
   transition: margin-left var(--t-base);
-  display: flex;
-  justify-content: center;
+  display: block;
 }
 .main-content.sidebar-collapsed { margin-left: calc(72px + var(--s8)); }
 
@@ -226,6 +225,10 @@ body {
   width: 100%;
   max-width: 935px;
   padding: var(--s8) var(--s6);
+  margin-left: auto;
+  margin-right: auto;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 /* Feed layout with right sidebar */
@@ -236,6 +239,10 @@ body {
   width: 100%;
   max-width: 100%;
   padding-left: var(--s6);
+  margin-left: auto;
+  margin-right: auto;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 .feed-main {
   flex: 1;
@@ -603,31 +610,33 @@ body {
 /* SPA page entrance & exit animations (water fluid slide-up & slide-down) */
 .anim-fade {
   animation: pageFloatIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  will-change: transform, opacity;
 }
 
 .page-exit-active {
   animation: pageSinkOut 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   pointer-events: none !important;
+  will-change: transform, opacity;
 }
 
 @keyframes pageFloatIn {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(16px) translateZ(0);
   }
   to {
     opacity: 1;
-    transform: none;
+    transform: translateY(0) translateZ(0);
   }
 }
 
 @keyframes pageSinkOut {
   from {
     opacity: 1;
-    transform: none;
+    transform: translateY(0) translateZ(0);
   }
   to {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(16px) translateZ(0);
   }
 }

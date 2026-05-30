@@ -563,7 +563,7 @@ class Store {
     // 3. Format result and sort stories by time
     const result = [];
     map.forEach((stories, handle) => {
-      stories.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      stories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       result.push({ authorHandle: handle, stories });
     });
     

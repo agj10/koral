@@ -71,7 +71,7 @@ export function renderExplorePage(container) {
   
   const searchHeader = el('div', { className: 'flex items-center gap-4 w-full flex-wrap explore-search-bar' });
   
-  const searchWrap = el('div', { className: 'flex-1 min-w-[200px]', style: { position: 'relative' } });
+  const searchWrap = el('div', { className: 'flex-1 min-w-[200px] explore-search-input-wrap', style: { position: 'relative' } });
   const searchInput = el('input', { 
     type: 'text', 
     className: 'input w-full py-3 rounded-2xl bg-element border-base text-lg font-semibold', 
@@ -233,6 +233,7 @@ export function renderProfilePage(container, { handle }) {
   );
   
   const info = el('div', { className: 'profile-info' });
+  const row1 = el('div', { className: 'profile-row1' });
   
   row1.appendChild(el('h2', { className: 'profile-handle' }, 
     user.handle.startsWith('@') ? user.handle : '@' + user.handle,
@@ -279,7 +280,7 @@ export function renderProfilePage(container, { handle }) {
   const renderGrid = () => {
     gridContainer.innerHTML = '';
     
-    const userStories = store.getState().stories.filter(s => s.authorHandle === user.handle);
+    const userStories = store.getState().stories.filter(s => s.authorHandle === user.handle).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     const combinedItems = [];
     
     if (activeTab === 'posts') {
@@ -324,8 +325,9 @@ export function renderProfilePage(container, { handle }) {
         const cell = el('div', { 
           className: 'profile-grid-cell group cursor-pointer relative', 
           onclick: () => {
+            const clickedIndex = userStories.indexOf(story);
             const groupedStories = [{ authorHandle: user.handle, stories: userStories }];
-            import('./components.js').then(m => m.renderStoryViewer(0, groupedStories));
+            import('./components.js').then(m => m.renderStoryViewer(0, groupedStories, clickedIndex));
           } 
         });
         const bgLayer = story.layers?.find(l => l.type === 'image');
