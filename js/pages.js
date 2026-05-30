@@ -803,6 +803,35 @@ function renderPostEditor(container) {
 }
 
 function renderSettingsLayout(container, activeTab, mainContentEl) {
+  const existingMain = container.querySelector('.settings-main-content');
+  const existingTabs = container.querySelector('.profile-tabs');
+  
+  if (existingMain && existingTabs) {
+    // Settings outer shell already exists! Only update the tab highlights and transition the inner content box
+    const tabElements = existingTabs.querySelectorAll('.profile-tab');
+    const links = [
+      { id: 'profile' },
+      { id: 'security' },
+      { id: 'theme' },
+      { id: 'language' }
+    ];
+    tabElements.forEach((tabEl, index) => {
+      const link = links[index];
+      if (link) {
+        if (link.id === activeTab) {
+          tabEl.classList.add('active');
+        } else {
+          tabEl.classList.remove('active');
+        }
+      }
+    });
+    
+    existingMain.innerHTML = '';
+    mainContentEl.classList.add('inner-settings-fade');
+    existingMain.appendChild(mainContentEl);
+    return;
+  }
+  
   container.innerHTML = '';
   const wrap = el('div', { className: 'page-container anim-fade', style: { maxWidth: '768px' } });
   
@@ -829,6 +858,7 @@ function renderSettingsLayout(container, activeTab, mainContentEl) {
   wrap.appendChild(tabs);
   
   const main = el('div', { className: 'settings-main-content bg-element border border-base rounded-2xl p-6 shadow-sm mb-10' });
+  mainContentEl.classList.add('inner-settings-fade');
   main.appendChild(mainContentEl);
   wrap.appendChild(main);
   

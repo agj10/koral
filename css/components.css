@@ -1320,3 +1320,20 @@
   justify-content: center;
   position: relative;
 }
+
+/* Smooth inner settings content fade/rise transition */
+.inner-settings-fade {
+  animation: innerSettingsFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes innerSettingsFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -183,6 +183,13 @@ window.navigateTo = function(path) {
     return; // Do absolutely nothing if already on the target path
   }
   
+  const isSettingsNav = normalizedCurrent.startsWith('settings') && normalizedNew.startsWith('settings');
+  if (isSettingsNav) {
+    // Bypass full-page exit transition for settings sub-tabs to allow smooth inner transitions
+    window.location.hash = path;
+    return;
+  }
+  
   const currentContainer = document.querySelector('.main-content') || document.querySelector('#app');
   if (currentContainer) {
     currentContainer.classList.add('page-exit-active');
