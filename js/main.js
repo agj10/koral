@@ -92,87 +92,94 @@ function updateNavActive(route) {
 let currentPath = '';
 
 function router() {
-  const hash = window.location.hash.slice(1) || '';
-  
-  if (currentPath && currentPath !== hash) {
-    sessionStorage.setItem(`scroll_${currentPath}`, window.scrollY);
-  }
-  currentPath = hash;
-  
-  store.subscribers = [];
-  
-  const parts = hash.split('/').filter(Boolean);
-  const route = parts[0] || '';
-  const param = parts[1] || '';
-  
-  const currentUser = store.getState().currentUser;
-  
-  // Auto-login logic: redirect to feed if already logged in
-  if (currentUser && ['login', 'signup', ''].includes(route)) {
-    return window.navigateTo('feed');
-  }
-  
-  // Routes not requiring auth — use surface wave mode (above water)
-  if (route === 'login') {
-    koralWaves.init('surface');
-    return renderLoginPage(appRoot);
-  }
-  if (route === 'signup') {
-    koralWaves.init('surface');
-    return renderSignupPage(appRoot);
-  }
-  if (!currentUser && !['explore', 'profile', 'post', 'tag'].includes(route)) {
-    koralWaves.init('surface');
-    return renderLandingPage(appRoot);
-  }
-  
-  // Post-login — use submerged wave mode (underwater)
-  koralWaves.init('submerged');
-  
-  // Build shell if not auth routes
-  buildAppShell();
-  updateNavActive(route);
-  
-  switch(route) {
-    case 'feed':
-    case '':
-      renderFeedPage(mainContent);
-      break;
-    case 'explore':
-      renderExplorePage(mainContent);
-      break;
-    case 'create':
-      renderCreatePage(mainContent, { subRoute: param });
-      break;
-    case 'profile':
-      renderProfilePage(mainContent, { handle: param });
-      break;
-    case 'post':
-      renderPostPage(mainContent, { postId: param });
-      break;
-    case 'settings':
-      if (param === 'profile') renderEditProfilePage(mainContent);
-      else if (param === 'theme') renderThemeSettingsPage(mainContent);
-      else if (param === 'security') renderSecurityPage(mainContent);
-      else if (param === 'language') renderLanguageSettingsPage(mainContent);
-      else {
-        // Direct redirect without creating secondary navigateTo trigger transitions
-        window.location.hash = 'settings/profile';
-      }
-      break;
-    case 'tag':
-      mainContent.innerHTML = `<div class="p-8 text-center text-xl font-bold">#${param} ${t('searchResultsFor')}</div>`;
-      break;
-    default:
-      renderFeedPage(mainContent);
-  }
-  
+  try {
+    const hash = window.location.hash.slice(1) || '';
+    
+    if (currentPath && currentPath !== hash) {
+      sessionStorage.setItem(`scroll_${currentPath}`, window.scrollY);
+    }
+    currentPath = hash;
+    
+    store.subscribers = [];
+    
+    const parts = hash.split('/').filter(Boolean);
+    const route = parts[0] || '';
+    const param = parts[1] || '';
+    
+    const currentUser = store.getState().currentUser;
+    
+    // Auto-login logic: redirect to feed if already logged in
+    if (currentUser && ['login', 'signup', ''].includes(route)) {
+      return window.navigateTo('feed');
+    }
+    
+    // Routes not requiring auth — use surface wave mode (above water)
+    if (route === 'login') {
+      koralWaves.init('surface');
+      return renderLoginPage(appRoot);
+    }
+    if (route === 'signup') {
+      koralWaves.init('surface');
+      return renderSignupPage(appRoot);
+    }
+    if (!currentUser && !['explore', 'profile', 'post', 'tag'].includes(route)) {
+      koralWaves.init('surface');
+      return renderLandingPage(appRoot);
+    }
+    
+    // Post-login — use submerged wave mode (underwater)
+    koralWaves.init('submerged');
+    
+    // Build shell if not auth routes
+    buildAppShell();
+    updateNavActive(route);
+    
+    switch(route) {
+      case 'feed':
+      case '':
+        renderFeedPage(mainContent);
+        break;
+      case 'explore':
+        renderExplorePage(mainContent);
+        break;
+      case 'create':
+        renderCreatePage(mainContent, { subRoute: param });
+        break;
+      case 'profile':
+        renderProfilePage(mainContent, { handle: param });
+        break;
+      case 'post':
+        renderPostPage(mainContent, { postId: param });
+        break;
+      case 'settings':
+        if (param === 'profile') renderEditProfilePage(mainContent);
+        else if (param === 'theme') renderThemeSettingsPage(mainContent);
+        else if (param === 'security') renderSecurityPage(mainContent);
+        else if (param === 'language') renderLanguageSettingsPage(mainContent);
+        else {
+          // Direct redirect without creating secondary navigateTo trigger transitions
+          window.location.hash = 'settings/profile';
+        }
+        break;
+      case 'tag':
+        mainContent.innerHTML = `<div class="p-8 text-center text-xl font-bold">#${param} ${t('searchResultsFor')}</div>`;
+        break;
+      default:
+        renderFeedPage(mainContent);
+    }
+    
     const savedScroll = sessionStorage.getItem(`scroll_${currentPath}`);
     if (savedScroll) {
       window.scrollTo(0, parseInt(savedScroll, 10));
     } else {
       window.scrollTo(0, 0);
     }
+  } catch (err) {
+    console.error("Router error, clearing localStorage and self-healing:", err);
+    localStorage.removeItem('koral_data_v2');
+    localStorage.removeItem('koral_recent_searches');
+    window.location.reload();
+  }
 }
 
 window.navigateTo = function(path) {
