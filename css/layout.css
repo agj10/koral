@@ -1,7 +1,41 @@
 /* ===== APP LAYOUT ===== */
 
+/* ---- Wave Background Canvas ---- */
+.koral-wave-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Surface mode: make auth / landing pages transparent so waves show through */
+.koral-waves-surface #app {
+  background: transparent !important;
+  background-image: none !important;
+}
+.koral-waves-surface .auth-shell {
+  background: transparent !important;
+}
+.koral-waves-surface .auth-banner-side {
+  background: transparent !important;
+}
+.koral-waves-surface .landing {
+  background: transparent !important;
+}
+
+/* Submerged mode: make #app transparent so wave canvas bg shows through */
+.koral-waves-submerged #app {
+  background: transparent !important;
+  background-image: none !important;
+}
+
 /* App shell: sidebar + main + aside */
 #app {
+  position: relative;
+  z-index: 1;
   min-height: 100vh;
   background: var(--bg-sub);
   background-image: linear-gradient(135deg, rgba(239,68,68,0.03) 0%, rgba(244,63,94,0.03) 50%, rgba(249,115,22,0.02) 100%);

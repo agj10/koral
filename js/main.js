@@ -3,6 +3,7 @@ import { el, $, $$ } from './utils.js';
 import { store } from './store.js';
 import { t } from './lang.js';
 import { renderFeedPage, renderExplorePage, renderProfilePage, renderPostPage, renderSettingsPage, renderEditProfilePage, renderThemeSettingsPage, renderSecurityPage, renderLanguageSettingsPage, renderLoginPage, renderSignupPage, renderLandingPage, renderCreatePage } from './pages.js';
+import { koralWaves } from './waves.js';
 
 let appRoot, shell, mainContent;
 
@@ -111,12 +112,22 @@ function router() {
     return window.navigateTo('feed');
   }
   
-  // Routes not requiring auth
-  if (route === 'login') return renderLoginPage(appRoot);
-  if (route === 'signup') return renderSignupPage(appRoot);
+  // Routes not requiring auth — use surface wave mode (above water)
+  if (route === 'login') {
+    koralWaves.init('surface');
+    return renderLoginPage(appRoot);
+  }
+  if (route === 'signup') {
+    koralWaves.init('surface');
+    return renderSignupPage(appRoot);
+  }
   if (!currentUser && !['explore', 'profile', 'post', 'tag'].includes(route)) {
+    koralWaves.init('surface');
     return renderLandingPage(appRoot);
   }
+  
+  // Post-login — use submerged wave mode (underwater)
+  koralWaves.init('submerged');
   
   // Build shell if not auth routes
   buildAppShell();

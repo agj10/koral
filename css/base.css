@@ -7,6 +7,12 @@ body {
   transition: background var(--t-base), color var(--t-base);
 }
 
+/* Wave background: make body transparent so canvas shows through */
+body.koral-waves-surface,
+body.koral-waves-submerged {
+  background: transparent !important;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
