@@ -221,7 +221,7 @@ export function initApp() {
         if (!target.classList.contains('hover-active')) {
           target.classList.remove('wobble-out-active');
         }
-      }, 600);
+      }, 800);
     }
   });
 
