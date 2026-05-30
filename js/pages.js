@@ -735,7 +735,7 @@ export function renderCreatePage(container, options = {}) {
 
   const createOption = (title, desc, icon, onClick) => {
     return el('button', {
-      className: 'w-full flex items-center justify-start gap-6 p-6 bg-element border border-base rounded-2xl hover:bg-hover hover:border-brand transition-all group cursor-pointer text-left',
+      className: 'w-full flex items-center justify-start gap-6 p-6 bg-element border border-base rounded-2xl hover:bg-hover hover:border-brand transition-all group cursor-pointer text-left create-option-card',
       onclick: onClick
     },
       el('div', { className: 'w-16 h-16 shrink-0 rounded-full bg-brand/10 text-brand flex items-center justify-center group-hover:scale-110 transition-transform' },

@@ -19,7 +19,7 @@
   background: var(--brand-grad); color: #fff;
   box-shadow: 0 2px 12px rgba(239,68,68,.3);
 }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(239,68,68,.4); filter: brightness(1.06); }
+.btn-primary:hover { box-shadow: 0 6px 24px rgba(239,68,68,.4); filter: brightness(1.06); }
 .btn-primary:active { transform: scale(0.96); box-shadow: 0 2px 10px rgba(239,68,68,.3); }
 
 .btn-secondary { background: var(--bg-sub); color: var(--tx); border-color: var(--border); }
@@ -41,7 +41,7 @@
   font-size: var(--text-sm); font-weight: 600; border-radius: var(--r-lg);
   box-shadow: 0 2px 10px rgba(239,68,68,.3); transition: all var(--t-bounce);
 }
-.btn-follow:hover { filter: brightness(1.08); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(239,68,68,.4); }
+.btn-follow:hover { filter: brightness(1.08); box-shadow: 0 4px 16px rgba(239,68,68,.4); }
 .btn-follow:active { transform: scale(0.96); }
 .btn-follow.following {
   background: transparent; color: var(--tx-2);
@@ -179,7 +179,6 @@
   .post-card { min-height: 500px; }
 }
 .post-card:hover {
-  transform: translateY(-4px);
   box-shadow: 0 12px 30px rgba(0,0,0,0.08);
 }
 
@@ -742,3 +741,99 @@
   color: #fff; cursor: pointer; font-size: 20px; transition: background var(--t-fast);
 }
 .lightbox-close:hover { background: rgba(255,255,255,.2); }
+
+/* ===== LIQUID ENVIRONMENT ANIMATIONS ===== */
+
+/* 1. Stately Floating in Water (Idle animation) */
+@keyframes floatWater {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.auth-card,
+.post-card,
+.suggest-card,
+.create-option-card,
+.card {
+  animation: floatWater 6s ease-in-out infinite;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s, border-color 0.4s, background-color 0.4s;
+}
+
+/* Stagger offsets for natural fluid ripples */
+.auth-card:nth-child(even),
+.post-card:nth-child(even),
+.suggest-card:nth-child(even),
+.create-option-card:nth-child(even),
+.card:nth-child(even) {
+  animation-duration: 7s;
+  animation-delay: -1.5s;
+}
+
+.auth-card:nth-child(3n),
+.post-card:nth-child(3n),
+.suggest-card:nth-child(3n),
+.create-option-card:nth-child(3n),
+.card:nth-child(3n) {
+  animation-duration: 8s;
+  animation-delay: -3.5s;
+}
+
+/* 2. Fluid Swaying Hover Wobble Animation */
+@keyframes wobbleHover {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-4px) rotate(-1.5deg); /* tilt left */
+  }
+  60% {
+    transform: translateY(-8px) rotate(1.2deg);  /* tilt right */
+  }
+  100% {
+    transform: translateY(-8px) rotate(0deg);    /* stabilize straight & elevated */
+  }
+}
+
+/* Settle in elevated hover position and wobble */
+.auth-card:hover,
+.post-card:hover,
+.suggest-card:hover,
+.create-option-card:hover,
+.card:hover {
+  animation: wobbleHover 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  box-shadow: 0 16px 36px rgba(0,0,0,0.08) !important;
+}
+
+/* 3. Small-scale Button Hover Wobble Animation */
+@keyframes wobbleHoverBtn {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-1.5px) rotate(-1.2deg); /* tilt left */
+  }
+  60% {
+    transform: translateY(-3px) rotate(0.8deg);   /* tilt right */
+  }
+  100% {
+    transform: translateY(-3px) rotate(0deg);     /* stabilize elevated */
+  }
+}
+
+.btn {
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s, filter 0.4s;
+}
+
+.btn:hover {
+  animation: wobbleHoverBtn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+/* Active pressing state remains snappy */
+.btn:active {
+  animation: none !important;
+  transform: scale(0.96) !important;
+}
