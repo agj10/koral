@@ -96,6 +96,10 @@ function lerp(start, end, amt) {
   return start + (end - start) * amt;
 }
 
+function easeInOutCubic(x) {
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
+
 function parseWaveConfig(wc) {
   const rgb = hexToRgb(wc.hex);
   return {
@@ -129,6 +133,23 @@ class KoralWaves {
     this.resizeObserver = null;
     this._boundDraw = this._draw.bind(this);
     this._boundResize = this._onResize.bind(this);
+
+    // Transition State Tracking
+    this.transitionStartTime = 0;
+    this.staggerDelay = 150; // 150ms delay per layer
+    this.layerDuration = 1500; // 1.5s smooth duration per layer
+    this.transitionDuration = 4 * this.staggerDelay + this.layerDuration; // 2100ms total
+    this.currentWaveStartY = null;
+    this.currentMidStopPos = null;
+    this.currentBgStops = null;
+    this.currentWaveColors = null;
+
+    this.startWaveStartY = null;
+    this.startMidStopPos = null;
+    this.startBgStops = null;
+    this.startWaveColors = null;
+
+    this.lastTheme = null;
   }
 
   /**
@@ -137,6 +158,7 @@ class KoralWaves {
    */
   init(mode = 'surface') {
     const isNew = !this.canvas;
+    const oldMode = this.mode;
     this.mode = mode;
 
     if (isNew) {
@@ -162,6 +184,8 @@ class KoralWaves {
 
       // Setup initial state immediately on first load
       const theme = getEffectiveTheme();
+      this.lastTheme = theme;
+
       const waveColors = mode === 'surface' 
         ? (theme === 'dark' ? SURFACE_WAVES_DARK : SURFACE_WAVES_LIGHT)
         : (theme === 'dark' ? SUBMERGED_WAVES_DARK : SUBMERGED_WAVES_LIGHT);
@@ -176,9 +200,24 @@ class KoralWaves {
       this.currentBgStops = bgStops.map(stop => ({ ...stop }));
       this.currentWaveColors = waveColors.map(wc => parseWaveConfig(wc));
 
+      // Synchronize start state with initial values
+      this.startWaveStartY = this.currentWaveStartY;
+      this.startMidStopPos = this.currentMidStopPos;
+      this.startBgStops = this.currentBgStops.map(stop => ({ ...stop }));
+      this.startWaveColors = this.currentWaveColors.map(wc => ({ ...wc }));
+
+      this.transitionStartTime = 0;
+
       // Start animation
       this.lastTs = null;
       this.animId = requestAnimationFrame(this._boundDraw);
+    } else if (oldMode !== mode) {
+      // Trigger smooth transition from current intermediate positions
+      this.startWaveStartY = this.currentWaveStartY;
+      this.startMidStopPos = this.currentMidStopPos;
+      this.startBgStops = this.currentBgStops.map(stop => ({ ...stop }));
+      this.startWaveColors = this.currentWaveColors.map(wc => ({ ...wc }));
+      this.transitionStartTime = this.time;
     }
 
     // Toggle body classes for CSS transparency overrides
@@ -228,7 +267,17 @@ class KoralWaves {
 
     ctx.clearRect(0, 0, W, H);
 
-    // 1. Determine targets based on current mode and theme
+    // 1. Theme Change Interruption Checker
+    if (this.lastTheme !== theme) {
+      this.startWaveStartY = this.currentWaveStartY;
+      this.startMidStopPos = this.currentMidStopPos;
+      this.startBgStops = this.currentBgStops.map(stop => ({ ...stop }));
+      this.startWaveColors = this.currentWaveColors.map(wc => ({ ...wc }));
+      this.transitionStartTime = this.time;
+      this.lastTheme = theme;
+    }
+
+    // 2. Determine target values
     const targetWaveStartY = mode === 'surface' ? H * 0.85 : H * 0.15;
     const targetMidStopPos = mode === 'surface' ? 0.7 : 0.5;
 
@@ -240,30 +289,22 @@ class KoralWaves {
       ? (theme === 'dark' ? BG_SURFACE_DARK : BG_SURFACE_LIGHT)
       : (theme === 'dark' ? BG_SUBMERGED_DARK : BG_SUBMERGED_LIGHT);
 
-    // 2. Interpolate current values towards targets (Time-independent lerp)
-    const t = 1 - Math.exp(-0.005 * dt); // smooth ~300ms transition
+    // 3. Interpolate overall background properties using ease-in-out cubic
+    const elapsed = this.time - this.transitionStartTime;
+    const progress = Math.max(0, Math.min(1, elapsed / this.transitionDuration));
+    const easedOverall = easeInOutCubic(progress);
 
-    this.currentWaveStartY = lerp(this.currentWaveStartY, targetWaveStartY, t);
-    this.currentMidStopPos = lerp(this.currentMidStopPos, targetMidStopPos, t);
+    this.currentWaveStartY = lerp(this.startWaveStartY, targetWaveStartY, easedOverall);
+    this.currentMidStopPos = lerp(this.startMidStopPos, targetMidStopPos, easedOverall);
 
     // Lerp background stops
     for (let j = 0; j < 3; j++) {
-      this.currentBgStops[j].r = lerp(this.currentBgStops[j].r, targetBgStops[j].r, t);
-      this.currentBgStops[j].g = lerp(this.currentBgStops[j].g, targetBgStops[j].g, t);
-      this.currentBgStops[j].b = lerp(this.currentBgStops[j].b, targetBgStops[j].b, t);
+      this.currentBgStops[j].r = lerp(this.startBgStops[j].r, targetBgStops[j].r, easedOverall);
+      this.currentBgStops[j].g = lerp(this.startBgStops[j].g, targetBgStops[j].g, easedOverall);
+      this.currentBgStops[j].b = lerp(this.startBgStops[j].b, targetBgStops[j].b, easedOverall);
     }
 
-    // Lerp wave colors
-    for (let j = 0; j < 5; j++) {
-      const targetWc = parseWaveConfig(targetWaveColors[j]);
-      this.currentWaveColors[j].r = lerp(this.currentWaveColors[j].r, targetWc.r, t);
-      this.currentWaveColors[j].g = lerp(this.currentWaveColors[j].g, targetWc.g, t);
-      this.currentWaveColors[j].b = lerp(this.currentWaveColors[j].b, targetWc.b, t);
-      this.currentWaveColors[j].aTop = lerp(this.currentWaveColors[j].aTop, targetWc.aTop, t);
-      this.currentWaveColors[j].aBot = lerp(this.currentWaveColors[j].aBot, targetWc.aBot, t);
-    }
-
-    // 3. Paint Background Gradient using current morphed colors
+    // 4. Paint Background Gradient using current morphed colors
     const bgGradient = ctx.createLinearGradient(0, 0, 0, H);
     const bg0 = this.currentBgStops[0];
     const bg1 = this.currentBgStops[1];
@@ -277,14 +318,35 @@ class KoralWaves {
     // Keep wave size, spacing, and floating amplitude EXACTLY identical between both modes
     const waveScaleHeight = H * 0.15;
 
-    // 4. Draw morphed wave layers
+    // 5. Draw wave layers with sequential STAGGERED easing
     WAVE_PARAMS.forEach((wp, i) => {
-      const wc = this.currentWaveColors[i];
+      // Staggered delay per layer (150ms delay)
+      const delay = i * this.staggerDelay;
+      const layerElapsed = Math.max(0, elapsed - delay);
+      const lp = Math.min(1, layerElapsed / this.layerDuration);
+      const easedLp = easeInOutCubic(lp);
 
-      // Spacing baseY using waveScaleHeight so layers are spaced gently
-      const baseY = this.currentWaveStartY + wp.yOffset * waveScaleHeight;
+      // Staggered Y-position interpolation
+      const layerStart = this.startWaveStartY + wp.yOffset * waveScaleHeight;
+      const layerTarget = targetWaveStartY + wp.yOffset * waveScaleHeight;
+      const baseY = lerp(layerStart, layerTarget, easedLp);
 
-      // Float vertical offset using waveScaleHeight so it is gentle and identical to pre-login
+      // Staggered color & alpha interpolation
+      const startWc = this.startWaveColors[i];
+      const targetWc = parseWaveConfig(targetWaveColors[i]);
+
+      const wc = {
+        r: lerp(startWc.r, targetWc.r, easedLp),
+        g: lerp(startWc.g, targetWc.g, easedLp),
+        b: lerp(startWc.b, targetWc.b, easedLp),
+        aTop: lerp(startWc.aTop, targetWc.aTop, easedLp),
+        aBot: lerp(startWc.aBot, targetWc.aBot, easedLp)
+      };
+
+      // Save current state back so next transitions start from correct intermediates
+      this.currentWaveColors[i] = wc;
+
+      // Float vertical offset using waveScaleHeight
       const floatOffset = Math.sin(time * wp.fSpeed + wp.fPhase) * wp.fAmp * waveScaleHeight;
 
       // Draw wave path
