@@ -833,137 +833,137 @@
   }
 }
 
-/* Variable-driven Floating Assignments to enable snapping-free hover transitions */
-.auth-card { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.5s; }
-.sidebar-nav { --float-anim: floatWaterFixed 5.5s ease-in-out infinite; --float-delay: -3.2s; }
-.landing-logo { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -0.8s; }
-.create-header { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -4.3s; }
-.profile-avatar-wrap { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -2.7s; }
-.profile-name { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -3.6s; }
-.profile-bio { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.9s; }
-.profile-handle { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.9s; }
-.profile-bio-link { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -5.3s; }
-.notif-day-label { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -4.8s; }
-.create-page > .mb-8 p { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.7s; }
-.settings-page p { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -3.1s; }
+/* Variable-driven Floating Assignments to enable snapping-free hover transitions (Underwater Submerged Mode Only!) */
+.koral-waves-submerged .auth-card { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.5s; }
+.koral-waves-submerged .sidebar-nav { --float-anim: floatWaterFixed 5.5s ease-in-out infinite; --float-delay: -3.2s; }
+.koral-waves-submerged .landing-logo { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -0.8s; }
+.koral-waves-submerged .create-header { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -4.3s; }
+.koral-waves-submerged .profile-avatar-wrap { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -2.7s; }
+.koral-waves-submerged .profile-name { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -3.6s; }
+.koral-waves-submerged .profile-bio { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.9s; }
+.koral-waves-submerged .profile-handle { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.9s; }
+.koral-waves-submerged .profile-bio-link { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -5.3s; }
+.koral-waves-submerged .notif-day-label { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -4.8s; }
+.koral-waves-submerged .create-page > .mb-8 p { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.7s; }
+.koral-waves-submerged .settings-page p { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -3.1s; }
 
-.suggest-card { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.2s; }
-.bottom-nav { --float-anim: floatWaterFixed 6.5s ease-in-out infinite; --float-delay: -1.2s; }
-.landing-sub { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -1.8s; }
-.explore-search-bar { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.8s; }
-.topbar { --float-anim: floatWaterFixed 6.5s ease-in-out infinite; --float-delay: -4.1s; }
-.profile-tabs { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -4.4s; }
-.trending-tag-name { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -1.3s; }
-.trending-tag-count { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -5.0s; }
-.aside-profile-name { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -3.4s; }
-.aside-profile-handle { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -0.6s; }
+.koral-waves-submerged .suggest-card { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.2s; }
+.koral-waves-submerged .bottom-nav { --float-anim: floatWaterFixed 6.5s ease-in-out infinite; --float-delay: -1.2s; }
+.koral-waves-submerged .landing-sub { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -1.8s; }
+.koral-waves-submerged .explore-search-bar { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.8s; }
+.koral-waves-submerged .topbar { --float-anim: floatWaterFixed 6.5s ease-in-out infinite; --float-delay: -4.1s; }
+.koral-waves-submerged .profile-tabs { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -4.4s; }
+.koral-waves-submerged .trending-tag-name { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -1.3s; }
+.koral-waves-submerged .trending-tag-count { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -5.0s; }
+.koral-waves-submerged .aside-profile-name { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -3.4s; }
+.koral-waves-submerged .aside-profile-handle { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -0.6s; }
 
-.auth-banner-side { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.7s; }
-.auth-language-bar { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -2.5s; }
-.g-text { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -2.9s; }
-.settings-header { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.2s; }
-.feed-page-title { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -2.2s; }
-.search-section-title { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.7s; }
-.settings-header h2 { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.2s; }
-.comments-wrap h3 { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.3s; }
+.koral-waves-submerged .auth-banner-side { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.7s; }
+.koral-waves-submerged .auth-language-bar { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -2.5s; }
+.koral-waves-submerged .g-text { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -2.9s; }
+.koral-waves-submerged .settings-header { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.2s; }
+.koral-waves-submerged .feed-page-title { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -2.2s; }
+.koral-waves-submerged .search-section-title { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.7s; }
+.koral-waves-submerged .settings-header h2 { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.2s; }
+.koral-waves-submerged .comments-wrap h3 { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.3s; }
 
 /* Apply individual out-of-phase buoyancy to children based on nth-child */
-.post-card:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -0.8s; }
-.post-card:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -3.4s; }
-.post-card:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -1.7s; }
+.koral-waves-submerged .post-card:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -0.8s; }
+.koral-waves-submerged .post-card:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -3.4s; }
+.koral-waves-submerged .post-card:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -1.7s; }
 
-.create-option-card:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.2s; }
-.create-option-card:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -4.5s; }
-.create-option-card:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -2.0s; }
+.koral-waves-submerged .create-option-card:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.2s; }
+.koral-waves-submerged .create-option-card:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -4.5s; }
+.koral-waves-submerged .create-option-card:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -2.0s; }
 
-.search-keyword-card:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -5.1s; }
-.search-keyword-card:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.1s; }
-.search-keyword-card:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.5s; }
+.koral-waves-submerged .search-keyword-card:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -5.1s; }
+.koral-waves-submerged .search-keyword-card:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.1s; }
+.koral-waves-submerged .search-keyword-card:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.5s; }
 
-.profile-grid-cell:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -2.9s; }
-.profile-grid-cell:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -0.9s; }
-.profile-grid-cell:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.1s; }
+.koral-waves-submerged .profile-grid-cell:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -2.9s; }
+.koral-waves-submerged .profile-grid-cell:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -0.9s; }
+.koral-waves-submerged .profile-grid-cell:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.1s; }
 
-.story-item:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.6s; }
-.story-item:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -4.0s; }
-.story-item:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.2s; }
+.koral-waves-submerged .story-item:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.6s; }
+.koral-waves-submerged .story-item:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -4.0s; }
+.koral-waves-submerged .story-item:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.2s; }
 
-.nav-item:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -2.3s; }
-.nav-item:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -0.5s; }
-.nav-item:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -3.8s; }
+.koral-waves-submerged .nav-item:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -2.3s; }
+.koral-waves-submerged .nav-item:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -0.5s; }
+.koral-waves-submerged .nav-item:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -3.8s; }
 
 /* Dynamic desynchronization for all interactive buttons, inputs, chips, stats */
-.btn:nth-child(3n),
-.btn-icon:nth-child(3n),
-.post-action-btn:nth-child(3n),
-.settings-item:nth-child(3n),
-.input:nth-child(3n),
-.textarea:nth-child(3n),
-.select:nth-child(3n),
-.custom-select-header:nth-child(3n),
-.chip:nth-child(3n),
-.btn-text-link:nth-child(3n),
-.profile-tab:nth-child(3n),
-.settings-back:nth-child(3n) {
+.koral-waves-submerged .btn:nth-child(3n),
+.koral-waves-submerged .btn-icon:nth-child(3n),
+.koral-waves-submerged .post-action-btn:nth-child(3n),
+.koral-waves-submerged .settings-item:nth-child(3n),
+.koral-waves-submerged .input:nth-child(3n),
+.koral-waves-submerged .textarea:nth-child(3n),
+.koral-waves-submerged .select:nth-child(3n),
+.koral-waves-submerged .custom-select-header:nth-child(3n),
+.koral-waves-submerged .chip:nth-child(3n),
+.koral-waves-submerged .btn-text-link:nth-child(3n),
+.koral-waves-submerged .profile-tab:nth-child(3n),
+.koral-waves-submerged .settings-back:nth-child(3n) {
   --float-anim: floatWater1 5.5s ease-in-out infinite;
   --float-delay: -1.8s;
 }
 
-.btn:nth-child(even),
-.btn-icon:nth-child(even),
-.post-action-btn:nth-child(even),
-.settings-item:nth-child(even),
-.input:nth-child(even),
-.textarea:nth-child(even),
-.select:nth-child(even),
-.custom-select-header:nth-child(even),
-.chip:nth-child(even),
-.btn-text-link:nth-child(even),
-.profile-tab:nth-child(even),
-.settings-back:nth-child(even) {
+.koral-waves-submerged .btn:nth-child(even),
+.koral-waves-submerged .btn-icon:nth-child(even),
+.koral-waves-submerged .post-action-btn:nth-child(even),
+.koral-waves-submerged .settings-item:nth-child(even),
+.koral-waves-submerged .input:nth-child(even),
+.koral-waves-submerged .textarea:nth-child(even),
+.koral-waves-submerged .select:nth-child(even),
+.koral-waves-submerged .custom-select-header:nth-child(even),
+.koral-waves-submerged .chip:nth-child(even),
+.koral-waves-submerged .btn-text-link:nth-child(even),
+.koral-waves-submerged .profile-tab:nth-child(even),
+.koral-waves-submerged .settings-back:nth-child(even) {
   --float-anim: floatWater2 6.5s ease-in-out infinite;
   --float-delay: -3.5s;
 }
 
-.btn:nth-child(odd),
-.btn-icon:nth-child(odd),
-.post-action-btn:nth-child(odd),
-.settings-item:nth-child(odd),
-.input:nth-child(odd),
-.textarea:nth-child(odd),
-.select:nth-child(odd),
-.custom-select-header:nth-child(odd),
-.chip:nth-child(odd),
-.btn-text-link:nth-child(odd),
-.profile-tab:nth-child(odd),
-.settings-back:nth-child(odd) {
+.koral-waves-submerged .btn:nth-child(odd),
+.koral-waves-submerged .btn-icon:nth-child(odd),
+.koral-waves-submerged .post-action-btn:nth-child(odd),
+.koral-waves-submerged .settings-item:nth-child(odd),
+.koral-waves-submerged .input:nth-child(odd),
+.koral-waves-submerged .textarea:nth-child(odd),
+.koral-waves-submerged .select:nth-child(odd),
+.koral-waves-submerged .custom-select-header:nth-child(odd),
+.koral-waves-submerged .chip:nth-child(odd),
+.koral-waves-submerged .btn-text-link:nth-child(odd),
+.koral-waves-submerged .profile-tab:nth-child(odd),
+.koral-waves-submerged .settings-back:nth-child(odd) {
   --float-anim: floatWater3 6.0s ease-in-out infinite;
   --float-delay: -0.9s;
 }
 
-.profile-stat:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.1s; }
-.profile-stat:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.8s; }
-.profile-stat:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.3s; }
+.koral-waves-submerged .profile-stat:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.1s; }
+.koral-waves-submerged .profile-stat:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.8s; }
+.koral-waves-submerged .profile-stat:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.3s; }
 
 /* Apply the variables globally to all target elements */
-.auth-card, .sidebar-nav, .landing-logo, .create-header,
-.profile-avatar-wrap, .profile-name, .profile-bio, .profile-handle, .profile-bio-link, .notif-day-label, .create-page > .mb-8 p, .settings-page p,
-.suggest-card, .bottom-nav, .landing-sub, .explore-search-bar,
-.topbar, .profile-tabs, .profile-stat, .trending-tag-name, .trending-tag-count, .aside-profile-name, .aside-profile-handle,
-.auth-banner-side, .auth-language-bar, .g-text, .settings-header, .feed-page-title, .search-section-title,
-.settings-header h2, .comments-wrap h3, .post-card, .create-option-card, .search-keyword-card, .profile-grid-cell,
-.story-item, .nav-item, .btn, .btn-icon, .post-action-btn, .settings-item, .input, .textarea, .select,
-.custom-select-header, .chip, .btn-text-link, .profile-tab, .settings-back {
+.koral-waves-submerged .auth-card, .koral-waves-submerged .sidebar-nav, .koral-waves-submerged .landing-logo, .koral-waves-submerged .create-header,
+.koral-waves-submerged .profile-avatar-wrap, .koral-waves-submerged .profile-name, .koral-waves-submerged .profile-bio, .koral-waves-submerged .profile-handle, .koral-waves-submerged .profile-bio-link, .koral-waves-submerged .notif-day-label, .koral-waves-submerged .create-page > .mb-8 p, .koral-waves-submerged .settings-page p,
+.koral-waves-submerged .suggest-card, .koral-waves-submerged .bottom-nav, .koral-waves-submerged .landing-sub, .koral-waves-submerged .explore-search-bar,
+.koral-waves-submerged .topbar, .koral-waves-submerged .profile-tabs, .koral-waves-submerged .profile-stat, .koral-waves-submerged .trending-tag-name, .koral-waves-submerged .trending-tag-count, .koral-waves-submerged .aside-profile-name, .koral-waves-submerged .aside-profile-handle,
+.koral-waves-submerged .auth-banner-side, .koral-waves-submerged .auth-language-bar, .koral-waves-submerged .g-text, .koral-waves-submerged .settings-header, .koral-waves-submerged .feed-page-title, .koral-waves-submerged .search-section-title,
+.koral-waves-submerged .settings-header h2, .koral-waves-submerged .comments-wrap h3, .koral-waves-submerged .post-card, .koral-waves-submerged .create-option-card, .koral-waves-submerged .search-keyword-card, .koral-waves-submerged .profile-grid-cell,
+.koral-waves-submerged .story-item, .koral-waves-submerged .nav-item, .koral-waves-submerged .btn, .koral-waves-submerged .btn-icon, .koral-waves-submerged .post-action-btn, .koral-waves-submerged .settings-item, .koral-waves-submerged .input, .koral-waves-submerged .textarea, .koral-waves-submerged .select,
+.koral-waves-submerged .custom-select-header, .koral-waves-submerged .chip, .koral-waves-submerged .btn-text-link, .koral-waves-submerged .profile-tab, .koral-waves-submerged .settings-back {
   animation: var(--float-anim, none);
   animation-delay: var(--float-delay, 0s);
 }
 
 /* Ensure Profile Detail elements are inline-block to accept transform matrix sways */
-.profile-handle,
-.profile-name,
-.profile-bio,
-.profile-bio-link,
-.profile-stat {
+.koral-waves-submerged .profile-handle,
+.koral-waves-submerged .profile-name,
+.koral-waves-submerged .profile-bio,
+.koral-waves-submerged .profile-bio-link,
+.koral-waves-submerged .profile-stat {
   display: inline-block !important;
   position: relative !important;
   transform-origin: center !important;
@@ -1046,13 +1046,13 @@
 }
 
 /* Settle in elevated hover position and wobble */
-.auth-card.hover-active,
-.post-card.hover-active,
-.suggest-card.hover-active,
-.create-option-card.hover-active,
-.card.hover-active,
-.profile-grid-cell.hover-active,
-.search-keyword-card.hover-active {
+.koral-waves-submerged .auth-card.hover-active,
+.koral-waves-submerged .post-card.hover-active,
+.koral-waves-submerged .suggest-card.hover-active,
+.koral-waves-submerged .create-option-card.hover-active,
+.koral-waves-submerged .card.hover-active,
+.koral-waves-submerged .profile-grid-cell.hover-active,
+.koral-waves-submerged .search-keyword-card.hover-active {
   animation: var(--float-anim, none), wobbleHover 0.7s cubic-bezier(0.45, 0, 0.55, 1) forwards !important;
   animation-delay: var(--float-delay, 0s), 0s !important;
   box-shadow: 0 16px 36px rgba(0,0,0,0.08) !important;
@@ -1071,64 +1071,64 @@
   }
 }
 
-.btn.hover-active,
-.nav-item.hover-active,
-.story-item.hover-active,
-.profile-avatar-wrap.hover-active,
-.avatar.hover-active,
-.settings-item.hover-active,
-.input.hover-active,
-.textarea.hover-active,
-.select.hover-active,
-.custom-select-header.hover-active,
-.chip.hover-active,
-.btn-text-link.hover-active,
-.btn-icon.hover-active,
-.post-action-btn.hover-active,
-.profile-handle.hover-active,
-.profile-name.hover-active,
-.profile-bio.hover-active,
-.profile-bio-link.hover-active,
-.profile-stat.hover-active,
-.profile-tab.hover-active,
-.settings-back.hover-active {
+.koral-waves-submerged .btn.hover-active,
+.koral-waves-submerged .nav-item.hover-active,
+.koral-waves-submerged .story-item.hover-active,
+.koral-waves-submerged .profile-avatar-wrap.hover-active,
+.koral-waves-submerged .avatar.hover-active,
+.koral-waves-submerged .settings-item.hover-active,
+.koral-waves-submerged .input.hover-active,
+.koral-waves-submerged .textarea.hover-active,
+.koral-waves-submerged .select.hover-active,
+.koral-waves-submerged .custom-select-header.hover-active,
+.koral-waves-submerged .chip.hover-active,
+.koral-waves-submerged .btn-text-link.hover-active,
+.koral-waves-submerged .btn-icon.hover-active,
+.koral-waves-submerged .post-action-btn.hover-active,
+.koral-waves-submerged .profile-handle.hover-active,
+.koral-waves-submerged .profile-name.hover-active,
+.koral-waves-submerged .profile-bio.hover-active,
+.koral-waves-submerged .profile-bio-link.hover-active,
+.koral-waves-submerged .profile-stat.hover-active,
+.koral-waves-submerged .profile-tab.hover-active,
+.koral-waves-submerged .settings-back.hover-active {
   animation: var(--float-anim, none), wobbleHoverBtn 0.5s cubic-bezier(0.45, 0, 0.55, 1) forwards !important;
   animation-delay: var(--float-delay, 0s), 0s !important;
 }
 
 /* 4. Hover-Out Sinking Wobbly Decay Animations */
-.auth-card.wobble-out-active,
-.post-card.wobble-out-active,
-.suggest-card.wobble-out-active,
-.create-option-card.wobble-out-active,
-.card.wobble-out-active,
-.profile-grid-cell.wobble-out-active,
-.search-keyword-card.wobble-out-active {
+.koral-waves-submerged .auth-card.wobble-out-active,
+.koral-waves-submerged .post-card.wobble-out-active,
+.koral-waves-submerged .suggest-card.wobble-out-active,
+.koral-waves-submerged .create-option-card.wobble-out-active,
+.koral-waves-submerged .card.wobble-out-active,
+.koral-waves-submerged .profile-grid-cell.wobble-out-active,
+.koral-waves-submerged .search-keyword-card.wobble-out-active {
   animation: var(--float-anim, none), wobbleOut 0.6s ease-out 1 !important;
   animation-delay: var(--float-delay, 0s), 0s !important;
 }
 
-.btn.wobble-out-active,
-.nav-item.wobble-out-active,
-.story-item.wobble-out-active,
-.profile-avatar-wrap.wobble-out-active,
-.avatar.wobble-out-active,
-.settings-item.wobble-out-active,
-.input.wobble-out-active,
-.textarea.wobble-out-active,
-.select.wobble-out-active,
-.custom-select-header.wobble-out-active,
-.chip.wobble-out-active,
-.btn-text-link.wobble-out-active,
-.btn-icon.wobble-out-active,
-.post-action-btn.wobble-out-active,
-.profile-handle.wobble-out-active,
-.profile-name.wobble-out-active,
-.profile-bio.wobble-out-active,
-.profile-bio-link.wobble-out-active,
-.profile-stat.wobble-out-active,
-.profile-tab.wobble-out-active,
-.settings-back.wobble-out-active {
+.koral-waves-submerged .btn.wobble-out-active,
+.koral-waves-submerged .nav-item.wobble-out-active,
+.koral-waves-submerged .story-item.wobble-out-active,
+.koral-waves-submerged .profile-avatar-wrap.wobble-out-active,
+.koral-waves-submerged .avatar.wobble-out-active,
+.koral-waves-submerged .settings-item.wobble-out-active,
+.koral-waves-submerged .input.wobble-out-active,
+.koral-waves-submerged .textarea.wobble-out-active,
+.koral-waves-submerged .select.wobble-out-active,
+.koral-waves-submerged .custom-select-header.wobble-out-active,
+.koral-waves-submerged .chip.wobble-out-active,
+.koral-waves-submerged .btn-text-link.wobble-out-active,
+.koral-waves-submerged .btn-icon.wobble-out-active,
+.koral-waves-submerged .post-action-btn.wobble-out-active,
+.koral-waves-submerged .profile-handle.wobble-out-active,
+.koral-waves-submerged .profile-name.wobble-out-active,
+.koral-waves-submerged .profile-bio.wobble-out-active,
+.koral-waves-submerged .profile-bio-link.wobble-out-active,
+.koral-waves-submerged .profile-stat.wobble-out-active,
+.koral-waves-submerged .profile-tab.wobble-out-active,
+.koral-waves-submerged .settings-back.wobble-out-active {
   animation: var(--float-anim, none), wobbleOutBtn 0.5s ease-out 1 !important;
   animation-delay: var(--float-delay, 0s), 0s !important;
 }
