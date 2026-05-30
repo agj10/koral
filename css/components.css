@@ -952,6 +952,11 @@
 .koral-waves-submerged .profile-stat:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.8s; }
 .koral-waves-submerged .profile-stat:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.3s; }
 
+/* Dynamic desynchronization for theme/language option cards */
+.koral-waves-submerged .theme-option:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.4s; }
+.koral-waves-submerged .theme-option:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -3.8s; }
+.koral-waves-submerged .theme-option:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.9s; }
+
 /* Apply the variables globally to all target elements */
 .koral-waves-submerged .auth-card, .koral-waves-submerged .story-viewer-box, .koral-waves-submerged .sidebar-nav, .koral-waves-submerged .landing-logo, .koral-waves-submerged .create-header,
 .koral-waves-submerged .profile-avatar-wrap, .koral-waves-submerged .profile-name, .koral-waves-submerged .profile-bio, .koral-waves-submerged .profile-handle, .koral-waves-submerged .profile-bio-link, .koral-waves-submerged .notif-day-label, .koral-waves-submerged .create-page > .mb-8 p, .koral-waves-submerged .settings-page p,
@@ -960,7 +965,7 @@
 .koral-waves-submerged .auth-banner-side, .koral-waves-submerged .auth-language-bar, .koral-waves-submerged .g-text, .koral-waves-submerged .settings-header, .koral-waves-submerged .feed-page-title, .koral-waves-submerged .search-section-title,
 .koral-waves-submerged .settings-header h2, .koral-waves-submerged .comments-wrap h3, .koral-waves-submerged .post-card, .koral-waves-submerged .create-option-card, .koral-waves-submerged .search-keyword-card, .koral-waves-submerged .profile-grid-cell,
 .koral-waves-submerged .story-item, .koral-waves-submerged .nav-item, .koral-waves-submerged .btn, .koral-waves-submerged .btn-icon, .koral-waves-submerged .post-action-btn, .koral-waves-submerged .settings-item, .koral-waves-submerged .input, .koral-waves-submerged .textarea, .koral-waves-submerged .select,
-.koral-waves-submerged .custom-select-header, .koral-waves-submerged .chip, .koral-waves-submerged .btn-text-link, .koral-waves-submerged .profile-tab, .koral-waves-submerged .settings-back {
+.koral-waves-submerged .custom-select-header, .koral-waves-submerged .chip, .koral-waves-submerged .btn-text-link, .koral-waves-submerged .profile-tab, .koral-waves-submerged .settings-back, .koral-waves-submerged .theme-option {
   animation: var(--float-anim, none);
   animation-delay: var(--float-delay, 0s);
 }
@@ -1036,7 +1041,8 @@
 .btn-icon,
 .post-action-btn,
 .profile-tab,
-.settings-back {
+.settings-back,
+.theme-option {
   transition: transform 0.65s cubic-bezier(0.34, 1.6, 0.64, 1), box-shadow 0.5s, border-color 0.4s, background-color 0.4s, filter 0.4s;
 }
 
@@ -1063,7 +1069,8 @@
 .koral-waves-submerged .create-option-card.hover-active,
 .koral-waves-submerged .card.hover-active,
 .koral-waves-submerged .profile-grid-cell.hover-active,
-.koral-waves-submerged .search-keyword-card.hover-active {
+.koral-waves-submerged .search-keyword-card.hover-active,
+.koral-waves-submerged .theme-option.hover-active {
   animation: var(--float-anim, none), wobbleHover 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
   animation-delay: var(--float-delay, 0s), 0s !important;
   box-shadow: 0 16px 36px rgba(0,0,0,0.08) !important;
@@ -1118,7 +1125,8 @@
 .koral-waves-submerged .create-option-card.wobble-out-active,
 .koral-waves-submerged .card.wobble-out-active,
 .koral-waves-submerged .profile-grid-cell.wobble-out-active,
-.koral-waves-submerged .search-keyword-card.wobble-out-active {
+.koral-waves-submerged .search-keyword-card.wobble-out-active,
+.koral-waves-submerged .theme-option.wobble-out-active {
   animation: var(--float-anim, none), wobbleOut 1.2s cubic-bezier(0.4, 0, 0.2, 1) 1 !important;
   animation-delay: var(--float-delay, 0s), 0s !important;
 }

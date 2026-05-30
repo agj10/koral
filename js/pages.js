@@ -1028,7 +1028,7 @@ export function renderSecurityPage(container) {
 
   actionsWrap.append(
     el('div', { 
-      className: 'flex items-center gap-4 p-5 rounded-2xl border border-base bg-subtle hover:bg-hover hover:border-str transition-all cursor-pointer shadow-sm', 
+      className: 'settings-item flex items-center gap-4 p-5 rounded-2xl border border-base bg-subtle hover:bg-hover hover:border-str transition-all cursor-pointer shadow-sm', 
       onclick: openHandleModal 
     },
       el('div', { className: 'w-12 h-12 rounded-xl bg-element flex items-center justify-center text-tx-2 shadow-sm' }, el('span', { innerHTML: icons.atSign(24) })),
@@ -1039,7 +1039,7 @@ export function renderSecurityPage(container) {
       el('div', { className: 'text-tx-3' }, el('span', { innerHTML: icons.chevronRight(24) }))
     ),
     el('div', { 
-      className: 'flex items-center gap-4 p-5 rounded-2xl border border-base bg-subtle hover:bg-hover hover:border-str transition-all cursor-pointer shadow-sm', 
+      className: 'settings-item flex items-center gap-4 p-5 rounded-2xl border border-base bg-subtle hover:bg-hover hover:border-str transition-all cursor-pointer shadow-sm', 
       onclick: openPwModal 
     },
       el('div', { className: 'w-12 h-12 rounded-xl bg-element flex items-center justify-center text-tx-2 shadow-sm' }, el('span', { innerHTML: icons.lock(24) })),
@@ -1050,7 +1050,7 @@ export function renderSecurityPage(container) {
       el('div', { className: 'text-tx-3' }, el('span', { innerHTML: icons.chevronRight(24) }))
     ),
     el('div', { 
-      className: 'flex items-center gap-4 p-5 rounded-2xl border border-base bg-subtle hover:bg-hover hover:border-str transition-all cursor-pointer shadow-sm mt-4', 
+      className: 'settings-item flex items-center gap-4 p-5 rounded-2xl border border-base bg-subtle hover:bg-hover hover:border-str transition-all cursor-pointer shadow-sm mt-4', 
       style: { borderColor: 'var(--accent-red)' },
       onclick: openDeleteModal 
     },

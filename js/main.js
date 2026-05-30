@@ -44,7 +44,7 @@ function buildAppShell() {
   );
   
   const bottomNavItems = el('div', { className: 'mt-auto mb-4', style: { display: 'flex', flexDirection: 'column' } },
-    createNavItem('settings', icons.settings(24), t('settings'), 'settings')
+    createNavItem('settings', icons.settings(24), t('settings'), 'settings/profile')
   );
   
   sidebar.append(logoWrap, navItems, bottomNavItems);
@@ -155,7 +155,10 @@ function router() {
       else if (param === 'theme') renderThemeSettingsPage(mainContent);
       else if (param === 'security') renderSecurityPage(mainContent);
       else if (param === 'language') renderLanguageSettingsPage(mainContent);
-      else renderSettingsPage(mainContent);
+      else {
+        // Direct redirect without creating secondary navigateTo trigger transitions
+        window.location.hash = 'settings/profile';
+      }
       break;
     case 'tag':
       mainContent.innerHTML = `<div class="p-8 text-center text-xl font-bold">#${param} ${t('searchResultsFor')}</div>`;
@@ -183,6 +186,10 @@ window.navigateTo = function(path) {
     return; // Do absolutely nothing if already on the target path
   }
   
+  if (normalizedCurrent.startsWith('settings') && (normalizedNew === 'settings' || normalizedNew === 'settings/profile')) {
+    return; // Already in Settings, do absolutely nothing
+  }
+  
   const isSettingsNav = normalizedCurrent.startsWith('settings') && normalizedNew.startsWith('settings');
   if (isSettingsNav) {
     // Bypass full-page exit transition for settings sub-tabs to allow smooth inner transitions
@@ -207,7 +214,7 @@ export function initApp() {
   window.addEventListener('hashchange', router);
   
   // Global Event Delegation for Premium Wobbly Hover-In and Hover-Out Decay
-  const interactiveSelectors = '.post-card, .btn, .nav-item, .story-item, .search-keyword-card, .suggest-card, .create-option-card, .profile-avatar-wrap, .profile-handle, .profile-name, .profile-bio, .profile-bio-link, .profile-stat, .chip, .settings-item, .input, .textarea, .select, .custom-select-header, .btn-text-link, .btn-icon, .post-action-btn, .profile-tab, .settings-back, .explore-search-input-wrap';
+  const interactiveSelectors = '.post-card, .btn, .nav-item, .story-item, .search-keyword-card, .suggest-card, .create-option-card, .profile-avatar-wrap, .profile-handle, .profile-name, .profile-bio, .profile-bio-link, .profile-stat, .chip, .settings-item, .input, .textarea, .select, .custom-select-header, .btn-text-link, .btn-icon, .post-action-btn, .profile-tab, .settings-back, .explore-search-input-wrap, .theme-option';
   
   document.body.addEventListener('mouseover', (e) => {
     let target = e.target.closest(interactiveSelectors);
