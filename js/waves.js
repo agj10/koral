@@ -29,51 +29,55 @@ function hexToRgb(hex) {
 }
 
 // ─── Wave Configurations ────────────────────────────────────
+// Brand colors: --brand-a: #ef4444  --brand-b: #f43f5e  --brand-c: #f97316
 
-// SURFACE MODE: Coral-red waves at the bottom of screen
-// Warm coral tones from light to deep
+// SURFACE MODE: Brand coral-red tone variations
+// Dark theme — vivid on dark bg
 const SURFACE_WAVES_DARK = [
-  { hex: '#E8755A', alphaTop: 0.45, alphaBot: 0.65 },
-  { hex: '#D45A3F', alphaTop: 0.50, alphaBot: 0.70 },
-  { hex: '#C44530', alphaTop: 0.55, alphaBot: 0.75 },
-  { hex: '#B03320', alphaTop: 0.60, alphaBot: 0.80 },
-  { hex: '#9C2515', alphaTop: 0.65, alphaBot: 0.90 },
+  { hex: '#f87171', alphaTop: 0.40, alphaBot: 0.60 },  // lightest coral
+  { hex: '#ef4444', alphaTop: 0.45, alphaBot: 0.68 },  // brand-a
+  { hex: '#f43f5e', alphaTop: 0.50, alphaBot: 0.72 },  // brand-b
+  { hex: '#dc2626', alphaTop: 0.55, alphaBot: 0.78 },  // deeper red
+  { hex: '#b91c1c', alphaTop: 0.60, alphaBot: 0.88 },  // darkest
 ];
 
+// Light theme — softer tints
 const SURFACE_WAVES_LIGHT = [
-  { hex: '#F4A393', alphaTop: 0.30, alphaBot: 0.50 },
-  { hex: '#EF8A78', alphaTop: 0.35, alphaBot: 0.55 },
-  { hex: '#E8755A', alphaTop: 0.40, alphaBot: 0.60 },
-  { hex: '#D45A3F', alphaTop: 0.45, alphaBot: 0.65 },
-  { hex: '#C44530', alphaTop: 0.50, alphaBot: 0.75 },
+  { hex: '#fca5a5', alphaTop: 0.28, alphaBot: 0.45 },  // pastel coral
+  { hex: '#f87171', alphaTop: 0.32, alphaBot: 0.50 },  // light coral
+  { hex: '#ef4444', alphaTop: 0.36, alphaBot: 0.55 },  // brand-a
+  { hex: '#f43f5e', alphaTop: 0.40, alphaBot: 0.60 },  // brand-b
+  { hex: '#dc2626', alphaTop: 0.45, alphaBot: 0.68 },  // deeper
 ];
 
 // SUBMERGED MODE: Dark-toned waves on coral background
-// Using the dark bg tones with slight reddish tint
+// Dark theme — dark bg tones with reddish tint
 const SUBMERGED_WAVES_DARK = [
-  { hex: '#1e1820', alphaTop: 0.50, alphaBot: 0.70 },
-  { hex: '#1a1418', alphaTop: 0.55, alphaBot: 0.75 },
-  { hex: '#151012', alphaTop: 0.60, alphaBot: 0.80 },
-  { hex: '#110c0e', alphaTop: 0.65, alphaBot: 0.85 },
-  { hex: '#0d090a', alphaTop: 0.70, alphaBot: 0.95 },
+  { hex: '#1f1315', alphaTop: 0.45, alphaBot: 0.65 },
+  { hex: '#1a0f11', alphaTop: 0.50, alphaBot: 0.70 },
+  { hex: '#150b0d', alphaTop: 0.55, alphaBot: 0.78 },
+  { hex: '#110809', alphaTop: 0.60, alphaBot: 0.85 },
+  { hex: '#0c0506', alphaTop: 0.68, alphaBot: 0.95 },
 ];
 
+// Light theme — warm cream/blush tones
 const SUBMERGED_WAVES_LIGHT = [
-  { hex: '#f5eae7', alphaTop: 0.40, alphaBot: 0.60 },
-  { hex: '#ede0db', alphaTop: 0.45, alphaBot: 0.65 },
-  { hex: '#e4d4ce', alphaTop: 0.50, alphaBot: 0.70 },
-  { hex: '#d9c6be', alphaTop: 0.55, alphaBot: 0.78 },
-  { hex: '#cdb6ad', alphaTop: 0.60, alphaBot: 0.88 },
+  { hex: '#f5e6e4', alphaTop: 0.35, alphaBot: 0.55 },
+  { hex: '#eddbd7', alphaTop: 0.40, alphaBot: 0.60 },
+  { hex: '#e3cec8', alphaTop: 0.45, alphaBot: 0.65 },
+  { hex: '#d9bfb8', alphaTop: 0.50, alphaBot: 0.72 },
+  { hex: '#cdb0a7', alphaTop: 0.55, alphaBot: 0.82 },
 ];
 
 // Wave motion parameters (shared between modes)
-// Each layer has unique frequencies and speeds for organic movement
+// Horizontal speed reduced ~60%, vertical float speed ~2.5x higher
+// Layers 1 and 3 move in REVERSE direction (negative wSpeed)
 const WAVE_PARAMS = [
-  { yOffset: 0,    wAmp: 0.022, wFreq: 0.008, wFreq2: 0.005, wSpeed: 0.0030, wSpeed2: 0.0018, wPhase: 0.0, wPhase2: 1.1, fAmp: 0.040, fSpeed: 0.0018, fPhase: 0.0 },
-  { yOffset: 0.09, wAmp: 0.019, wFreq: 0.006, wFreq2: 0.011, wSpeed: 0.0025, wSpeed2: 0.0022, wPhase: 1.2, wPhase2: 2.8, fAmp: 0.028, fSpeed: 0.0011, fPhase: 1.5 },
-  { yOffset: 0.18, wAmp: 0.025, wFreq: 0.010, wFreq2: 0.004, wSpeed: 0.0020, wSpeed2: 0.0014, wPhase: 2.5, wPhase2: 0.4, fAmp: 0.050, fSpeed: 0.0025, fPhase: 3.1 },
-  { yOffset: 0.27, wAmp: 0.018, wFreq: 0.007, wFreq2: 0.013, wSpeed: 0.0028, wSpeed2: 0.0019, wPhase: 0.7, wPhase2: 3.5, fAmp: 0.035, fSpeed: 0.0014, fPhase: 2.0 },
-  { yOffset: 0.35, wAmp: 0.021, wFreq: 0.009, wFreq2: 0.006, wSpeed: 0.0022, wSpeed2: 0.0016, wPhase: 3.8, wPhase2: 1.9, fAmp: 0.045, fSpeed: 0.0020, fPhase: 4.2 },
+  { yOffset: 0,    wAmp: 0.022, wFreq: 0.008, wFreq2: 0.005, wSpeed:  0.0010, wSpeed2:  0.0006, wPhase: 0.0, wPhase2: 1.1, fAmp: 0.050, fSpeed: 0.0045, fPhase: 0.0 },
+  { yOffset: 0.09, wAmp: 0.019, wFreq: 0.006, wFreq2: 0.011, wSpeed: -0.0008, wSpeed2: -0.0007, wPhase: 1.2, wPhase2: 2.8, fAmp: 0.038, fSpeed: 0.0030, fPhase: 1.5 },
+  { yOffset: 0.18, wAmp: 0.025, wFreq: 0.010, wFreq2: 0.004, wSpeed:  0.0007, wSpeed2:  0.0005, wPhase: 2.5, wPhase2: 0.4, fAmp: 0.060, fSpeed: 0.0055, fPhase: 3.1 },
+  { yOffset: 0.27, wAmp: 0.018, wFreq: 0.007, wFreq2: 0.013, wSpeed: -0.0009, wSpeed2:  0.0006, wPhase: 0.7, wPhase2: 3.5, fAmp: 0.042, fSpeed: 0.0035, fPhase: 2.0 },
+  { yOffset: 0.35, wAmp: 0.021, wFreq: 0.009, wFreq2: 0.006, wSpeed:  0.0006, wSpeed2: -0.0005, wPhase: 3.8, wPhase2: 1.9, fAmp: 0.055, fSpeed: 0.0050, fPhase: 4.2 },
 ];
 
 // ─── Wave Renderer Class ────────────────────────────────────
