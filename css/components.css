@@ -801,38 +801,38 @@
 
 /* Hover-Out Wobbly Bounce-Back Decay Keyframes (찰랑흔들 가라앉는 하강 궤적) */
 
-/* wobbleOut (For Cards/Boards) - 0.8s play */
+/* wobbleOut (For Cards/Boards) - 1.2s play */
 @keyframes wobbleOut {
   0% {
     transform: translateY(-10px) rotate(0deg);
   }
-  30% {
-    transform: translateY(-5px) rotate(-1.8deg); /* One side sinks first, causing a tilt */
+  35% {
+    transform: translateY(-5px) rotate(-1.2deg); /* Slower descent and gentler tilt */
   }
-  60% {
-    transform: translateY(1.5px) rotate(0.6deg); /* Dips slightly into the water, other side catches up */
+  65% {
+    transform: translateY(1.0px) rotate(0.4deg); /* Much smaller water-dip so it doesn't feel like a sudden drop */
   }
-  80% {
-    transform: translateY(-0.8px) rotate(-0.2deg); /* Gentle rebound */
+  85% {
+    transform: translateY(-0.4px) rotate(-0.1deg); /* Barely noticeable bounce back */
   }
   100% {
     transform: translateY(0) rotate(0deg); /* Settles back to resting floating center */
   }
 }
 
-/* wobbleOutBtn (For Buttons/Inputs/Texts) - 0.65s play */
+/* wobbleOutBtn (For Buttons/Inputs/Texts) - 0.9s play */
 @keyframes wobbleOutBtn {
   0% {
     transform: translateY(-4px) rotate(0deg);
   }
-  30% {
-    transform: translateY(-2px) rotate(-1.2deg); /* One side sinks first */
+  35% {
+    transform: translateY(-2px) rotate(-0.8deg); /* Slower descent and gentler tilt */
   }
-  60% {
-    transform: translateY(0.6px) rotate(0.4deg); /* Dips slightly, other side catches up */
+  65% {
+    transform: translateY(0.4px) rotate(0.2deg); /* Gentle water-dip */
   }
-  80% {
-    transform: translateY(-0.3px) rotate(-0.1deg); /* Gentle rebound */
+  85% {
+    transform: translateY(-0.1px) rotate(0deg); /* Barely noticeable bounce back */
   }
   100% {
     transform: translateY(0) rotate(0deg); /* Settles */
@@ -1045,11 +1045,11 @@
   0% {
     transform: translateY(0) rotate(0deg);
   }
-  30% {
-    transform: translateY(-3.5px) rotate(1.8deg); /* One side floats up first, causing a tilt */
+  35% {
+    transform: translateY(-3px) rotate(1.2deg); /* Slower start, gentler tilt */
   }
-  65% {
-    transform: translateY(-8.5px) rotate(-0.5deg); /* The other side catches up, reversing tilt */
+  70% {
+    transform: translateY(-8.5px) rotate(-0.3deg); /* Tail edge catches up smoothly */
   }
   100% {
     transform: translateY(-10px) rotate(0deg); /* Settles at elevated float height */
@@ -1064,7 +1064,7 @@
 .koral-waves-submerged .card.hover-active,
 .koral-waves-submerged .profile-grid-cell.hover-active,
 .koral-waves-submerged .search-keyword-card.hover-active {
-  animation: var(--float-anim, none), wobbleHover 0.85s cubic-bezier(0.25, 0.8, 0.25, 1) forwards !important;
+  animation: var(--float-anim, none), wobbleHover 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
   animation-delay: var(--float-delay, 0s), 0s !important;
   box-shadow: 0 16px 36px rgba(0,0,0,0.08) !important;
 }
@@ -1074,11 +1074,11 @@
   0% {
     transform: translateY(0) rotate(0deg);
   }
-  30% {
-    transform: translateY(-1.5px) rotate(1.2deg); /* One side floats up first */
+  35% {
+    transform: translateY(-1.2px) rotate(0.8deg); /* One side floats up first gently */
   }
-  65% {
-    transform: translateY(-3.5px) rotate(-0.3deg); /* The other side catches up */
+  70% {
+    transform: translateY(-3.5px) rotate(-0.2deg); /* Tail edge catches up gently */
   }
   100% {
     transform: translateY(-4px) rotate(0deg); /* Settles */
@@ -1107,7 +1107,7 @@
 .koral-waves-submerged .profile-stat.hover-active,
 .koral-waves-submerged .profile-tab.hover-active,
 .koral-waves-submerged .settings-back.hover-active {
-  animation: var(--float-anim, none), wobbleHoverBtn 0.65s cubic-bezier(0.25, 0.8, 0.25, 1) forwards !important;
+  animation: var(--float-anim, none), wobbleHoverBtn 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
   animation-delay: var(--float-delay, 0s), 0s !important;
 }
 
@@ -1119,7 +1119,7 @@
 .koral-waves-submerged .card.wobble-out-active,
 .koral-waves-submerged .profile-grid-cell.wobble-out-active,
 .koral-waves-submerged .search-keyword-card.wobble-out-active {
-  animation: var(--float-anim, none), wobbleOut 0.8s cubic-bezier(0.25, 0.8, 0.25, 1) 1 !important;
+  animation: var(--float-anim, none), wobbleOut 1.2s cubic-bezier(0.4, 0, 0.2, 1) 1 !important;
   animation-delay: var(--float-delay, 0s), 0s !important;
 }
 
@@ -1145,7 +1145,7 @@
 .koral-waves-submerged .profile-stat.wobble-out-active,
 .koral-waves-submerged .profile-tab.wobble-out-active,
 .koral-waves-submerged .settings-back.wobble-out-active {
-  animation: var(--float-anim, none), wobbleOutBtn 0.65s cubic-bezier(0.25, 0.8, 0.25, 1) 1 !important;
+  animation: var(--float-anim, none), wobbleOutBtn 0.9s cubic-bezier(0.4, 0, 0.2, 1) 1 !important;
   animation-delay: var(--float-delay, 0s), 0s !important;
 }
 
