@@ -198,19 +198,17 @@ class KoralWaves {
       // Submerged mode (post-login): Theme-colored waves on Coral Main Background
       waveColors = theme === 'dark' ? SUBMERGED_WAVES_DARK : SUBMERGED_WAVES_LIGHT;
 
-      // Paint gorgeous coral-red main color gradients
+      // Paint highly saturated, rich coral-red main color gradients
       if (theme === 'dark') {
         bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-        bgGradient.addColorStop(0, '#1c0d0a'); // Dark coral black for readable light text
-        bgGradient.addColorStop(0.4, '#2d1410');
-        bgGradient.addColorStop(0.7, '#4c1c15'); // Deep glowing brand coral red
-        bgGradient.addColorStop(1, '#2b0f0a');
+        bgGradient.addColorStop(0, '#450a0a'); // Deep warm coral black for pristine readability
+        bgGradient.addColorStop(0.5, '#991b1b'); // Rich dark brand coral red
+        bgGradient.addColorStop(1, '#be123c'); // Glowing dark rose red at the bottom
       } else {
         bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-        bgGradient.addColorStop(0, '#fff0ed'); // Warm peach blush for readable dark text
-        bgGradient.addColorStop(0.4, '#ffdcd3');
-        bgGradient.addColorStop(0.7, '#fca5a5'); // Luminous light brand coral pink
-        bgGradient.addColorStop(1, '#f43f5e'); // Vivid brand rose red at the bottom
+        bgGradient.addColorStop(0, '#fca5a5'); // Rich coral pink
+        bgGradient.addColorStop(0.5, '#ef4444'); // Main brand coral red
+        bgGradient.addColorStop(1, '#f43f5e'); // Brand rose red at the bottom
       }
     }
     ctx.fillStyle = bgGradient;
