@@ -602,7 +602,7 @@
   margin-bottom: var(--s2); background: transparent;
   border: 1px solid transparent;
 }
-.settings-item:hover { background: var(--bg-hover); border-color: var(--border-s); transform: translateX(4px); }
+.settings-item:hover { background: var(--bg-hover); border-color: var(--border-s); }
 .settings-item-icon {
   width: 44px; height: 44px; border-radius: var(--r-xl);
   background: var(--bg-sub); display: flex; align-items: center;
@@ -758,7 +758,9 @@
 .post-card,
 .suggest-card,
 .create-option-card,
-.card {
+.card,
+.profile-grid-cell,
+.search-keyword-card {
   animation: floatWater 6s ease-in-out infinite;
   transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s, border-color 0.4s, background-color 0.4s;
 }
@@ -768,7 +770,9 @@
 .post-card:nth-child(even),
 .suggest-card:nth-child(even),
 .create-option-card:nth-child(even),
-.card:nth-child(even) {
+.card:nth-child(even),
+.profile-grid-cell:nth-child(even),
+.search-keyword-card:nth-child(even) {
   animation-duration: 7s;
   animation-delay: -1.5s;
 }
@@ -777,7 +781,9 @@
 .post-card:nth-child(3n),
 .suggest-card:nth-child(3n),
 .create-option-card:nth-child(3n),
-.card:nth-child(3n) {
+.card:nth-child(3n),
+.profile-grid-cell:nth-child(3n),
+.search-keyword-card:nth-child(3n) {
   animation-duration: 8s;
   animation-delay: -3.5s;
 }
@@ -803,7 +809,9 @@
 .post-card:hover,
 .suggest-card:hover,
 .create-option-card:hover,
-.card:hover {
+.card:hover,
+.profile-grid-cell:hover,
+.search-keyword-card:hover {
   animation: wobbleHover 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   box-shadow: 0 16px 36px rgba(0,0,0,0.08) !important;
 }
@@ -824,16 +832,157 @@
   }
 }
 
-.btn {
-  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s, filter 0.4s;
+.btn,
+.nav-item,
+.story-item,
+.profile-avatar-wrap,
+.avatar,
+.settings-item,
+.input,
+.textarea,
+.select,
+.custom-select-header,
+.chip,
+.btn-text-link,
+.btn-icon,
+.post-action-btn {
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s, filter 0.4s, background-color 0.4s, border-color 0.4s;
 }
 
-.btn:hover {
+.btn:hover,
+.nav-item:hover,
+.story-item:hover,
+.profile-avatar-wrap:hover,
+.avatar:hover,
+.settings-item:hover,
+.input:hover,
+.textarea:hover,
+.select:hover,
+.custom-select-header:hover,
+.chip:hover,
+.btn-text-link:hover,
+.btn-icon:hover,
+.post-action-btn:hover {
   animation: wobbleHoverBtn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
 /* Active pressing state remains snappy */
-.btn:active {
+.btn:active,
+.nav-item:active,
+.story-item:active,
+.profile-avatar-wrap:active,
+.avatar:active,
+.settings-item:active,
+.input:active,
+.textarea:active,
+.select:active,
+.custom-select-header:active,
+.chip:active,
+.btn-text-link:active,
+.btn-icon:active,
+.post-action-btn:active {
   animation: none !important;
   transform: scale(0.96) !important;
 }
+
+/* Custom styles for search terms */
+.search-keyword-card {
+  background: var(--bg-sub);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: var(--s3) var(--s4) !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.02);
+}
+
+/* 4. Modal Float-Up and Sink-Down Exit Animations */
+.modal-backdrop {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.modal-backdrop.out {
+  animation: fadeOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.modal {
+  animation: floatInModal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.modal-backdrop.out .modal {
+  animation: sinkOutModal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+@keyframes floatInModal {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes sinkOutModal {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* 5. Dropdown Menu Buoyant Floating Entry */
+.dropdown-menu {
+  position: absolute; top: calc(100% + 6px); right: 0;
+  min-width: 180px; background: var(--bg-el); border: 1px solid var(--border);
+  border-radius: var(--r-xl); box-shadow: 0 8px 32px rgba(0,0,0,.15);
+  padding: var(--s1); z-index: var(--z-dropdown);
+  opacity: 0; visibility: hidden; transform: translateY(16px) scale(.95);
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+  transform-origin: top right;
+}
+.dropdown-menu.open { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+
+/* 6. Toast Buoyant Entrance & Sinking Exit */
+@keyframes floatInToast {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes sinkOutToast {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+}
+
+.toast {
+  display: flex; align-items: center; gap: var(--s3);
+  padding: var(--s3) var(--s4); background: var(--bg-el);
+  border: 1px solid var(--border); border-radius: var(--r-xl);
+  box-shadow: 0 4px 20px rgba(0,0,0,.15); font-size: var(--text-sm);
+  font-weight: 500; color: var(--tx); pointer-events: all;
+  max-width: 340px; animation: floatInToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.toast.out { animation: sinkOutToast 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important; }

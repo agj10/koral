@@ -104,21 +104,21 @@ export function renderExplorePage(container) {
     const recentWrap = el('div', { className: 'flex flex-col gap-4 w-full' });
     recentWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3 flex justify-between items-center' }, 
       '최근 검색어',
-      el('button', { className: 'text-sm text-tx-3 hover:text-tx', onclick: () => { localStorage.removeItem('koral_recent_searches'); renderDefaultView(); } }, '전체 삭제')
+      el('button', { className: 'text-sm text-tx-3 hover:text-tx btn-text-link', onclick: () => { localStorage.removeItem('koral_recent_searches'); renderDefaultView(); } }, '전체 삭제')
     ));
     
     const savedRecent = JSON.parse(localStorage.getItem('koral_recent_searches') || '[]');
     if (savedRecent.length === 0) {
       recentWrap.appendChild(el('div', { className: 'text-tx-3 text-sm py-4 text-center' }, '최근 검색 기록이 없습니다.'));
     } else {
-      const recentList = el('div', { className: 'flex flex-col' });
+      const recentList = el('div', { className: 'flex flex-col gap-2' });
       savedRecent.forEach(kw => {
-        const item = el('div', { className: 'flex items-center justify-between py-2 cursor-pointer hover:bg-hover px-2 -mx-2 rounded-lg group' });
+        const item = el('div', { className: 'search-keyword-card group' });
         item.onclick = () => {
           searchInput.value = kw;
           renderSearchResults(kw);
         };
-        const textSpan = el('span', { className: 'text-tx' }, kw);
+        const textSpan = el('span', { className: 'text-tx font-medium' }, kw);
         const delBtn = el('button', { 
           className: 'text-tx-3 hover:text-brand p-1 opacity-0 group-hover:opacity-100 transition-opacity',
           onclick: (e) => {
@@ -140,7 +140,7 @@ export function renderExplorePage(container) {
     recWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3' }, '추천 검색어'));
     const recList = el('div', { className: 'flex flex-col gap-2' });
     ['#프론트엔드', '#감성사진', '#카페투어', 'OOTD', '포트폴리오', 'AI 활용법'].forEach(kw => {
-      recList.appendChild(el('div', { className: 'flex items-center py-2 cursor-pointer hover:bg-hover px-2 -mx-2 rounded-lg text-tx font-medium', textContent: kw, onclick: () => {
+      recList.appendChild(el('div', { className: 'search-keyword-card font-medium', textContent: kw, onclick: () => {
         searchInput.value = kw;
         renderSearchResults(kw);
       }}));

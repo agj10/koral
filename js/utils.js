@@ -152,8 +152,11 @@ export function showModal(contentEl, options = {}) {
   if (!container) return { close: () => {} };
 
   const close = () => {
-    backdrop.remove();
-    if (options.onClose) options.onClose();
+    backdrop.classList.add('out');
+    setTimeout(() => {
+      backdrop.remove();
+      if (options.onClose) options.onClose();
+    }, 300);
   };
 
   const modalClass = ['modal'];
