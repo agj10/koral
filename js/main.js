@@ -164,24 +164,59 @@ function router() {
       renderFeedPage(mainContent);
   }
   
-  setTimeout(() => {
     const savedScroll = sessionStorage.getItem(`scroll_${currentPath}`);
     if (savedScroll) {
       window.scrollTo(0, parseInt(savedScroll, 10));
     } else {
       window.scrollTo(0, 0);
     }
-  }, 10);
 }
 
 window.navigateTo = function(path) {
-  window.location.hash = path;
+  const currentContainer = document.querySelector('.main-content') || document.querySelector('#app');
+  if (currentContainer) {
+    currentContainer.classList.add('page-exit-active');
+    setTimeout(() => {
+      currentContainer.classList.remove('page-exit-active');
+      window.location.hash = path;
+    }, 220);
+  } else {
+    window.location.hash = path;
+  }
 };
 
 export function initApp() {
   appRoot = $('#app');
   window.addEventListener('hashchange', router);
   
+  // Global Event Delegation for Premium Wobbly Hover-In and Hover-Out Decay
+  const interactiveSelectors = '.post-card, .btn, .nav-item, .story-item, .search-keyword-card, .suggest-card, .create-option-card, .profile-avatar-wrap, .profile-handle, .profile-name, .profile-bio, .profile-bio-link, .profile-stat, .chip, .settings-item, .input, .textarea, .select, .custom-select-header, .btn-text-link, .btn-icon, .post-action-btn, .profile-tab, .settings-back';
+  
+  document.body.addEventListener('mouseover', (e) => {
+    const target = e.target.closest(interactiveSelectors);
+    if (target) {
+      // Ignore inner child transitions to prevent layout jitter and snapping
+      if (e.relatedTarget && target.contains(e.relatedTarget)) return;
+      target.classList.add('hover-active');
+      target.classList.remove('wobble-out-active');
+    }
+  });
+  
+  document.body.addEventListener('mouseout', (e) => {
+    const target = e.target.closest(interactiveSelectors);
+    if (target) {
+      // Ignore inner child transitions to prevent layout jitter and snapping
+      if (e.relatedTarget && target.contains(e.relatedTarget)) return;
+      target.classList.remove('hover-active');
+      target.classList.add('wobble-out-active');
+      setTimeout(() => {
+        if (!target.classList.contains('hover-active')) {
+          target.classList.remove('wobble-out-active');
+        }
+      }, 600);
+    }
+  });
+
   // Initial render
   router();
 }

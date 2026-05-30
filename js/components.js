@@ -220,7 +220,7 @@ export function renderStoryRow() {
       el('div', { className: `story-ring ${allSeen ? 'seen' : ''}` },
         el('div', { className: 'story-inner' }, el('img', { src: user.avatar || '' }))
       ),
-      el('div', { className: `story-name truncate ${allSeen ? 'seen' : ''}` }, user.handle)
+      el('div', { className: `story-name truncate ${allSeen ? 'seen' : ''}` }, user.handle.startsWith('@') ? user.handle : '@' + user.handle)
     );
     row.appendChild(item);
   });
@@ -853,7 +853,7 @@ export function renderSuggestSidebar() {
     el('div', { className: 'flex items-center gap-3' },
       renderAvatar(currentUser, 'av-lg'),
       el('div', { className: 'aside-profile-info' },
-        el('div', { className: 'aside-profile-name font-bold cursor-pointer hover:underline', onclick: () => window.navigateTo(`profile/${currentUser.handle.substring(1)}`) }, currentUser.handle),
+        el('div', { className: 'aside-profile-name font-bold cursor-pointer hover:underline', onclick: () => window.navigateTo(`profile/${currentUser.handle.substring(1)}`) }, currentUser.handle.startsWith('@') ? currentUser.handle : '@' + currentUser.handle),
         el('div', { className: 'aside-profile-handle text-sm text-tx-2', innerHTML: renderMarkdown(currentUser.displayName).replace(/^<p>/, '').replace(/<\/p>$/,'') })
       )
     ),
@@ -872,7 +872,7 @@ export function renderSuggestSidebar() {
     const item = el('div', { className: 'suggest-user' },
       renderAvatar(user, 'av-md', true),
       el('div', { className: 'suggest-user-info' },
-        el('div', { className: 'suggest-user-name', onclick: () => window.navigateTo(`profile/${user.handle.substring(1)}`) }, user.handle),
+        el('div', { className: 'suggest-user-name', onclick: () => window.navigateTo(`profile/${user.handle.substring(1)}`) }, user.handle.startsWith('@') ? user.handle : '@' + user.handle),
         el('div', { className: 'suggest-user-sub' }, recTitle)
       ),
       el('button', { 
@@ -1124,7 +1124,7 @@ export function renderCommentSection(postId) {
         renderAvatar(author, 'av-sm'),
         el('div', { className: 'flex flex-col' },
           el('div', { className: 'font-bold text-tx text-sm flex items-center gap-1' }, 
-            author.handle, 
+            author.handle.startsWith('@') ? author.handle : '@' + author.handle, 
             author.verified ? el('span', { className: 'text-brand', innerHTML: icons.verified(14) }) : ''
           )
         )
@@ -1230,7 +1230,7 @@ export function renderPostPreviewCard(post, options = {}) {
     renderAvatar(author, 'av-sm'),
     el('div', { className: 'text-xs' },
       el('div', { className: 'font-semibold text-tx flex items-center gap-1' }, 
-        author.handle,
+        author.handle.startsWith('@') ? author.handle : '@' + author.handle,
         author.verified ? el('span', { className: 'verified text-brand', innerHTML: icons.verified(12) }) : null
       ),
       el('div', { className: 'text-tx-3' }, timeAgo(post.createdAt))
@@ -1288,7 +1288,7 @@ export function renderPostPreviewCard(post, options = {}) {
           el('div', { className: 'flex items-center gap-2' },
             renderAvatar(topAuthor, 'av-xs'),
             el('span', { className: 'font-semibold text-xs text-tx flex items-center gap-1' }, 
-              topAuthor.handle,
+              topAuthor.handle.startsWith('@') ? topAuthor.handle : '@' + topAuthor.handle,
               topAuthor.verified ? el('span', { className: 'verified text-brand', innerHTML: icons.verified(10) }) : null
             ),
             el('span', { className: 'text-xs text-tx-3' }, timeAgo(topComment.createdAt))

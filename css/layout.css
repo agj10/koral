@@ -1,5 +1,15 @@
 /* ===== APP LAYOUT ===== */
 
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 /* ---- Wave Background Canvas ---- */
 .koral-wave-canvas {
   position: fixed;
@@ -37,6 +47,8 @@
   position: relative;
   z-index: 1;
   min-height: 100vh;
+  overflow-x: hidden;
+  max-width: 100vw;
   background: var(--bg-sub);
   background-image: linear-gradient(135deg, rgba(239,68,68,0.03) 0%, rgba(244,63,94,0.03) 50%, rgba(249,115,22,0.02) 100%);
   background-attachment: fixed;
@@ -45,6 +57,8 @@
 .app-shell {
   display: flex;
   min-height: 100vh;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* ---- Left Sidebar Nav ---- */
@@ -584,4 +598,36 @@
 /* Hide redundant mobile bottom nav element globally by default */
 .bottom-nav {
   display: none !important;
+}
+
+/* SPA page entrance & exit animations (water fluid slide-up & slide-down) */
+.anim-fade {
+  animation: pageFloatIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.page-exit-active {
+  animation: pageSinkOut 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  pointer-events: none !important;
+}
+
+@keyframes pageFloatIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pageSinkOut {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(16px);
+  }
 }

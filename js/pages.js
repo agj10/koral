@@ -25,7 +25,7 @@ export function renderFeedPage(container, params = {}) {
       const colsContainer = el('div', { className: 'flex gap-6 w-full items-start feed-cols-container' });
       
       const createCol = (title, iconName, items) => {
-        const col = el('div', { className: 'flex-1 flex flex-col gap-6 w-1/3 min-w-0' });
+        const col = el('div', { className: 'flex-1 flex flex-col gap-6 w-1/3 min-w-0 feed-column' });
         const header = el('div', { className: 'flex items-center gap-2 font-bold text-lg text-tx border-b border-base pb-3 mb-2' },
           el('span', { className: 'text-brand', innerHTML: icons[iconName] ? icons[iconName](24) : '' }),
           title
@@ -69,7 +69,7 @@ export function renderExplorePage(container) {
   
   const wrap = el('div', { className: 'page-container anim-fade flex flex-col gap-8 w-full max-w-5xl mx-auto' });
   
-  const searchHeader = el('div', { className: 'flex items-center gap-4 w-full flex-wrap' });
+  const searchHeader = el('div', { className: 'flex items-center gap-4 w-full flex-wrap explore-search-bar' });
   
   const searchWrap = el('div', { className: 'flex-1 min-w-[200px]', style: { position: 'relative' } });
   const searchInput = el('input', { 
@@ -234,9 +234,8 @@ export function renderProfilePage(container, { handle }) {
   
   const info = el('div', { className: 'profile-info' });
   
-  const row1 = el('div', { className: 'profile-row1' });
   row1.appendChild(el('h2', { className: 'profile-handle' }, 
-    user.handle.substring(1),
+    user.handle.startsWith('@') ? user.handle : '@' + user.handle,
     user.verified ? el('span', { className: 'verified ml-2', innerHTML: icons.verified(18) }) : null
   ));
   
@@ -724,7 +723,7 @@ export function renderCreatePage(container, options = {}) {
   }
 
   container.innerHTML = '';
-  const wrap = el('div', { className: 'page-container anim-fade flex flex-col items-start', style: { maxWidth: '768px' } });
+  const wrap = el('div', { className: 'page-container anim-fade flex flex-col items-start create-page', style: { maxWidth: '768px' } });
   
   const header = el('div', { className: 'mb-8 text-left w-full' },
     el('h2', { className: 'text-2xl font-bold text-tx mb-2 text-left' }, t('createTitle')),
@@ -734,9 +733,11 @@ export function renderCreatePage(container, options = {}) {
   const optionsWrap = el('div', { className: 'flex flex-col gap-4 w-full max-w-md' });
 
   const createOption = (title, desc, icon, onClick) => {
-    return el('button', {
+    return el('div', {
       className: 'w-full flex items-center justify-start gap-6 p-6 bg-element border border-base rounded-2xl hover:bg-hover hover:border-brand transition-all group cursor-pointer text-left create-option-card',
-      onclick: onClick
+      onclick: onClick,
+      role: 'button',
+      tabIndex: 0
     },
       el('div', { className: 'w-16 h-16 shrink-0 rounded-full bg-brand/10 text-brand flex items-center justify-center group-hover:scale-110 transition-transform' },
         el('span', { innerHTML: icon(32) })

@@ -744,143 +744,275 @@
 
 /* ===== LIQUID ENVIRONMENT ANIMATIONS ===== */
 
-/* 1. Stately Floating in Water (Idle buoyancy variations) */
-/* Slow, lazy cycle durations between 14s and 18s with tiny rotation sways (±0.4deg) */
+/* 1. Contrasting Out-of-Phase Floating in Water (Idle buoyancy variations) */
+/* Idle water drifting driven by standard CSS translate and rotate, leaving transform free for hover interactive sways! */
 
-/* Variation 1: 10px Float, -0.4deg to 0.4deg sway */
+/* Variation 1: 10px Float, -0.35deg to 0.35deg sway (5.5s duration) - Rising Phase */
 @keyframes floatWater1 {
   0%, 100% {
-    transform: translateY(0) rotate(-0.4deg);
+    translate: 0 0px;
+    rotate: -0.35deg;
   }
   50% {
-    transform: translateY(-10px) rotate(0.4deg);
+    translate: 0 -10px;
+    rotate: 0.35deg;
   }
 }
 
-/* Variation 2: 12px Float, 0.3deg to -0.3deg sway (Opposite phase) */
+/* Variation 2: 12px Float, 0.25deg to -0.25deg sway (6.5s duration) - Completely Out-of-Phase Falling Phase */
 @keyframes floatWater2 {
   0%, 100% {
-    transform: translateY(-2px) rotate(0.3deg);
+    translate: 0 -12px;
+    rotate: 0.25deg;
   }
   50% {
-    transform: translateY(-12px) rotate(-0.3deg);
+    translate: 0 0px;
+    rotate: -0.25deg;
   }
 }
 
-/* Variation 3: 11px Float, -0.5deg to 0.2deg sway (Asymmetric path) */
+/* Variation 3: 11px Float, -0.4deg to 0.2deg sway (6.0s duration) - Asymmetric Phase */
 @keyframes floatWater3 {
   0%, 100% {
-    transform: translateY(-6px) rotate(-0.5deg);
+    translate: 0 -5px;
+    rotate: -0.4deg;
+  }
+  35% {
+    translate: 0 -11px;
+    rotate: 0.1deg;
+  }
+  70% {
+    translate: 0 -2px;
+    rotate: 0.3deg;
+  }
+}
+
+/* Variation Fixed: 4px Calm Float, -0.15deg to 0.15deg sway (Gentle floating for fixed borders) */
+@keyframes floatWaterFixed {
+  0%, 100% {
+    translate: 0 0px;
+    rotate: -0.15deg;
   }
   50% {
-    transform: translateY(0) rotate(0.2deg);
+    translate: 0 -4px;
+    rotate: 0.15deg;
   }
 }
 
-/* Assign animations to container blocks instead of micro-elements */
-.auth-card {
-  animation: floatWater1 15s ease-in-out infinite;
+/* Hover-Out Wobbly Bounce-Back Decay Keyframes (찰랑흔들 가라앉는 하강 궤적) */
+
+/* wobbleOut (For Cards/Boards) - 0.6s play */
+@keyframes wobbleOut {
+  0% {
+    transform: translateY(-10px) rotate(0deg);
+  }
+  40% {
+    transform: translateY(-2px) rotate(1.2deg);
+  }
+  75% {
+    transform: translateY(-5px) rotate(-0.5deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
 }
 
-.post-card:nth-child(3n) {
-  animation: floatWater1 14s ease-in-out infinite;
-}
-.post-card:nth-child(even) {
-  animation: floatWater2 18s ease-in-out infinite;
-}
-.post-card:nth-child(odd) {
-  animation: floatWater3 16s ease-in-out infinite;
-}
-
-.suggest-card {
-  animation: floatWater2 17s ease-in-out infinite;
-}
-
-.create-option-card:nth-child(3n) {
-  animation: floatWater1 14s ease-in-out infinite;
-}
-.create-option-card:nth-child(even) {
-  animation: floatWater2 18s ease-in-out infinite;
-}
-.create-option-card:nth-child(odd) {
-  animation: floatWater3 16s ease-in-out infinite;
+/* wobbleOutBtn (For Buttons/Inputs/Texts) - 0.5s play */
+@keyframes wobbleOutBtn {
+  0% {
+    transform: translateY(-4px) rotate(0deg);
+  }
+  40% {
+    transform: translateY(-1px) rotate(-0.8deg);
+  }
+  75% {
+    transform: translateY(-2px) rotate(0.3deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
 }
 
-/* Float the entire profile grid and story row together to keep cells aligned */
-.profile-grid {
-  animation: floatWater1 16s ease-in-out infinite;
+/* Variable-driven Floating Assignments to enable snapping-free hover transitions */
+.auth-card { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.5s; }
+.sidebar-nav { --float-anim: floatWaterFixed 5.5s ease-in-out infinite; --float-delay: -3.2s; }
+.landing-logo { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -0.8s; }
+.create-header { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -4.3s; }
+.profile-avatar-wrap { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -2.7s; }
+.profile-name { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -3.6s; }
+.profile-bio { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.9s; }
+.profile-handle { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.9s; }
+.profile-bio-link { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -5.3s; }
+.notif-day-label { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -4.8s; }
+.create-page > .mb-8 p { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.7s; }
+.settings-page p { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -3.1s; }
+
+.suggest-card { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.2s; }
+.bottom-nav { --float-anim: floatWaterFixed 6.5s ease-in-out infinite; --float-delay: -1.2s; }
+.landing-sub { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -1.8s; }
+.explore-search-bar { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.8s; }
+.topbar { --float-anim: floatWaterFixed 6.5s ease-in-out infinite; --float-delay: -4.1s; }
+.profile-tabs { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -4.4s; }
+.trending-tag-name { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -1.3s; }
+.trending-tag-count { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -5.0s; }
+.aside-profile-name { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -3.4s; }
+.aside-profile-handle { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -0.6s; }
+
+.auth-banner-side { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.7s; }
+.auth-language-bar { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -2.5s; }
+.g-text { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -2.9s; }
+.settings-header { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.2s; }
+.feed-page-title { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -2.2s; }
+.search-section-title { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.7s; }
+.settings-header h2 { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.2s; }
+.comments-wrap h3 { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.3s; }
+
+/* Apply individual out-of-phase buoyancy to children based on nth-child */
+.post-card:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -0.8s; }
+.post-card:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -3.4s; }
+.post-card:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -1.7s; }
+
+.create-option-card:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.2s; }
+.create-option-card:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -4.5s; }
+.create-option-card:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -2.0s; }
+
+.search-keyword-card:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -5.1s; }
+.search-keyword-card:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.1s; }
+.search-keyword-card:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.5s; }
+
+.profile-grid-cell:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -2.9s; }
+.profile-grid-cell:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -0.9s; }
+.profile-grid-cell:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.1s; }
+
+.story-item:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.6s; }
+.story-item:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -4.0s; }
+.story-item:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.2s; }
+
+.nav-item:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -2.3s; }
+.nav-item:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -0.5s; }
+.nav-item:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -3.8s; }
+
+/* Dynamic desynchronization for all interactive buttons, inputs, chips, stats */
+.btn:nth-child(3n),
+.btn-icon:nth-child(3n),
+.post-action-btn:nth-child(3n),
+.settings-item:nth-child(3n),
+.input:nth-child(3n),
+.textarea:nth-child(3n),
+.select:nth-child(3n),
+.custom-select-header:nth-child(3n),
+.chip:nth-child(3n),
+.btn-text-link:nth-child(3n),
+.profile-tab:nth-child(3n),
+.settings-back:nth-child(3n) {
+  --float-anim: floatWater1 5.5s ease-in-out infinite;
+  --float-delay: -1.8s;
 }
 
-.stories-row {
-  animation: floatWater3 15s ease-in-out infinite;
+.btn:nth-child(even),
+.btn-icon:nth-child(even),
+.post-action-btn:nth-child(even),
+.settings-item:nth-child(even),
+.input:nth-child(even),
+.textarea:nth-child(even),
+.select:nth-child(even),
+.custom-select-header:nth-child(even),
+.chip:nth-child(even),
+.btn-text-link:nth-child(even),
+.profile-tab:nth-child(even),
+.settings-back:nth-child(even) {
+  --float-anim: floatWater2 6.5s ease-in-out infinite;
+  --float-delay: -3.5s;
 }
 
-/* Float search keyword cards in perfect sync so they stay aligned */
-.search-keyword-card {
-  animation: floatWater2 18s ease-in-out infinite;
+.btn:nth-child(odd),
+.btn-icon:nth-child(odd),
+.post-action-btn:nth-child(odd),
+.settings-item:nth-child(odd),
+.input:nth-child(odd),
+.textarea:nth-child(odd),
+.select:nth-child(odd),
+.custom-select-header:nth-child(odd),
+.chip:nth-child(odd),
+.btn-text-link:nth-child(odd),
+.profile-tab:nth-child(odd),
+.settings-back:nth-child(odd) {
+  --float-anim: floatWater3 6.0s ease-in-out infinite;
+  --float-delay: -0.9s;
 }
 
+.profile-stat:nth-child(3n) { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.1s; }
+.profile-stat:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -2.8s; }
+.profile-stat:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.3s; }
+
+/* Apply the variables globally to all target elements */
+.auth-card, .sidebar-nav, .landing-logo, .create-header,
+.profile-avatar-wrap, .profile-name, .profile-bio, .profile-handle, .profile-bio-link, .notif-day-label, .create-page > .mb-8 p, .settings-page p,
+.suggest-card, .bottom-nav, .landing-sub, .explore-search-bar,
+.topbar, .profile-tabs, .profile-stat, .trending-tag-name, .trending-tag-count, .aside-profile-name, .aside-profile-handle,
+.auth-banner-side, .auth-language-bar, .g-text, .settings-header, .feed-page-title, .search-section-title,
+.settings-header h2, .comments-wrap h3, .post-card, .create-option-card, .search-keyword-card, .profile-grid-cell,
+.story-item, .nav-item, .btn, .btn-icon, .post-action-btn, .settings-item, .input, .textarea, .select,
+.custom-select-header, .chip, .btn-text-link, .profile-tab, .settings-back {
+  animation: var(--float-anim, none);
+  animation-delay: var(--float-delay, 0s);
+}
+
+/* Ensure Profile Detail elements are inline-block to accept transform matrix sways */
+.profile-handle,
+.profile-name,
+.profile-bio,
+.profile-bio-link,
+.profile-stat {
+  display: inline-block !important;
+  position: relative !important;
+  transform-origin: center !important;
+}
+
+/* Base transitions for delightful wobbly transform recovery */
 .auth-card,
 .post-card,
 .suggest-card,
 .create-option-card,
 .card,
+.sidebar-nav,
+.page-container,
+.bottom-nav,
+.auth-banner-side,
+.auth-language-bar,
+.landing-logo,
+.g-text,
+.landing-sub,
+.landing-buttons,
 .profile-grid,
 .stories-row,
-.search-keyword-card {
-  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s, border-color 0.4s, background-color 0.4s;
-}
-
-/* 2. Fluid Swaying Hover Wobble Animation - Slow, soft and wobbly */
-@keyframes wobbleHover {
-  0% {
-    transform: translateY(0) rotate(0deg);
-  }
-  30% {
-    transform: translateY(-4px) rotate(-0.8deg); /* gentle left sway */
-  }
-  65% {
-    transform: translateY(-8px) rotate(0.6deg);  /* gentle right sway */
-  }
-  85% {
-    transform: translateY(-10px) rotate(-0.2deg); /* stabilizing sway */
-  }
-  100% {
-    transform: translateY(-10px) rotate(0deg);    /* settle straight & elevated */
-  }
-}
-
-/* Settle in elevated hover position and wobble */
-.auth-card:hover,
-.post-card:hover,
-.suggest-card:hover,
-.create-option-card:hover,
-.card:hover,
-.profile-grid-cell:hover,
-.search-keyword-card:hover {
-  animation: wobbleHover 1.5s cubic-bezier(0.45, 0, 0.55, 1) forwards !important;
-  box-shadow: 0 16px 36px rgba(0,0,0,0.08) !important;
-}
-
-/* 3. Small-scale Button Hover Wobble Animation - Slow and soft */
-@keyframes wobbleHoverBtn {
-  0% {
-    transform: translateY(0) rotate(0deg);
-  }
-  30% {
-    transform: translateY(-2px) rotate(-0.6deg);
-  }
-  65% {
-    transform: translateY(-4px) rotate(0.4deg);
-  }
-  85% {
-    transform: translateY(-4px) rotate(-0.1deg);
-  }
-  100% {
-    transform: translateY(-4px) rotate(0deg);
-  }
-}
-
+.search-keyword-card,
+.feed-column,
+.feed-aside,
+.profile-header,
+.profile-tabs,
+.settings-main-content,
+.settings-profile-section,
+.bento-sidebar,
+.bento-main,
+.messages-sidebar,
+.messages-chat,
+.explore-search-bar,
+.topbar,
+.create-header,
+.settings-header,
+.profile-name,
+.profile-bio,
+.profile-bio-link,
+.notif-day-label,
+.trending-tag-name,
+.trending-tag-count,
+.aside-profile-name,
+.aside-profile-handle,
+.feed-page-title,
+.search-section-title,
+.settings-header h2,
+.comments-wrap h3,
 .btn,
 .nav-item,
 .story-item,
@@ -894,25 +1026,111 @@
 .chip,
 .btn-text-link,
 .btn-icon,
-.post-action-btn {
-  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s, filter 0.4s, background-color 0.4s, border-color 0.4s;
+.post-action-btn,
+.profile-tab,
+.settings-back {
+  transition: transform 0.65s cubic-bezier(0.34, 1.6, 0.64, 1), box-shadow 0.5s, border-color 0.4s, background-color 0.4s, filter 0.4s;
 }
 
-.btn:hover,
-.nav-item:hover,
-.story-item:hover,
-.profile-avatar-wrap:hover,
-.avatar:hover,
-.settings-item:hover,
-.input:hover,
-.textarea:hover,
-.select:hover,
-.custom-select-header:hover,
-.chip:hover,
-.btn-text-link:hover,
-.btn-icon:hover,
-.post-action-btn:hover {
-  animation: wobbleHoverBtn 1.1s cubic-bezier(0.45, 0, 0.55, 1) forwards !important;
+/* 2. Fluid Swaying Hover Wobble Animation - Smooth single sine-wave sway, step-free */
+@keyframes wobbleHover {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(-1.2deg);
+  }
+  100% {
+    transform: translateY(-10px) rotate(0deg);
+  }
+}
+
+/* Settle in elevated hover position and wobble */
+.auth-card.hover-active,
+.post-card.hover-active,
+.suggest-card.hover-active,
+.create-option-card.hover-active,
+.card.hover-active,
+.profile-grid-cell.hover-active,
+.search-keyword-card.hover-active {
+  animation: var(--float-anim, none), wobbleHover 0.7s cubic-bezier(0.45, 0, 0.55, 1) forwards !important;
+  animation-delay: var(--float-delay, 0s), 0s !important;
+  box-shadow: 0 16px 36px rgba(0,0,0,0.08) !important;
+}
+
+/* 3. Small-scale Button Hover Wobble Animation - Smooth single sway, step-free */
+@keyframes wobbleHoverBtn {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-3px) rotate(1.2deg);
+  }
+  100% {
+    transform: translateY(-4px) rotate(0deg);
+  }
+}
+
+.btn.hover-active,
+.nav-item.hover-active,
+.story-item.hover-active,
+.profile-avatar-wrap.hover-active,
+.avatar.hover-active,
+.settings-item.hover-active,
+.input.hover-active,
+.textarea.hover-active,
+.select.hover-active,
+.custom-select-header.hover-active,
+.chip.hover-active,
+.btn-text-link.hover-active,
+.btn-icon.hover-active,
+.post-action-btn.hover-active,
+.profile-handle.hover-active,
+.profile-name.hover-active,
+.profile-bio.hover-active,
+.profile-bio-link.hover-active,
+.profile-stat.hover-active,
+.profile-tab.hover-active,
+.settings-back.hover-active {
+  animation: var(--float-anim, none), wobbleHoverBtn 0.5s cubic-bezier(0.45, 0, 0.55, 1) forwards !important;
+  animation-delay: var(--float-delay, 0s), 0s !important;
+}
+
+/* 4. Hover-Out Sinking Wobbly Decay Animations */
+.auth-card.wobble-out-active,
+.post-card.wobble-out-active,
+.suggest-card.wobble-out-active,
+.create-option-card.wobble-out-active,
+.card.wobble-out-active,
+.profile-grid-cell.wobble-out-active,
+.search-keyword-card.wobble-out-active {
+  animation: var(--float-anim, none), wobbleOut 0.6s ease-out 1 !important;
+  animation-delay: var(--float-delay, 0s), 0s !important;
+}
+
+.btn.wobble-out-active,
+.nav-item.wobble-out-active,
+.story-item.wobble-out-active,
+.profile-avatar-wrap.wobble-out-active,
+.avatar.wobble-out-active,
+.settings-item.wobble-out-active,
+.input.wobble-out-active,
+.textarea.wobble-out-active,
+.select.wobble-out-active,
+.custom-select-header.wobble-out-active,
+.chip.wobble-out-active,
+.btn-text-link.wobble-out-active,
+.btn-icon.wobble-out-active,
+.post-action-btn.wobble-out-active,
+.profile-handle.wobble-out-active,
+.profile-name.wobble-out-active,
+.profile-bio.wobble-out-active,
+.profile-bio-link.wobble-out-active,
+.profile-stat.wobble-out-active,
+.profile-tab.wobble-out-active,
+.settings-back.wobble-out-active {
+  animation: var(--float-anim, none), wobbleOutBtn 0.5s ease-out 1 !important;
+  animation-delay: var(--float-delay, 0s), 0s !important;
 }
 
 /* Active pressing state remains snappy */
