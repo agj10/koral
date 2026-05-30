@@ -696,15 +696,20 @@ export function renderSignupPage(container) {
 
 export function renderLandingPage(container) {
   container.innerHTML = '';
+  
+  const langBar = createAuthLanguageBar();
+  langBar.classList.add('animate-entrance');
+  langBar.style.animationDelay = '800ms';
+
   const landing = el('div', { className: 'landing' },
-    createAuthLanguageBar(),
+    langBar,
     el('div', { className: 'mesh-bg' },
       el('div', { className: 'orb-1' }), el('div', { className: 'orb-2' }), el('div', { className: 'orb-3' })
     ),
-    el('div', { className: 'landing-logo', innerHTML: '<svg viewBox="0 0 100 100" fill="none" width="64" height="64"><defs><linearGradient id="llg" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#f43f5e"/></linearGradient></defs><g fill="url(#llg)" transform="translate(0, 4)"><rect x="10" y="48" width="80" height="24"/><rect x="50" y="48" width="40" height="24" transform="rotate(-60 50 60)"/><rect x="50" y="48" width="40" height="24" transform="rotate(-120 50 60)"/></g></svg>' }),
-    el('h1', { className: 'g-text' }, t('welcomeBanner')),
-    el('p', { className: 'landing-sub' }, t('welcomeSub')),
-    el('div', { className: 'landing-buttons' },
+    el('div', { className: 'landing-logo animate-entrance', style: { animationDelay: '1000ms' }, innerHTML: '<svg viewBox="0 0 100 100" fill="none" width="64" height="64"><defs><linearGradient id="llg" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#f43f5e"/></linearGradient></defs><g fill="url(#llg)" transform="translate(0, 4)"><rect x="10" y="48" width="80" height="24"/><rect x="50" y="48" width="40" height="24" transform="rotate(-60 50 60)"/><rect x="50" y="48" width="40" height="24" transform="rotate(-120 50 60)"/></g></svg>' }),
+    el('h1', { className: 'g-text animate-entrance', style: { animationDelay: '1200ms' } }, t('welcomeBanner')),
+    el('p', { className: 'landing-sub animate-entrance', style: { animationDelay: '1400ms' } }, t('welcomeSub')),
+    el('div', { className: 'landing-buttons animate-entrance', style: { animationDelay: '1600ms' } },
       el('button', { className: 'btn btn-primary btn-lg', onclick: () => window.navigateTo('signup') }, t('signup')),
       el('button', { className: 'btn btn-secondary btn-lg', onclick: () => window.navigateTo('login') }, t('login'))
     )

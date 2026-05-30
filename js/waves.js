@@ -194,7 +194,7 @@ class KoralWaves {
         ? (theme === 'dark' ? BG_SURFACE_DARK : BG_SURFACE_LIGHT)
         : (theme === 'dark' ? BG_SUBMERGED_DARK : BG_SUBMERGED_LIGHT);
 
-      this.currentWaveStartY = mode === 'surface' ? this.H * 0.85 : this.H * 0.15;
+      this.currentWaveStartY = mode === 'surface' ? this.H * 1.25 : this.H * 0.15;
       this.currentMidStopPos = mode === 'surface' ? 0.7 : 0.5;
 
       this.currentBgStops = bgStops.map(stop => ({ ...stop }));
