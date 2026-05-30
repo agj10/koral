@@ -957,6 +957,33 @@
 .koral-waves-submerged .theme-option:nth-child(even) { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -3.8s; }
 .koral-waves-submerged .theme-option:nth-child(odd) { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.9s; }
 
+/* Loose headings, subheadings, labels, paragraphs, and empty states in submerged mode */
+.koral-waves-submerged h2 { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.7s; }
+.koral-waves-submerged h3 { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -3.6s; }
+.koral-waves-submerged p { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.9s; }
+.koral-waves-submerged .input-label { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -2.8s; }
+
+/* Empty state containers & texts */
+.koral-waves-submerged .empty { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -2.3s; }
+.koral-waves-submerged .empty-icon { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -4.4s; }
+.koral-waves-submerged .empty h3 { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.7s; }
+.koral-waves-submerged .empty p { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -1.2s; }
+
+/* Feed empty state */
+.koral-waves-submerged .feed-layout .text-center { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -3.0s; }
+.koral-waves-submerged .feed-layout .text-center .mb-4 { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -1.5s; }
+.koral-waves-submerged .feed-layout .text-center p.text-lg { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.8s; }
+.koral-waves-submerged .feed-layout .text-center p.text-sm { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -2.7s; }
+
+/* Right sidebar components */
+.koral-waves-submerged .aside-profile { --float-anim: floatWater1 5.5s ease-in-out infinite; --float-delay: -3.4s; }
+.koral-waves-submerged .aside-footer { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -0.6s; }
+
+/* Explore Page Specific Titles & Search Empty States */
+.koral-waves-submerged .explore-page .font-bold.text-lg,
+.koral-waves-submerged .explore-page .font-bold.text-2xl { --float-anim: floatWater2 6.5s ease-in-out infinite; --float-delay: -1.9s; }
+.koral-waves-submerged .explore-page .text-tx-3.text-sm.py-4 { --float-anim: floatWater3 6.0s ease-in-out infinite; --float-delay: -4.1s; }
+
 /* Apply the variables globally to all target elements */
 .koral-waves-submerged .auth-card, .koral-waves-submerged .story-viewer-box, .koral-waves-submerged .sidebar-nav, .koral-waves-submerged .landing-logo, .koral-waves-submerged .create-header,
 .koral-waves-submerged .profile-avatar-wrap, .koral-waves-submerged .profile-name, .koral-waves-submerged .profile-bio, .koral-waves-submerged .profile-handle, .koral-waves-submerged .profile-bio-link, .koral-waves-submerged .notif-day-label, .koral-waves-submerged .create-page > .mb-8 p, .koral-waves-submerged .settings-page p,
@@ -965,9 +992,19 @@
 .koral-waves-submerged .auth-banner-side, .koral-waves-submerged .auth-language-bar, .koral-waves-submerged .g-text, .koral-waves-submerged .settings-header, .koral-waves-submerged .feed-page-title, .koral-waves-submerged .search-section-title,
 .koral-waves-submerged .settings-header h2, .koral-waves-submerged .comments-wrap h3, .koral-waves-submerged .post-card, .koral-waves-submerged .create-option-card, .koral-waves-submerged .search-keyword-card, .koral-waves-submerged .profile-grid-cell,
 .koral-waves-submerged .story-item, .koral-waves-submerged .nav-item, .koral-waves-submerged .btn, .koral-waves-submerged .btn-icon, .koral-waves-submerged .post-action-btn, .koral-waves-submerged .settings-item, .koral-waves-submerged .input, .koral-waves-submerged .textarea, .koral-waves-submerged .select,
-.koral-waves-submerged .custom-select-header, .koral-waves-submerged .chip, .koral-waves-submerged .btn-text-link, .koral-waves-submerged .profile-tab, .koral-waves-submerged .settings-back, .koral-waves-submerged .theme-option {
+.koral-waves-submerged .custom-select-header, .koral-waves-submerged .chip, .koral-waves-submerged .btn-text-link, .koral-waves-submerged .profile-tab, .koral-waves-submerged .settings-back, .koral-waves-submerged .theme-option,
+.koral-waves-submerged h2, .koral-waves-submerged h3, .koral-waves-submerged p, .koral-waves-submerged .input-label,
+.koral-waves-submerged .empty, .koral-waves-submerged .empty-icon, .koral-waves-submerged .empty h3, .koral-waves-submerged .empty p,
+.koral-waves-submerged .feed-layout .text-center, .koral-waves-submerged .feed-layout .text-center .mb-4, .koral-waves-submerged .feed-layout .text-center p,
+.koral-waves-submerged .aside-profile, .koral-waves-submerged .aside-footer,
+.koral-waves-submerged .explore-page .font-bold, .koral-waves-submerged .explore-page .text-tx-3 {
   animation: var(--float-anim, none);
   animation-delay: var(--float-delay, 0s);
+}
+
+/* Ensure inline elements are inline-block to accept transform translations */
+.koral-waves-submerged .input-label {
+  display: inline-block !important;
 }
 
 /* Ensure Profile Detail elements are inline-block to accept transform matrix sways */

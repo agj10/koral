@@ -67,7 +67,7 @@ export function renderExplorePage(container) {
   container.innerHTML = '';
   const posts = store.getExplorePosts();
   
-  const wrap = el('div', { className: 'page-container anim-fade flex flex-col gap-8 w-full max-w-5xl mx-auto' });
+  const wrap = el('div', { className: 'page-container explore-page anim-fade flex flex-col gap-8 w-full max-w-5xl mx-auto' });
   
   const searchHeader = el('div', { className: 'flex items-center gap-4 w-full flex-wrap explore-search-bar' });
   
@@ -223,7 +223,7 @@ export function renderProfilePage(container, { handle }) {
   const isOwn = currentUser && currentUser.handle === user.handle;
   const posts = store.getUserPosts(user.handle);
   
-  const wrap = el('div', { className: 'page-container anim-fade', style: { maxWidth: '935px' } });
+  const wrap = el('div', { className: 'page-container profile-page anim-fade', style: { maxWidth: '935px' } });
   
   // Header
   const header = el('div', { className: 'profile-header' });
@@ -833,7 +833,7 @@ function renderSettingsLayout(container, activeTab, mainContentEl) {
   }
   
   container.innerHTML = '';
-  const wrap = el('div', { className: 'page-container anim-fade', style: { maxWidth: '768px' } });
+  const wrap = el('div', { className: 'page-container settings-page anim-fade', style: { maxWidth: '768px' } });
   
   wrap.appendChild(el('h2', { className: 'text-2xl font-bold mb-6 text-tx' }, t('settings')));
   
