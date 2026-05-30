@@ -60,13 +60,13 @@ const SUBMERGED_WAVES_DARK = [
   { hex: '#0c0506', alphaTop: 0.68, alphaBot: 0.95 },
 ];
 
-// Light theme — warm cream/blush tones
+// Light theme — warm, vibrant coral/rose tones
 const SUBMERGED_WAVES_LIGHT = [
-  { hex: '#f5e6e4', alphaTop: 0.35, alphaBot: 0.55 },
-  { hex: '#eddbd7', alphaTop: 0.40, alphaBot: 0.60 },
-  { hex: '#e3cec8', alphaTop: 0.45, alphaBot: 0.65 },
-  { hex: '#d9bfb8', alphaTop: 0.50, alphaBot: 0.72 },
-  { hex: '#cdb0a7', alphaTop: 0.55, alphaBot: 0.82 },
+  { hex: '#ffe4e6', alphaTop: 0.40, alphaBot: 0.60 }, // rose-100
+  { hex: '#fecdd3', alphaTop: 0.45, alphaBot: 0.68 }, // rose-200
+  { hex: '#fda4af', alphaTop: 0.50, alphaBot: 0.75 }, // rose-300
+  { hex: '#fb7185', alphaTop: 0.55, alphaBot: 0.80 }, // rose-400
+  { hex: '#ef4444', alphaTop: 0.60, alphaBot: 0.90 }, // brand-a (vibrant coral red!)
 ];
 
 // Wave motion parameters (shared between modes)
@@ -209,10 +209,10 @@ class KoralWaves {
         bgGradient.addColorStop(1, '#1a0a06');
       } else {
         bgGradient = ctx.createLinearGradient(0, 0, 0, H);
-        bgGradient.addColorStop(0, '#fdf0ed');
-        bgGradient.addColorStop(0.3, '#fce4de');
-        bgGradient.addColorStop(0.6, '#f9d5cb');
-        bgGradient.addColorStop(1, '#f5c4b3');
+        bgGradient.addColorStop(0, '#fff5f5'); // Clean warm white with subtle brand blush
+        bgGradient.addColorStop(0.3, '#ffe3e3'); // Soft brand red tint
+        bgGradient.addColorStop(0.6, '#ffd2d2'); // Warm light coral
+        bgGradient.addColorStop(1, '#ffb3b3'); // Rich coral blush blending with waves
       }
       ctx.fillStyle = bgGradient;
       ctx.fillRect(0, 0, W, H);
