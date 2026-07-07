@@ -1,0 +1,4 @@
+node_modules/
+koral.db
+public/uploads/
+.env
