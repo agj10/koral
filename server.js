@@ -1,11 +1,15 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const multer = require('multer');
-const db = require('./db');
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import fs from 'fs';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import multer from 'multer';
+import { fileURLToPath } from 'url';
+import db from './db.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;

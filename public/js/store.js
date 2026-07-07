@@ -1,3 +1,9 @@
+const storage = typeof window !== 'undefined' ? window.localStorage : {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {}
+};
+
 class Store {
   constructor() {
     this.state = {
@@ -11,7 +17,7 @@ class Store {
       theme: 'system'
     };
     this.subscribers = new Set();
-    this.token = localStorage.getItem('koral_token') || null;
+    this.token = storage.getItem('koral_token') || null;
     this.apiUrl = '/api';
   }
 
@@ -40,7 +46,7 @@ class Store {
 
   async init() {
     try {
-      this.state.theme = localStorage.getItem('koral_theme') || 'system';
+      this.state.theme = storage.getItem('koral_theme') || 'system';
       this.applyTheme(this.state.theme);
       
       const [usersRes, postsRes, commentsRes, storiesRes] = await Promise.all([
@@ -65,7 +71,7 @@ class Store {
           this.state.drafts = draftsRes.drafts || [];
         } catch (e) {
           this.token = null;
-          localStorage.removeItem('koral_token');
+          storage.removeItem('koral_token');
         }
       }
       this._notify();
@@ -94,7 +100,7 @@ class Store {
     try {
       const res = await this.api('/auth/login', 'POST', { handleOrEmail, password });
       this.token = res.token;
-      localStorage.setItem('koral_token', res.token);
+      storage.setItem('koral_token', res.token);
       this.state.currentUser = res.user;
       
       const notifsRes = await this.api('/notifications');
@@ -117,7 +123,7 @@ class Store {
       }
       const res = await this.api('/auth/register', 'POST', { ...userData, avatar: avatarUrl });
       this.token = res.token;
-      localStorage.setItem('koral_token', res.token);
+      storage.setItem('koral_token', res.token);
       this.state.currentUser = res.user;
       this.state.users.push(res.user);
       this._notify();
@@ -129,7 +135,7 @@ class Store {
 
   logout() {
     this.token = null;
-    localStorage.removeItem('koral_token');
+    storage.removeItem('koral_token');
     this.state.currentUser = null;
     this.state.notifications = [];
     this.state.drafts = [];
@@ -376,22 +382,27 @@ class Store {
   // --- Settings ---
   applyTheme(theme) {
     this.state.theme = theme;
-    localStorage.setItem('koral_theme', theme);
+    storage.setItem('koral_theme', theme);
     
     let isDark = false;
     if (theme === 'system') {
-      isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      isDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     } else {
       isDark = theme === 'dark';
     }
     
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    if (typeof document !== 'undefined') {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     }
     this._notify();
   }
 }
 
-window.store = new Store();
+export const store = new Store();
+if (typeof window !== 'undefined') {
+  window.store = store;
+}

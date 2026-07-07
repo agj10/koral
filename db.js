@@ -1,11 +1,16 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const fs = require('fs');
+import sqlite3Pkg from 'sqlite3';
+const sqlite3 = sqlite3Pkg.verbose();
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import util from 'util';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const dbPath = path.join(__dirname, 'koral.db');
 const db = new sqlite3.Database(dbPath);
 
-const util = require('util');
 db.runAsync = util.promisify(db.run).bind(db);
 db.getAsync = util.promisify(db.get).bind(db);
 db.allAsync = util.promisify(db.all).bind(db);
@@ -138,4 +143,4 @@ const initDb = async () => {
 
 initDb().catch(console.error);
 
-module.exports = db;
+export default db;
