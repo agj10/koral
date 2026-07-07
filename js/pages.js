@@ -648,64 +648,92 @@ export function renderSignupPage(container) {
           el('h2', { className: 'text-lg font-semibold text-secondary px-4' }, t('signup'))
         ),
         el('h2', { className: 'text-2xl font-bold mb-6 text-tx hidden md:block' }, t('signupTitle')),
-        el('form', { className: 'auth-form mt-4', onsubmit: (e) => {
-          e.preventDefault();
-          const t = e.target;
-          let handle = t.handle.value.trim();
-          if (!handle.startsWith('@')) handle = '@' + handle;
-          
-          const res = store.register({
-            handle,
-            displayName: t.displayName.value.trim(),
-            email: t.email.value.trim(),
-            password: t.pw.value,
-            avatar: avatarDataUrl
-          });
-          
-          if (res.ok) window.navigateTo('feed');
-          else toast(res.error, 'error');
-        }},
-          el('div', { className: 'auth-avatar-upload mb-4' }), // will append preview
-          el('div', { className: 'input-group mb-3' }, el('input', { name: 'email', type: 'email', className: 'input', placeholder: t('emailPlaceholder'), required: true })),
-          el('div', { className: 'input-group mb-3' }, el('input', { name: 'displayName', className: 'input', placeholder: t('nicknamePlaceholder'), required: true })),
-          el('div', { className: 'input-group mb-3' }, 
-            el('div', { className: 'input-wrap' },
-              el('div', { className: 'input-prefix' }, '@'),
-              el('input', { name: 'handle', className: 'input', placeholder: t('handlePlaceholder'), required: true })
-            )
-          ),
-          el('div', { className: 'input-group mb-6' }, el('input', { name: 'pw', type: 'password', className: 'input', placeholder: t('password'), required: true, minLength: 4 })),
-          el('label', { className: 'custom-checkbox mb-6' },
-            el('input', { type: 'checkbox', required: true }),
-            el('div', { className: 'checkbox-box' }),
-            (() => {
-              const checkboxText = el('div', { className: 'checkbox-text' });
-              const fullText = t('agreeTerms');
-              const termsWord = t('acceptTerms');
-              const parts = fullText.split(termsWord);
-              if (parts.length === 2) {
-                checkboxText.append(
-                  parts[0],
-                  el('a', { 
-                    className: 'text-tx-br font-semibold hover:underline', 
-                    onclick: (e) => {
-                      e.preventDefault();
-                      showModal(el('div', { className: 'p-6' }, 
-                        el('h3', { className: 'text-xl font-bold mb-4' }, t('acceptTerms') + ' koral'),
-                        el('p', { className: 'text-sm text-tx-2 leading-relaxed' }, 'koral은 개발자를 위한 마크다운 기반 SNS입니다. 건전한 코드 공유 문화를 위해 타인을 비방하거나 악의적인 코드를 공유하지 않을 것에 동의합니다. 사용자의 데이터는 안전하게 보관되며 맞춤형 피드 제공을 위해 쿠키가 사용될 수 있습니다.')
-                      ));
-                    }
-                  }, termsWord),
-                  parts[1]
-                );
-              } else {
-                checkboxText.textContent = fullText;
-              }
-              return checkboxText;
-            })()
-          ),
-          el('button', { type: 'submit', className: 'btn btn-primary w-full' }, t('signup'))
-        ),
+        (() => {
+          let generatedCode = '';
+          const form = el('form', { className: 'auth-form mt-4', onsubmit: (e) => {
+            e.preventDefault();
+            const t = e.target;
+            
+            if (!generatedCode || t.verificationCode.value !== generatedCode) {
+              toast('인증코드가 올바르지 않습니다.', 'error');
+              return;
+            }
+            
+            let handle = t.handle.value.trim();
+            if (!handle.startsWith('@')) handle = '@' + handle;
+            
+            const res = store.register({
+              handle,
+              displayName: t.displayName.value.trim(),
+              email: t.email.value.trim(),
+              password: t.pw.value,
+              avatar: avatarDataUrl
+            });
+            
+            if (res.ok) window.navigateTo('feed');
+            else toast(res.error, 'error');
+          }},
+            el('div', { className: 'auth-avatar-upload mb-4' }), // will append preview
+            
+            el('div', { className: 'input-group mb-3 flex gap-2' }, 
+              el('input', { name: 'email', type: 'email', className: 'input flex-1', placeholder: t('emailPlaceholder'), required: true }),
+              el('button', { type: 'button', className: 'btn btn-secondary whitespace-nowrap', onclick: (e) => {
+                const emailInput = e.target.previousElementSibling;
+                const email = emailInput.value.trim();
+                if (!email || !email.includes('@')) {
+                  toast('유효한 이메일을 입력해주세요.', 'error');
+                  return;
+                }
+                generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+                toast(`[koral] 인증번호 [${generatedCode}] 가 발송되었습니다.`, 'success');
+              } }, '인증 발송')
+            ),
+            
+            el('div', { className: 'input-group mb-3' }, 
+              el('input', { name: 'verificationCode', type: 'text', className: 'input', placeholder: '인증코드 6자리 입력', required: true, maxLength: 6 })
+            ),
+            
+            el('div', { className: 'input-group mb-3' }, el('input', { name: 'displayName', className: 'input', placeholder: t('nicknamePlaceholder'), required: true })),
+            el('div', { className: 'input-group mb-3' }, 
+              el('div', { className: 'input-wrap' },
+                el('div', { className: 'input-prefix' }, '@'),
+                el('input', { name: 'handle', className: 'input', placeholder: t('handlePlaceholder'), required: true })
+              )
+            ),
+            el('div', { className: 'input-group mb-6' }, el('input', { name: 'pw', type: 'password', className: 'input', placeholder: t('password'), required: true, minLength: 4 })),
+            el('label', { className: 'custom-checkbox mb-6' },
+              el('input', { type: 'checkbox', required: true }),
+              el('div', { className: 'checkbox-box' }),
+              (() => {
+                const checkboxText = el('div', { className: 'checkbox-text' });
+                const fullText = t('agreeTerms');
+                const termsWord = t('acceptTerms');
+                const parts = fullText.split(termsWord);
+                if (parts.length === 2) {
+                  checkboxText.append(
+                    parts[0],
+                    el('a', { 
+                      className: 'text-tx-br font-semibold hover:underline', 
+                      onclick: (e) => {
+                        e.preventDefault();
+                        showModal(el('div', { className: 'p-6' }, 
+                          el('h3', { className: 'text-xl font-bold mb-4' }, t('acceptTerms') + ' koral'),
+                          el('p', { className: 'text-sm text-tx-2 leading-relaxed' }, 'koral은 개발자를 위한 마크다운 기반 SNS입니다. 건전한 코드 공유 문화를 위해 타인을 비방하거나 악의적인 코드를 공유하지 않을 것에 동의합니다. 사용자의 데이터는 안전하게 보관되며 맞춤형 피드 제공을 위해 쿠키가 사용될 수 있습니다.')
+                        ));
+                      }
+                    }, termsWord),
+                    parts[1]
+                  );
+                } else {
+                  checkboxText.textContent = fullText;
+                }
+                return checkboxText;
+              })()
+            ),
+            el('button', { type: 'submit', className: 'btn btn-primary w-full' }, t('signup'))
+          );
+          return form;
+        })(),
         el('div', { className: 'auth-footer mt-6 border-t border-base pt-6' },
           t('haveAccount') + ' ',
           el('a', { onclick: () => window.navigateTo('login') }, t('login'))
