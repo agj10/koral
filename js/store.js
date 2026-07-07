@@ -1,5 +1,45 @@
 import { uid, getInitials, generateGradientAvatar, generatePlaceholderImage } from './utils.js';
 
+const DB_NAME = 'koral_db';
+const STORE_NAME = 'koral_store';
+const DB_VERSION = 1;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    request.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+  });
+}
+
+async function idbGet(key) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.get(key);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+  });
+}
+
+async function idbSet(key, val) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.put(val, key);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
+}
+
 class Store {
   constructor() {
     this.state = {
@@ -12,14 +52,24 @@ class Store {
       theme: 'system'
     };
     this.subscribers = new Set();
-    this.init();
   }
 
-  init() {
-    const saved = localStorage.getItem('koral_data_v2');
-    if (saved) {
-      try {
-        this.state = JSON.parse(saved);
+  async init() {
+    try {
+      let saved = await idbGet('koral_data_v2');
+      
+      // Migrate from localStorage if no data in IDB yet
+      if (!saved) {
+        const localSaved = localStorage.getItem('koral_data_v2');
+        if (localSaved) {
+          saved = JSON.parse(localSaved);
+          await idbSet('koral_data_v2', saved);
+          localStorage.removeItem('koral_data_v2'); // Cleanup migrated data
+        }
+      }
+
+      if (saved) {
+        this.state = saved;
         
         // Ensure core arrays exist
         if (!this.state.users) this.state.users = [];
@@ -42,11 +92,11 @@ class Store {
         });
         
         this.applyTheme(this.state.theme);
-      } catch (e) {
-        console.error('Failed to load store', e);
+      } else {
         this._seedData();
       }
-    } else {
+    } catch (e) {
+      console.error('Failed to load store', e);
       this._seedData();
     }
   }
@@ -66,26 +116,11 @@ class Store {
     this._save();
   }
 
-  _save() {
+  async _save() {
     try {
-      localStorage.setItem('koral_data_v2', JSON.stringify(this.state));
+      await idbSet('koral_data_v2', this.state);
     } catch (e) {
-      console.error('Failed to save to localStorage, it might be full. Clearing editor drafts to free space...', e);
-      try {
-        // Find and remove all koral_editor_draft_ keys which might be taking up space
-        const keysToRemove = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && key.startsWith('koral_editor_draft_')) {
-            keysToRemove.push(key);
-          }
-        }
-        keysToRemove.forEach(key => localStorage.removeItem(key));
-        // Try saving again
-        localStorage.setItem('koral_data_v2', JSON.stringify(this.state));
-      } catch (retryError) {
-        console.error('Still failed to save after cleanup:', retryError);
-      }
+      console.error('Failed to save to IndexedDB', e);
     }
   }
 

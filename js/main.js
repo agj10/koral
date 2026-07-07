@@ -224,13 +224,17 @@ window.navigateTo = function(path) {
   }
 };
 
-export function initApp() {
+export async function initApp() {
   try {
     appRoot = document.getElementById('app') || document.body;
     if (!appRoot) {
       console.error("App root element not found!");
       return;
     }
+    
+    // Wait for store (IndexedDB) to load before rendering
+    await store.init();
+    
     window.addEventListener('hashchange', router);
     
     // Global Event Delegation for Premium Wobbly Hover-In and Hover-Out Decay
