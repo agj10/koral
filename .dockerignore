@@ -1,0 +1,7 @@
+node_modules
+npm-debug.log
+koral.db
+public/uploads/*
+!public/uploads/.gitkeep
+.git
+.gitignore

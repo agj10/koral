@@ -599,11 +599,11 @@ export function renderLoginPage(container) {
           el('div', { className: 'auth-logo-icon', innerHTML: '<svg viewBox="0 0 100 100" fill="none" width="48" height="48"><defs><linearGradient id="alg" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#f43f5e"/></linearGradient></defs><g fill="url(#alg)" transform="translate(0, 4)"><rect x="10" y="48" width="80" height="24"/><rect x="50" y="48" width="40" height="24" transform="rotate(-60 50 60)"/><rect x="50" y="48" width="40" height="24" transform="rotate(-120 50 60)"/></g></svg>' }),
           el('h1', { className: 'auth-title' }, 'koral')
         ),
-        el('form', { className: 'auth-form', onsubmit: (e) => {
+        el('form', { className: 'auth-form', onsubmit: async (e) => {
           e.preventDefault();
           const id = e.target.id.value;
           const pw = e.target.pw.value;
-          const res = store.login(id, pw);
+          const res = await store.login(id, pw);
           if (res.ok) {
             window.navigateTo('feed');
           } else {
@@ -650,7 +650,7 @@ export function renderSignupPage(container) {
         el('h2', { className: 'text-2xl font-bold mb-6 text-tx hidden md:block' }, t('signupTitle')),
         (() => {
           let generatedCode = '';
-          const form = el('form', { className: 'auth-form mt-4', onsubmit: (e) => {
+          const form = el('form', { className: 'auth-form mt-4', onsubmit: async (e) => {
             e.preventDefault();
             const t = e.target;
             
@@ -662,7 +662,7 @@ export function renderSignupPage(container) {
             let handle = t.handle.value.trim();
             if (!handle.startsWith('@')) handle = '@' + handle;
             
-            const res = store.register({
+            const res = await store.register({
               handle,
               displayName: t.displayName.value.trim(),
               email: t.email.value.trim(),
@@ -871,21 +871,21 @@ function renderPostEditor(container, options = {}) {
         store.saveDraft('post', postDraft, options.draftId);
         toast(currentLang === 'ko' ? '임시저장 되었습니다.' : 'Draft saved.', 'success');
       },
-      onSubmit: (text, title) => {
+      onSubmit: async (text, title) => {
         const imgMatches = [...text.matchAll(/!\[.*?\]\((.*?)\)/g)];
         const images = imgMatches.map(m => m[1]);
         const plainText = text.replace(/<[^>]*>?/gm, ' ');
         const tagMatches = [...plainText.matchAll(/(?:^|\s)#([가-힣a-zA-Z0-9_]+)/g)];
         const tags = tagMatches.map(m => '#' + m[1]);
 
-        const post = store.createPost({ title, images, caption: text, location: '', tags });
-        if (post) {
+        const result = await store.createPost({ title, images, caption: text, location: '', tags });
+        if (result && result.ok) {
           toast(currentLang === 'ko' ? '리프가 생성되었습니다.' : 'Reef created successfully.', 'success');
           localStorage.removeItem(`koral_editor_draft_create_post_${currentUser ? currentUser.id : 'guest'}`);
           if (options.draftId) {
-            store.deleteDraft(options.draftId);
+            store.removeDraft(options.draftId);
           }
-          window.navigateTo('post/' + post.id);
+          window.navigateTo('post/' + result.post.id);
         }
       }
     })

@@ -204,7 +204,14 @@ class Store {
   }
 
   // --- Comments ---
-  async addComment(postId, text, parentId = null) {
+  async addComment(postIdOrObj, text, parentId = null) {
+    // Support both: addComment({ postId, text, parentId }) and addComment(postId, text, parentId)
+    let postId = postIdOrObj;
+    if (typeof postIdOrObj === 'object') {
+      postId = postIdOrObj.postId;
+      text = postIdOrObj.text;
+      parentId = postIdOrObj.parentId || null;
+    }
     try {
       const res = await this.api('/comments', 'POST', { postId, text, parentId });
       this.state.comments.push(res);
@@ -399,6 +406,15 @@ class Store {
       }
     }
     this._notify();
+  }
+
+  // --- Compatibility methods for existing frontend code ---
+  getState() {
+    return this.state;
+  }
+
+  getFeed() {
+    return this.state.posts;
   }
 }
 
