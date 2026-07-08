@@ -490,7 +490,7 @@ class Store {
   }
 
   getUser(handle) {
-    return this.state.users.find(u => u.handle === handle);
+    return this.state.users.find(u => u.handle === handle || u.handle === '@' + handle || u.handle.replace(/^@/, '') === handle.replace(/^@/, ''));
   }
 
   getCommentsForPost(postId) {

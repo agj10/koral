@@ -1095,8 +1095,11 @@ export function renderEditProfilePage(container) {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
+      input.style.display = 'none';
+      document.body.appendChild(input);
       input.onchange = async (ev) => {
         const file = ev.target.files[0];
+        document.body.removeChild(input);
         if (!file) return;
         try {
           const dataUrl = await resizeImage(file, 400);
