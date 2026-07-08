@@ -459,6 +459,36 @@ class Store {
   getTheme() {
     return this.state.theme;
   }
+
+  getSuggestedUsers() {
+    const me = this.state.currentUser;
+    if (!me) return [];
+    return this.state.users.filter(u => u.handle !== me.handle && !u.followers?.includes(me.handle)).slice(0, 5);
+  }
+
+  getPost(id) {
+    return this.state.posts.find(p => p.id === id);
+  }
+
+  getPostComments(postId) {
+    return this.state.comments.filter(c => c.postId === postId && !c.parentId);
+  }
+
+  getCommentReplies(parentId) {
+    return this.state.comments.filter(c => c.parentId === parentId);
+  }
+
+  getExplorePosts() {
+    return [...this.state.posts].sort((a, b) => b.likes.length - a.likes.length || new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  getUserPosts(handle) {
+    return this.state.posts.filter(p => p.authorHandle === handle).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  getDrafts(handle) {
+    return Object.values(this.state.drafts || {}).filter(d => d.authorHandle === handle).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  }
 }
 
 export const store = new Store();
