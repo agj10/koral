@@ -80,21 +80,37 @@ app.post('/api/auth/send-verification', async (req, res) => {
       [email, code, expiresAt]
     );
 
-    const mailOptions = {
-      from: `"koral" <${process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@koral.com'}>`,
-      to: email,
-      subject: '[koral] 이메일 인증 코드',
-      text: `koral에 가입해 주셔서 감사합니다!\n\n인증 코드: ${code}\n\n이 코드는 5분간 유효합니다.`
-    };
+    const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@koral.com';
+    const subject = '[koral] 이메일 인증 코드';
+    const text = `koral에 가입해 주셔서 감사합니다!\n\n인증 코드: ${code}\n\n이 코드는 5분간 유효합니다.`;
 
-    console.log(`[DEBUG] Attempting to connect to SMTP: ${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`);
-    console.log(`[DEBUG] Auth user: ${process.env.SMTP_USER}, From: ${mailOptions.from}`);
+    console.log(`[DEBUG] Attempting to send email to ${email} from ${fromAddress}`);
 
-    await transporter.sendMail(mailOptions);
+    if (process.env.SMTP_HOST === 'smtp.sendgrid.net') {
+      console.log(`[DEBUG] Using SendGrid HTTP API`);
+      await sgMail.send({
+        to: email,
+        from: `"koral" <${fromAddress}>`,
+        subject,
+        text
+      });
+    } else {
+      console.log(`[DEBUG] Attempting to connect to SMTP: ${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`);
+      await transporter.sendMail({
+        from: `"koral" <${fromAddress}>`,
+        to: email,
+        subject,
+        text
+      });
+    }
+
     res.json({ message: 'Verification code sent.' });
   } catch (err) {
     console.error('Error sending email:', err);
-    res.status(500).json({ error: 'Failed to send verification email. Check SMTP configuration.' });
+    if (err.response) {
+      console.error(err.response.body);
+    }
+    res.status(500).json({ error: 'Failed to send verification email.' });
   }
 });
 app.post('/api/auth/register', async (req, res) => {
