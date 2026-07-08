@@ -252,6 +252,36 @@ class Store {
   }
 
   // --- Stories ---
+  getGroupedStories() {
+    const groups = {};
+    const me = this.state.currentUser?.handle;
+    this.state.stories.forEach(s => {
+      const handle = s.authorHandle;
+      if (!groups[handle]) {
+        groups[handle] = {
+          authorHandle: handle,
+          author: this.getUser(handle),
+          stories: [],
+          hasUnread: false
+        };
+      }
+      groups[handle].stories.push(s);
+      if (me && (!s.views || !s.views.includes(me))) {
+        groups[handle].hasUnread = true;
+      }
+    });
+    const arr = Object.values(groups);
+    arr.sort((a, b) => {
+      if (a.authorHandle === me) return -1;
+      if (b.authorHandle === me) return 1;
+      if (a.hasUnread && !b.hasUnread) return -1;
+      if (!a.hasUnread && b.hasUnread) return 1;
+      return 0;
+    });
+    return arr;
+  }
+
+
   async createStory(layers) {
     try {
       // For stories, layers may contain images in 'content' if type is image
