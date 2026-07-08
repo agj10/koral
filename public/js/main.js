@@ -183,7 +183,7 @@ function router() {
     console.error("Router error, clearing localStorage and self-healing:", err);
     localStorage.removeItem('koral_data_v2');
     localStorage.removeItem('koral_recent_searches');
-    window.location.reload();
+    // window.location.reload();
   }
 }
 
@@ -281,7 +281,7 @@ export async function initApp() {
     console.error("Critical error during app initialization, clearing state and self-healing:", err);
     localStorage.removeItem('koral_data_v2');
     localStorage.removeItem('koral_recent_searches');
-    window.location.reload();
+    // window.location.reload();
   }
 }
 
