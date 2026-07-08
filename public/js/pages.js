@@ -977,9 +977,12 @@ export function renderEditProfilePage(container) {
   content.appendChild(el('h3', { className: 'text-2xl font-bold mb-8 text-tx' }, t('editProfile')));
   
   let currentAvatar = currentUser.avatar;
-  const avatarImg = el('div', { 
-    className: 'w-24 h-24 rounded-full flex items-center justify-center text-4xl font-bold cursor-pointer hover:opacity-80 transition-opacity shadow-sm',
-    style: currentAvatar ? `background: url(${currentAvatar}) center/cover;` : 'background: var(--bg-hover); color: var(--tx-muted); border: 1px solid var(--border-base);',
+  
+  const avatarPreview = el('div', {}, renderAvatar(currentUser, 'av-2xl'));
+  
+  const avatarWrap = el('div', { 
+    className: 'relative cursor-pointer hover:opacity-80 transition-opacity inline-block',
+    title: '프로필 사진 변경',
     onclick: () => {
       const input = document.createElement('input');
       input.type = 'file';
@@ -990,19 +993,32 @@ export function renderEditProfilePage(container) {
         const reader = new FileReader();
         reader.onload = (e) => {
           currentAvatar = e.target.result;
-          avatarImg.style.background = `url(${currentAvatar}) center/cover`;
-          avatarImg.textContent = ''; // hide the initial
+          avatarPreview.innerHTML = '';
+          avatarPreview.appendChild(renderAvatar({ ...currentUser, avatar: currentAvatar }, 'av-2xl'));
+          removeAvatarBtn.style.display = '';
         };
         reader.readAsDataURL(file);
       };
       input.click();
-    },
-    title: '프로필 사진 변경'
+    }
   });
-  
-  if (!currentAvatar) {
-    avatarImg.textContent = currentUser.displayName ? currentUser.displayName.charAt(0).toUpperCase() : '?';
-  }
+
+  avatarWrap.append(
+    avatarPreview,
+    el('div', { className: 'absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full pointer-events-none shadow-md', innerHTML: icons.image(16) })
+  );
+
+  const removeAvatarBtn = el('button', {
+    type: 'button',
+    className: 'btn btn-ghost text-red-500 mt-2 text-sm',
+    style: currentAvatar ? '' : 'display: none;',
+    onclick: () => {
+      currentAvatar = null;
+      avatarPreview.innerHTML = '';
+      avatarPreview.appendChild(renderAvatar({ ...currentUser, avatar: null }, 'av-2xl'));
+      removeAvatarBtn.style.display = 'none';
+    }
+  }, '기본 프로필로 돌아가기');
 
   const form = el('form', { onsubmit: async (e) => {
     e.preventDefault();
@@ -1015,7 +1031,9 @@ export function renderEditProfilePage(container) {
       let avatarUrl = currentUser.avatar;
       if (currentAvatar && currentAvatar.startsWith('data:')) {
         avatarUrl = await store._uploadImage(currentAvatar);
-      } else if (currentAvatar) {
+      } else if (currentAvatar === null) {
+        avatarUrl = null;
+      } else {
         avatarUrl = currentAvatar;
       }
 
@@ -1035,15 +1053,13 @@ export function renderEditProfilePage(container) {
   }});
 
   form.append(
-    el('div', { className: 'flex justify-center mb-8' },
-      el('div', { className: 'relative' },
-        avatarImg,
-        el('div', { className: 'absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full pointer-events-none shadow-md', innerHTML: icons.image(16) })
-      )
+    el('div', { className: 'flex flex-col items-center mb-8' },
+      avatarWrap,
+      removeAvatarBtn
     ),
     el('div', { className: 'input-group mb-6' },
       el('label', { className: 'input-label' }, t('nickname')),
-      el('input', { name: 'displayName', className: 'input input-lg', value: currentUser.displayName })
+      el('input', { name: 'displayName', className: 'input input-lg', value: currentUser.displayName || '' })
     ),
     el('div', { className: 'input-group mb-6' },
       el('label', { className: 'input-label' }, t('bio')),
@@ -1057,6 +1073,7 @@ export function renderEditProfilePage(container) {
       el('button', { type: 'submit', className: 'btn btn-primary btn-lg shadow-md' }, t('saveChanges'))
     )
   );
+  
   
   content.appendChild(form);
   renderSettingsLayout(container, 'profile', content);
