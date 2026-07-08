@@ -7,6 +7,17 @@ import jwt from 'jsonwebtoken';
 import multer from 'multer';
 import { fileURLToPath } from 'url';
 import db from './db.js';
+import nodemailer from 'nodemailer';
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '465'),
+  secure: process.env.SMTP_PORT === '465' || process.env.SMTP_PORT == null,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  }
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -53,11 +64,44 @@ const verifyToken = (req, res, next) => {
 const uid = () => Math.random().toString(36).substring(2, 9);
 
 // --- Auth Routes ---
+app.post('/api/auth/send-verification', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+
+  try {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes
+
+    await db.runAsync(
+      'INSERT INTO verification_codes (email, code, expiresAt) VALUES (?, ?, ?) ON CONFLICT (email) DO UPDATE SET code = excluded.code, expiresAt = excluded.expiresAt',
+      [email, code, expiresAt]
+    );
+
+    const mailOptions = {
+      from: `"koral" <${process.env.SMTP_USER || 'noreply@koral.com'}>`,
+      to: email,
+      subject: '[koral] 이메일 인증 코드',
+      text: `koral에 가입해 주셔서 감사합니다!\n\n인증 코드: ${code}\n\n이 코드는 5분간 유효합니다.`
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.json({ message: 'Verification code sent.' });
+  } catch (err) {
+    console.error('Error sending email:', err);
+    res.status(500).json({ error: 'Failed to send verification email. Check SMTP configuration.' });
+  }
+});
 app.post('/api/auth/register', async (req, res) => {
-  const { handle, displayName, email, password, avatar } = req.body;
-  if (!handle || !email || !password) return res.status(400).json({ error: 'Missing fields' });
+  const { handle, displayName, email, password, avatar, verificationCode } = req.body;
+  if (!handle || !email || !password || !verificationCode) return res.status(400).json({ error: 'Missing fields' });
   
   try {
+    const vc = await db.getAsync('SELECT * FROM verification_codes WHERE email = ?', [email]);
+    if (!vc || vc.code !== verificationCode) return res.status(400).json({ error: '인증코드가 올바르지 않거나 발송되지 않았습니다.' });
+    if (new Date(vc.expiresAt) < new Date()) return res.status(400).json({ error: '인증코드가 만료되었습니다.' });
+    
+    await db.runAsync('DELETE FROM verification_codes WHERE email = ?', [email]);
+
     const existing = await db.getAsync('SELECT * FROM users WHERE handle = ? OR email = ?', [handle, email]);
     if (existing) return res.status(400).json({ error: 'Handle or email already in use.' });
     

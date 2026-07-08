@@ -115,6 +115,15 @@ class Store {
     }
   }
 
+  async sendVerificationCode(email) {
+    try {
+      await this.api('/auth/send-verification', 'POST', { email });
+      return { ok: true };
+    } catch(err) {
+      return { ok: false, error: err.message };
+    }
+  }
+
   async register(userData) {
     try {
       let avatarUrl = userData.avatar;

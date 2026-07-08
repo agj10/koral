@@ -150,6 +150,14 @@ const initDb = async () => {
       updatedAt TEXT NOT NULL
     )
   `);
+
+  await db.runAsync(`
+    CREATE TABLE IF NOT EXISTS verification_codes (
+      email TEXT PRIMARY KEY,
+      code TEXT NOT NULL,
+      expiresAt TEXT NOT NULL
+    )
+  `);
   
   console.log("Database initialized successfully.");
 };

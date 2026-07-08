@@ -649,15 +649,9 @@ export function renderSignupPage(container) {
         ),
         el('h2', { className: 'text-2xl font-bold mb-6 text-tx hidden md:block' }, t('signupTitle')),
         (() => {
-          let generatedCode = '';
           const form = el('form', { className: 'auth-form mt-4', onsubmit: async (e) => {
             e.preventDefault();
             const t = e.target;
-            
-            if (!generatedCode || t.verificationCode.value !== generatedCode) {
-              toast('인증코드가 올바르지 않습니다.', 'error');
-              return;
-            }
             
             let handle = t.handle.value.trim();
             if (!handle.startsWith('@')) handle = '@' + handle;
@@ -667,7 +661,8 @@ export function renderSignupPage(container) {
               displayName: t.displayName.value.trim(),
               email: t.email.value.trim(),
               password: t.pw.value,
-              avatar: avatarDataUrl
+              avatar: avatarDataUrl,
+              verificationCode: t.verificationCode.value.trim()
             });
             
             if (res.ok) window.navigateTo('feed');
@@ -677,15 +672,26 @@ export function renderSignupPage(container) {
             
             el('div', { className: 'input-group mb-3 flex gap-2' }, 
               el('input', { name: 'email', type: 'email', className: 'input flex-1', placeholder: t('emailPlaceholder'), required: true }),
-              el('button', { type: 'button', className: 'btn btn-secondary whitespace-nowrap', onclick: (e) => {
+              el('button', { type: 'button', className: 'btn btn-secondary whitespace-nowrap', onclick: async (e) => {
                 const emailInput = e.target.previousElementSibling;
                 const email = emailInput.value.trim();
                 if (!email || !email.includes('@')) {
                   toast('유효한 이메일을 입력해주세요.', 'error');
                   return;
                 }
-                generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
-                toast(`[koral] 인증번호 [${generatedCode}] 가 발송되었습니다.`, 'success');
+                const btn = e.target;
+                btn.disabled = true;
+                btn.textContent = '발송중...';
+                
+                const res = await store.sendVerificationCode(email);
+                if (res.ok) {
+                  toast('입력하신 이메일로 인증코드가 발송되었습니다.', 'success');
+                  btn.textContent = '재발송';
+                } else {
+                  toast(res.error || '발송 실패', 'error');
+                  btn.textContent = '인증 발송';
+                }
+                btn.disabled = false;
               } }, '인증 발송')
             ),
             
