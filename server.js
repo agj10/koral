@@ -87,6 +87,9 @@ app.post('/api/auth/send-verification', async (req, res) => {
       text: `koral에 가입해 주셔서 감사합니다!\n\n인증 코드: ${code}\n\n이 코드는 5분간 유효합니다.`
     };
 
+    console.log(`[DEBUG] Attempting to connect to SMTP: ${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`);
+    console.log(`[DEBUG] Auth user: ${process.env.SMTP_USER}, From: ${mailOptions.from}`);
+
     await transporter.sendMail(mailOptions);
     res.json({ message: 'Verification code sent.' });
   } catch (err) {
