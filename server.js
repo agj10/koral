@@ -294,7 +294,7 @@ app.delete('/api/users/me', verifyToken, async (req, res) => {
 
 app.get('/api/users', async (req, res) => {
   try {
-    const users = await db.allAsync('SELECT id, handle, displayName, avatar, bio, verified FROM users');
+    const users = await db.allAsync('SELECT id, handle, displayName, avatar, bio, website, verified FROM users');
     for (const u of users) {
       const followers = await db.allAsync('SELECT follower FROM follows WHERE following = ?', [u.handle]);
       const following = await db.allAsync('SELECT following FROM follows WHERE follower = ?', [u.handle]);

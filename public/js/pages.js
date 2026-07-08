@@ -209,7 +209,7 @@ export function renderExplorePage(container) {
 
 export function renderProfilePage(container, { handle }) {
   container.innerHTML = '';
-  const user = store.getUser('@' + handle);
+  const user = store.getUser(handle.replace(/^@/, ''));
   const currentUser = store.getState().currentUser;
   
   if (!user) {
@@ -248,9 +248,12 @@ export function renderProfilePage(container, { handle }) {
     const isFollowing = store.isFollowing(user.handle);
     const followBtn = el('button', { 
       className: `btn btn-sm ${isFollowing ? 'btn-secondary' : 'btn-primary'}`,
-      onclick: () => {
+      onclick: (e) => {
         store.toggleFollow(user.handle);
-        window.navigateTo(`profile/${handle}`); // re-render
+        const following = store.isFollowing(user.handle);
+        e.target.className = `btn btn-sm ${following ? 'btn-secondary' : 'btn-primary'}`;
+        e.target.textContent = following ? t('following') : t('follow');
+        if (stats) stats.children[1].children[0].textContent = user.followers?.length || 0;
       }
     }, isFollowing ? t('following') : t('follow'));
     actions.appendChild(followBtn);
@@ -1089,7 +1092,7 @@ export function renderEditProfilePage(container) {
         avatar: avatarUrl
       });
       toast(localStorage.getItem('koral_language') === 'en' ? 'Profile updated successfully.' : '프로필이 업데이트되었습니다.', 'success');
-      window.navigateTo(`profile/${currentUser.handle.substring(1)}`);
+      window.navigateTo(`profile/${currentUser.handle.replace(/^@/, '')}`);
     } catch (err) {
       toast('Failed to update profile.', 'error');
       btn.textContent = originalText;

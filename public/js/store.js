@@ -103,6 +103,12 @@ class Store {
       storage.setItem('koral_token', res.token);
       this.state.currentUser = res.user;
       
+      const saved = JSON.parse(storage.getItem('koral_saved_accounts') || '[]');
+      if (!saved.find(u => u.id === res.user.id)) {
+        saved.push(res.user);
+        storage.setItem('koral_saved_accounts', JSON.stringify(saved));
+      }
+      
       const notifsRes = await this.api('/notifications');
       this.state.notifications = notifsRes.notifications || [];
       const draftsRes = await this.api('/drafts');
@@ -135,6 +141,13 @@ class Store {
       storage.setItem('koral_token', res.token);
       this.state.currentUser = res.user;
       this.state.users.push(res.user);
+      
+      const saved = JSON.parse(storage.getItem('koral_saved_accounts') || '[]');
+      if (!saved.find(u => u.id === res.user.id)) {
+        saved.push(res.user);
+        storage.setItem('koral_saved_accounts', JSON.stringify(saved));
+      }
+      
       this._notify();
       return { ok: true };
     } catch(err) {

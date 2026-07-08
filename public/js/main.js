@@ -22,11 +22,11 @@ function buildAppShell() {
   
   const navItems = el('div', { className: 'nav-items', style: { flex: 1, display: 'flex', flexDirection: 'column' } });
   
-  const createNavItem = (id, iconSvg, label, route) => {
+  const createNavItem = (id, iconSvg, label, route, onClick) => {
     const item = el('a', { 
       className: 'nav-item', 
       id: `nav-${id}`,
-      onclick: () => window.navigateTo(route)
+      onclick: onClick || (() => window.navigateTo(route))
     },
       el('div', { className: 'nav-item-icon' }, el('span', { innerHTML: iconSvg })),
       el('div', { className: 'nav-item-label' }, label)
@@ -39,7 +39,7 @@ function buildAppShell() {
   navItems.append(
     createNavItem('home', icons.home(24), t('home'), 'feed'),
     createNavItem('explore', icons.compass(24), t('explore'), 'explore'),
-    currentUser ? createNavItem('profile', icons.user(24), t('profile'), `profile/${currentUser.handle.startsWith('@') ? currentUser.handle.substring(1) : currentUser.handle}`) : '',
+    currentUser ? createNavItem('profile', icons.user(24), t('profile'), `profile/${currentUser.handle.startsWith('@') ? currentUser.handle.replace(/^@/, '') : currentUser.handle}`) : '',
     createNavItem('create', icons.plusSquare(24), t('create'), 'create')
   );
   
@@ -57,8 +57,11 @@ function buildAppShell() {
     el('div', { className: 'bottom-nav-items' },
       createNavItem('m-home', icons.home(24), '', 'feed'),
       createNavItem('m-explore', icons.compass(24), '', 'explore'),
-      currentUser ? createNavItem('m-profile', icons.user(24), '', `profile/${currentUser.handle.startsWith('@') ? currentUser.handle.substring(1) : currentUser.handle}`) : '',
-      createNavItem('m-create', icons.plusSquare(24), '', 'create')
+      createNavItem('m-create', icons.plusSquare(24), '', 'create'),
+      currentUser ? createNavItem('m-profile', icons.user(24), '', `profile/${currentUser.handle.replace(/^@/, '')}`) : '',
+      createNavItem('m-more', icons.more(24), '', '#', () => {
+        import('./components.js').then(c => c.showMoreModal());
+      })
     )
   );
   

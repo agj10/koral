@@ -35,7 +35,7 @@ export function renderPostCard(post, options = {}) {
   const header = el('div', { className: 'post-header' });
   const authorLink = el('div', { 
     className: 'post-author',
-    onclick: () => window.navigateTo(`profile/${post.authorHandle.substring(1)}`)
+    onclick: () => window.navigateTo(`profile/${post.authorHandle.replace(/^@/, '')}`)
   },
     renderAvatar(author, 'av-md', true), // give story ring to everyone for aesthetic
     el('div', { className: 'post-author-info' },
@@ -156,7 +156,7 @@ export function renderPostCard(post, options = {}) {
 
   const tagsEl = el('div', { className: 'post-tags' });
   (post.tags || []).forEach(tag => {
-    const t = el('span', { className: 'post-tag', textContent: tag, onclick: () => window.navigateTo(`tag/${tag.substring(1)}`) });
+    const t = el('span', { className: 'post-tag', textContent: tag, onclick: () => window.navigateTo(`tag/${tag.replace(/^@/, '')}`) });
     tagsEl.appendChild(t);
   });
 
@@ -784,7 +784,7 @@ export function renderStoryViewer(startIndex, groupedStories, startStoryIndex = 
         e.stopPropagation();
         document.body.style.overflow = originalBodyOverflow;
         overlay.remove();
-        window.navigateTo(`profile/${user.handle.substring(1)}`);
+        window.navigateTo(`profile/${user.handle.replace(/^@/, '')}`);
       }
     },
       renderAvatar(user, 'av-xs', false),
@@ -878,30 +878,27 @@ export function renderSuggestSidebar() {
   
   asideSwitch.onclick = (e) => {
     e.stopPropagation();
-    
-    const moreWrap = el('div', { className: 'p-2 w-full flex flex-col gap-1' });
-    moreWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx px-3 pt-2 pb-3 mb-1 border-b border-base' }, optionsTitle));
-    
-    const switchBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3', onclick: () => {
-      modal.close();
-      showSwitcherModal();
-    }}, el('span', { innerHTML: icons.user(18) }), switchLabel);
-    
-    const logoutBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3 text-red-500 hover:bg-red-50', onclick: () => {
-      modal.close();
-      store.logout();
-      window.navigateTo('');
-    }}, el('span', { innerHTML: icons.logout(18) }), logoutLabel);
-    
-    moreWrap.append(switchBtn, logoutBtn);
-    const modal = showModal(moreWrap, { className: 'w-full max-w-sm' });
+    showMoreModal();
   };
+}
+
+export function showMoreModal() {
+  const currentUser = store.getState().currentUser;
+  if (!currentUser) return;
+  const currentLang = localStorage.getItem('koral_language') || 'ko';
+  const switchLabel = currentLang === 'ko' ? '계정 전환' : currentLang === 'ja' ? 'アカウント切り替え' : currentLang === 'zh' ? '切换账号' : 'Switch Account';
+  const logoutLabel = currentLang === 'ko' ? '로그아웃' : currentLang === 'ja' ? 'ログアウト' : currentLang === 'zh' ? '退出登录' : 'Log out';
+  const optionsTitle = currentLang === 'ko' ? '옵션' : currentLang === 'ja' ? 'オプション' : currentLang === 'zh' ? '选项' : 'Options';
+  const addAccountLabel = currentLang === 'ko' ? '기존 계정 추가' : currentLang === 'ja' ? '既存のアカウントを追加' : currentLang === 'zh' ? '添加已有账号' : 'Add Existing Account';
 
   const showSwitcherModal = () => {
     const wrap = el('div', { className: 'p-2 w-full flex flex-col gap-1' });
     wrap.appendChild(el('div', { className: 'font-bold text-lg text-tx px-3 pt-2 pb-3 mb-1 border-b border-base' }, switchLabel));
     
-    const otherUsers = store.getState().users.filter(u => u.id !== currentUser.id).slice(0, 2);
+    // Read saved accounts and only show them
+    const saved = JSON.parse(localStorage.getItem('koral_saved_accounts') || '[]');
+    const otherUsers = saved.filter(u => u.id !== currentUser.id);
+    
     otherUsers.forEach(u => {
       const item = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 text-left p-3', onclick: () => {
         store.getState().currentUser = u;
@@ -918,18 +915,37 @@ export function renderSuggestSidebar() {
     const addBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3 mt-1 border-t border-base rounded-none text-brand', onclick: () => {
       switchModal.close();
       store.logout();
-      window.navigateTo('');
+      window.location.reload();
     } }, el('span', { innerHTML: icons.plusSquare(18) }), addAccountLabel);
     
     wrap.appendChild(addBtn);
     const switchModal = showModal(wrap, { className: 'w-full max-w-sm' });
   };
 
+  const moreWrap = el('div', { className: 'p-2 w-full flex flex-col gap-1' });
+  moreWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx px-3 pt-2 pb-3 mb-1 border-b border-base' }, optionsTitle));
+  
+  const switchBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3', onclick: () => {
+    modal.close();
+    showSwitcherModal();
+  }}, el('span', { innerHTML: icons.user(18) }), switchLabel);
+  
+  const logoutBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3 text-red-500 hover:bg-red-50', onclick: () => {
+    modal.close();
+    store.logout();
+    window.location.reload();
+  }}, el('span', { innerHTML: icons.logout(18) }), logoutLabel);
+  
+  moreWrap.append(switchBtn, logoutBtn);
+  const modal = showModal(moreWrap, { className: 'w-full max-w-sm' });
+
+
+
   const myProfile = el('div', { className: 'aside-profile flex items-center justify-between mb-6', style: { position: 'relative' } },
     el('div', { className: 'flex items-center gap-3' },
       renderAvatar(currentUser, 'av-lg'),
       el('div', { className: 'aside-profile-info' },
-        el('div', { className: 'aside-profile-name font-bold cursor-pointer hover:underline', onclick: () => window.navigateTo(`profile/${currentUser.handle.substring(1)}`) }, currentUser.handle.startsWith('@') ? currentUser.handle : '@' + currentUser.handle),
+        el('div', { className: 'aside-profile-name font-bold cursor-pointer hover:underline', onclick: () => window.navigateTo(`profile/${currentUser.handle.replace(/^@/, '')}`) }, currentUser.handle.startsWith('@') ? currentUser.handle : '@' + currentUser.handle),
         el('div', { className: 'aside-profile-handle text-sm text-tx-2', innerHTML: renderMarkdown(currentUser.displayName).replace(/^<p>/, '').replace(/<\/p>$/,'') })
       )
     ),
@@ -948,7 +964,7 @@ export function renderSuggestSidebar() {
     const item = el('div', { className: 'suggest-user' },
       renderAvatar(user, 'av-md', true),
       el('div', { className: 'suggest-user-info' },
-        el('div', { className: 'suggest-user-name', onclick: () => window.navigateTo(`profile/${user.handle.substring(1)}`) }, user.handle.startsWith('@') ? user.handle : '@' + user.handle),
+        el('div', { className: 'suggest-user-name', onclick: () => window.navigateTo(`profile/${user.handle.replace(/^@/, '')}`) }, user.handle.startsWith('@') ? user.handle : '@' + user.handle),
         el('div', { className: 'suggest-user-sub' }, recTitle)
       ),
       el('button', { 
@@ -1027,7 +1043,7 @@ export function renderSearchBar(onNavigate) {
         const item = el('div', { className: 'search-result-item', onclick: () => {
           results.classList.add('hidden');
           input.value = '';
-          if (onNavigate) onNavigate(`profile/${u.handle.substring(1)}`);
+          if (onNavigate) onNavigate(`profile/${u.handle.replace(/^@/, '')}`);
         }},
           renderAvatar(u, 'av-sm'),
           el('div', {},
@@ -1196,7 +1212,7 @@ export function renderCommentSection(postId) {
         };
       }
 
-      const authorProfileWrap = el('div', { className: 'flex items-center gap-3 cursor-pointer mb-2', onclick: () => window.navigateTo(`profile/${author.handle.substring(1)}`) },
+      const authorProfileWrap = el('div', { className: 'flex items-center gap-3 cursor-pointer mb-2', onclick: () => window.navigateTo(`profile/${author.handle.replace(/^@/, '')}`) },
         renderAvatar(author, 'av-sm'),
         el('div', { className: 'flex flex-col' },
           el('div', { className: 'font-bold text-tx text-sm flex items-center gap-1' }, 
