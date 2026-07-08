@@ -602,6 +602,36 @@ body {
   }
 }
 
+/* Floating more button (for tablet landscape where feed-aside is hidden) */
+.floating-more-btn {
+  display: none;
+  position: fixed;
+  bottom: var(--s8);
+  right: var(--s8);
+  width: 56px;
+  height: 56px;
+  background: var(--bg-el);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  color: var(--tx);
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+  cursor: pointer;
+  transition: transform var(--t-fast);
+}
+.floating-more-btn:hover {
+  transform: scale(1.05);
+  background: var(--bg-hover);
+}
+
+@media (max-width: 1100px) and (orientation: landscape) {
+  .floating-more-btn {
+    display: flex;
+  }
+}
+
 /* Hide redundant mobile bottom nav element globally by default */
 .bottom-nav {
   display: none !important;

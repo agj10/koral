@@ -965,8 +965,7 @@ export function showMoreModal() {
     
     const addBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3 mt-1 border-t border-base rounded-none text-brand', onclick: () => {
       switchModal.close();
-      store.logout();
-      window.location.reload();
+      window.navigateTo('add-account');
     } }, el('span', { innerHTML: icons.plusSquare(18) }), addAccountLabel);
     
     wrap.appendChild(addBtn);

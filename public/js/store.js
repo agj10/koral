@@ -162,6 +162,7 @@ class Store {
     this.state.notifications = [];
     this.state.drafts = [];
     this._notify();
+    window.location.reload();
   }
 
   // --- Posts ---
@@ -404,6 +405,8 @@ class Store {
     const myHandle = this.state.currentUser.handle;
     
     if(!targetUser) return;
+    if (!targetUser.followers) targetUser.followers = [];
+    if (!this.state.currentUser.following) this.state.currentUser.following = [];
     
     const isFollowing = targetUser.followers.includes(myHandle);
     
@@ -426,7 +429,6 @@ class Store {
       } else {
         targetUser.followers = targetUser.followers.filter(h => h !== myHandle);
         this.state.currentUser.following = this.state.currentUser.following.filter(h => h !== handle);
-      }
       this._notify();
     }
   }
@@ -559,9 +561,9 @@ class Store {
     
     if (typeof document !== 'undefined') {
       if (isDark) {
-        document.documentElement.classList.add('dark');
+        document.body.classList.add('theme-dark');
       } else {
-        document.documentElement.classList.remove('dark');
+        document.body.classList.remove('theme-dark');
       }
     }
     this._notify();

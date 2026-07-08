@@ -44,7 +44,10 @@ function buildAppShell() {
   );
   
   const bottomNavItems = el('div', { className: 'mt-auto mb-4', style: { display: 'flex', flexDirection: 'column' } },
-    createNavItem('settings', icons.settings(24), t('settings'), 'settings/profile')
+    createNavItem('settings', icons.settings(24), t('settings'), 'settings/profile'),
+    createNavItem('more', icons.more(24), '더보기', '#', () => {
+      import('./components.js').then(c => c.showMoreModal());
+    })
   );
   
   sidebar.append(logoWrap, navItems, bottomNavItems);
@@ -65,7 +68,12 @@ function buildAppShell() {
     )
   );
   
-  shell.append(sidebar, mainContent, mobileNav);
+  const floatingMoreBtn = el('button', { 
+    className: 'floating-more-btn', 
+    onclick: () => import('./components.js').then(c => c.showMoreModal()) 
+  }, el('span', { innerHTML: icons.more(24) }));
+  
+  shell.append(sidebar, mainContent, mobileNav, floatingMoreBtn);
   appRoot.appendChild(shell);
 }
 
@@ -106,12 +114,12 @@ function router() {
     
     const parts = hash.split('/').filter(Boolean);
     const route = parts[0] || '';
-    const param = parts[1] || '';
+    const param = decodeURIComponent(parts[1] || '');
     
     const currentUser = store.getState().currentUser;
     
-    // Auto-login logic: redirect to feed if already logged in
-    if (currentUser && ['login', 'signup'].includes(route)) {
+    // Auto-login logic: redirect to feed if already logged in (unless adding an account)
+    if (currentUser && ['login', 'signup'].includes(route) && route !== 'add-account') {
       return window.navigateTo('feed');
     }
     if (currentUser && route === '') {
@@ -119,9 +127,9 @@ function router() {
     }
     
     // Routes not requiring auth — use surface wave mode (above water)
-    if (route === 'login') {
+    if (route === 'login' || route === 'add-account') {
       koralWaves.init('surface');
-      return renderLoginPage(appRoot);
+      return renderLoginPage(appRoot, route === 'add-account');
     }
     if (route === 'signup') {
       koralWaves.init('surface');

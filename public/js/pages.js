@@ -267,41 +267,42 @@ export function renderProfilePage(container, { handle }) {
     el('div', { className: 'profile-stat', onclick: () => toast(t('featureReadyInfo')) }, el('span', { className: 'font-semibold text-base' }, user.following?.length || 0), t('statFollowing'))
   );
   
-  const nameBio = el('div', { className: 'w-full min-w-0 flex flex-col gap-1 mt-2' });
-  nameBio.appendChild(el('div', { className: 'profile-name text-2xl font-bold break-words whitespace-pre-wrap leading-tight', innerHTML: renderMarkdown(user.displayName).replace(/^<p>/, '').replace(/<\/p>$/,'') }));
+  const nameBio = el('div', { className: 'w-full min-w-0 flex flex-col gap-3 mt-4' });
+  nameBio.appendChild(el('div', { className: 'profile-name text-2xl font-bold break-words whitespace-pre-wrap leading-tight' }, user.displayName));
   
   if (user.bio) {
     const isLongBio = user.bio.length > 150 || (user.bio.match(/\n/g) || []).length > 3;
-    const bioSpan = el('div', { className: 'profile-bio text-base break-words whitespace-pre-wrap text-tx-2', innerHTML: renderMarkdown(user.bio).replace(/^<p>/, '').replace(/<\/p>$/, '') });
-    const toggleMoreBtn = isLongBio ? el('button', { className: 'text-sm font-bold text-tx-3 hover:text-tx bg-transparent p-0 border-none cursor-pointer mt-1' }, '자세히 보기') : null;
+    const bioText = el('div', { 
+      className: 'profile-bio text-base break-words whitespace-pre-wrap text-tx-2', 
+      textContent: user.bio 
+    });
     
     if (isLongBio) {
-      bioSpan.style.display = '-webkit-box';
-      bioSpan.style.webkitBoxOrient = 'vertical';
-      bioSpan.style.overflow = 'hidden';
-      bioSpan.style.webkitLineClamp = '3';
+      bioText.style.display = '-webkit-box';
+      bioText.style.webkitBoxOrient = 'vertical';
+      bioText.style.webkitLineClamp = '3';
+      bioText.style.overflow = 'hidden';
       
+      const toggleMoreBtn = el('button', { className: 'text-sm font-bold text-brand bg-transparent p-0 border-none cursor-pointer mt-1' }, '자세히 보기');
       let expanded = false;
-      toggleMoreBtn.onclick = (e) => {
-        e.stopPropagation();
+      toggleMoreBtn.onclick = () => {
         expanded = !expanded;
         if (expanded) {
-          bioSpan.style.display = 'block';
-          bioSpan.style.webkitLineClamp = 'unset';
-          toggleMoreBtn.textContent = '간단히 보기';
+          bioText.style.webkitLineClamp = 'unset';
+          toggleMoreBtn.textContent = '간략히 보기';
         } else {
-          bioSpan.style.display = '-webkit-box';
-          bioSpan.style.webkitLineClamp = '3';
+          bioText.style.webkitLineClamp = '3';
           toggleMoreBtn.textContent = '자세히 보기';
         }
       };
+      const bioWrap = el('div', { className: 'flex flex-col items-start w-full min-w-0 mt-1 mb-1' },
+        bioText,
+        toggleMoreBtn
+      );
+      nameBio.appendChild(bioWrap);
+    } else {
+      nameBio.appendChild(el('div', { className: 'w-full min-w-0 mt-1 mb-1' }, bioText));
     }
-    
-    const bioWrap = el('div', { className: 'w-full min-w-0 mt-1 mb-1' },
-      bioSpan,
-      isLongBio ? el('div', {}, toggleMoreBtn) : null
-    );
-    nameBio.appendChild(bioWrap);
   }
 
   if (user.website) {
@@ -623,22 +624,27 @@ function createAuthLanguageBar() {
   return langBar;
 }
 
-export function renderLoginPage(container) {
+export function renderLoginPage(container, isAddAccount = false) {
   container.innerHTML = '';
+  
+  const currentLang = localStorage.getItem('koral_language') || 'ko';
+  const addAccountTitle = currentLang === 'ko' ? '계정 추가' : currentLang === 'ja' ? 'アカウント追加' : currentLang === 'zh' ? '添加账号' : 'Add Account';
+  const addAccountSub = currentLang === 'ko' ? '기존 계정으로 로그인하여 여러 계정을 쉽게 전환하세요.' : currentLang === 'ja' ? '既存のアカウントでログインして、簡単に切り替えます。' : currentLang === 'zh' ? '登录现有账号以轻松切换。' : 'Log in to an existing account to easily switch between them.';
+  
   const shell = el('div', { className: 'auth-shell' },
     createAuthLanguageBar(),
     el('div', { className: 'auth-banner-side' },
       el('div', { className: 'auth-orb auth-orb-1' }),
       el('div', { className: 'auth-orb auth-orb-2' }),
       el('div', { innerHTML: '<svg viewBox="0 0 100 100" fill="none" width="80" height="80"><defs><linearGradient id="alg3" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#f43f5e"/></linearGradient></defs><g fill="url(#alg3)" transform="translate(0, 4)"><rect x="10" y="48" width="80" height="24"/><rect x="50" y="48" width="40" height="24" transform="rotate(-60 50 60)"/><rect x="50" y="48" width="40" height="24" transform="rotate(-120 50 60)"/></g></svg>' }),
-      el('h1', { className: 'auth-banner-title' }, t('welcomeBanner')),
-      el('p', { className: 'auth-banner-sub' }, t('welcomeSub'))
+      el('h1', { className: 'auth-banner-title' }, isAddAccount ? addAccountTitle : t('welcomeBanner')),
+      el('p', { className: 'auth-banner-sub' }, isAddAccount ? addAccountSub : t('welcomeSub'))
     ),
     el('div', { className: 'auth-form-side' },
       el('div', { className: 'auth-card' },
         el('div', { className: 'auth-logo md:hidden mb-8 flex flex-col items-center' },
           el('div', { className: 'auth-logo-icon', innerHTML: '<svg viewBox="0 0 100 100" fill="none" width="48" height="48"><defs><linearGradient id="alg" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#f43f5e"/></linearGradient></defs><g fill="url(#alg)" transform="translate(0, 4)"><rect x="10" y="48" width="80" height="24"/><rect x="50" y="48" width="40" height="24" transform="rotate(-60 50 60)"/><rect x="50" y="48" width="40" height="24" transform="rotate(-120 50 60)"/></g></svg>' }),
-          el('h1', { className: 'auth-title' }, 'koral')
+          el('h1', { className: 'auth-title' }, isAddAccount ? addAccountTitle : 'koral')
         ),
         el('form', { className: 'auth-form', onsubmit: async (e) => {
           e.preventDefault();
@@ -697,6 +703,11 @@ export function renderSignupPage(container) {
             let handle = t.handle.value.trim();
             if (!handle.startsWith('@')) handle = '@' + handle;
             
+            if (t.pw.value !== t.pwConfirm.value) {
+              toast('비밀번호가 일치하지 않습니다.', 'error');
+              return;
+            }
+            
             const res = await store.register({
               handle,
               displayName: t.displayName.value.trim(),
@@ -728,6 +739,14 @@ export function renderSignupPage(container) {
                 if (res.ok) {
                   toast('입력하신 이메일로 인증코드가 발송되었습니다.', 'success');
                   btn.textContent = '재발송';
+                  
+                  // Show OTP container with animation
+                  const otpWrap = btn.closest('.auth-form').querySelector('.otp-container');
+                  if (otpWrap) {
+                    otpWrap.style.display = 'block';
+                    otpWrap.classList.add('anim-fade');
+                    otpWrap.querySelector('input').focus();
+                  }
                 } else {
                   toast(res.error || '발송 실패', 'error');
                   btn.textContent = '인증 발송';
@@ -736,9 +755,50 @@ export function renderSignupPage(container) {
               } }, '인증 발송')
             ),
             
-            el('div', { className: 'input-group mb-3' }, 
-              el('input', { name: 'verificationCode', type: 'text', className: 'input', placeholder: '인증코드 6자리 입력', required: true, maxLength: 6 })
-            ),
+            (() => {
+              const otpContainer = el('div', { className: 'input-group mb-3 otp-container', style: { display: 'none' } });
+              const hiddenInput = el('input', { type: 'hidden', name: 'verificationCode', required: true });
+              
+              const boxContainer = el('div', { className: 'flex gap-2 justify-between' });
+              const boxes = Array.from({ length: 6 }, () => el('input', { 
+                type: 'text', 
+                className: 'input text-center text-xl font-bold font-mono', 
+                style: { width: '40px', height: '48px', padding: '0' },
+                maxLength: 1 
+              }));
+              
+              const updateHidden = () => {
+                hiddenInput.value = boxes.map(b => b.value).join('');
+              };
+              
+              boxes.forEach((box, i) => {
+                box.addEventListener('input', (e) => {
+                  updateHidden();
+                  if (e.target.value && i < boxes.length - 1) boxes[i + 1].focus();
+                });
+                box.addEventListener('keydown', (e) => {
+                  if (e.key === 'Backspace' && !e.target.value && i > 0) boxes[i - 1].focus();
+                  if (e.key === 'ArrowLeft' && i > 0) boxes[i - 1].focus();
+                  if (e.key === 'ArrowRight' && i < boxes.length - 1) boxes[i + 1].focus();
+                });
+                box.addEventListener('paste', (e) => {
+                  e.preventDefault();
+                  const pasted = (e.clipboardData || window.clipboardData).getData('text').slice(0, 6);
+                  [...pasted].forEach((char, idx) => {
+                    if (idx < 6) {
+                      boxes[idx].value = char;
+                      if (idx < 5) boxes[idx+1].focus();
+                      else boxes[5].blur();
+                    }
+                  });
+                  updateHidden();
+                });
+                boxContainer.appendChild(box);
+              });
+              
+              otpContainer.append(el('label', { className: 'input-label text-sm mb-2 block' }, '인증코드 6자리'), boxContainer, hiddenInput);
+              return otpContainer;
+            })(),
             
             el('div', { className: 'input-group mb-3' }, el('input', { name: 'displayName', className: 'input', placeholder: t('nicknamePlaceholder'), required: true })),
             el('div', { className: 'input-group mb-3' }, 
@@ -747,7 +807,8 @@ export function renderSignupPage(container) {
                 el('input', { name: 'handle', className: 'input', placeholder: t('handlePlaceholder'), required: true })
               )
             ),
-            el('div', { className: 'input-group mb-6' }, el('input', { name: 'pw', type: 'password', className: 'input', placeholder: t('password'), required: true, minLength: 4 })),
+            el('div', { className: 'input-group mb-3' }, el('input', { name: 'pw', type: 'password', className: 'input', placeholder: t('password'), required: true, minLength: 4 })),
+            el('div', { className: 'input-group mb-6' }, el('input', { name: 'pwConfirm', type: 'password', className: 'input', placeholder: '비밀번호 확인', required: true, minLength: 4 })),
             el('label', { className: 'custom-checkbox mb-6' },
               el('input', { type: 'checkbox', required: true }),
               el('div', { className: 'checkbox-box' }),

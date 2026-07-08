@@ -14,6 +14,30 @@ const convertQuery = (sql) => {
   return sql.replace(/\?/g, () => `$${count++}`);
 };
 
+const mapKeys = (row) => {
+  if (!row) return row;
+  const keyMap = {
+    'displayname': 'displayName',
+    'joinedat': 'joinedAt',
+    'createdat': 'createdAt',
+    'authorhandle': 'authorHandle',
+    'postid': 'postId',
+    'parentid': 'parentId',
+    'editedat': 'editedAt',
+    'commentid': 'commentId',
+    'expiresat': 'expiresAt',
+    'storyid': 'storyId',
+    'fromhandle': 'fromHandle',
+    'tohandle': 'toHandle',
+    'updatedat': 'updatedAt'
+  };
+  const newRow = {};
+  for (const [key, value] of Object.entries(row)) {
+    newRow[keyMap[key] || key] = value;
+  }
+  return newRow;
+};
+
 const db = {
   async runAsync(sql, params = []) {
     const res = await pool.query(convertQuery(sql), params);
@@ -21,11 +45,11 @@ const db = {
   },
   async getAsync(sql, params = []) {
     const res = await pool.query(convertQuery(sql), params);
-    return res.rows[0];
+    return mapKeys(res.rows[0]);
   },
   async allAsync(sql, params = []) {
     const res = await pool.query(convertQuery(sql), params);
-    return res.rows;
+    return res.rows.map(mapKeys);
   }
 };
 const initDb = async () => {

@@ -150,10 +150,19 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 app.post('/api/auth/login', async (req, res) => {
-  const { handleOrEmail, password } = req.body;
+  let { handleOrEmail, password } = req.body;
+  
+  // Create a version with @ and without @ to be safe
+  let handleWithAt = handleOrEmail;
+  if (!handleWithAt.startsWith('@') && !handleWithAt.includes('@')) {
+    handleWithAt = '@' + handleWithAt;
+  }
   
   try {
-    const user = await db.getAsync('SELECT * FROM users WHERE handle = ? OR email = ?', [handleOrEmail, handleOrEmail]);
+    const user = await db.getAsync(
+      'SELECT * FROM users WHERE handle = ? OR handle = ? OR email = ?', 
+      [handleOrEmail, handleWithAt, handleOrEmail]
+    );
     if (!user) return res.status(400).json({ error: 'User not found.' });
     
     const match = await bcrypt.compare(password, user.password);
