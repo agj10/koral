@@ -416,6 +416,10 @@ class Store {
   getFeed() {
     return this.state.posts;
   }
+  
+  getTheme() {
+    return this.state.theme;
+  }
 }
 
 export const store = new Store();
