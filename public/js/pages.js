@@ -973,12 +973,18 @@ export function renderEditProfilePage(container) {
   const currentUser = store.getState().currentUser;
   if (!currentUser) return window.navigateTo('login');
 
+  const cleanVal = (v) => (v === 'undefined' || v === 'null' || v == null) ? '' : v;
+  const currentDisplayName = cleanVal(currentUser.displayName);
+  const currentBio = cleanVal(currentUser.bio);
+  const currentWebsite = cleanVal(currentUser.website);
+  let currentAvatar = cleanVal(currentUser.avatar);
+
+  const cleanUser = { ...currentUser, displayName: currentDisplayName, avatar: currentAvatar };
+
   const content = el('div');
   content.appendChild(el('h3', { className: 'text-2xl font-bold mb-8 text-tx' }, t('editProfile')));
   
-  let currentAvatar = currentUser.avatar;
-  
-  const avatarPreview = el('div', {}, renderAvatar(currentUser, 'av-2xl'));
+  const avatarPreview = el('div', {}, renderAvatar(cleanUser, 'av-2xl'));
   
   const avatarWrap = el('div', { 
     className: 'relative cursor-pointer hover:opacity-80 transition-opacity inline-block',
@@ -994,8 +1000,8 @@ export function renderEditProfilePage(container) {
         reader.onload = (e) => {
           currentAvatar = e.target.result;
           avatarPreview.innerHTML = '';
-          avatarPreview.appendChild(renderAvatar({ ...currentUser, avatar: currentAvatar }, 'av-2xl'));
-          removeAvatarBtn.style.display = '';
+          avatarPreview.appendChild(renderAvatar({ ...cleanUser, avatar: currentAvatar }, 'av-2xl'));
+          removeAvatarBtn.style.visibility = 'visible';
         };
         reader.readAsDataURL(file);
       };
@@ -1010,15 +1016,15 @@ export function renderEditProfilePage(container) {
 
   const removeAvatarBtn = el('button', {
     type: 'button',
-    className: 'btn btn-ghost text-red-500 mt-2 text-sm',
-    style: currentAvatar ? '' : 'display: none;',
+    className: 'btn btn-ghost text-red-500 mt-2 text-sm font-medium',
+    style: currentAvatar ? 'visibility: visible;' : 'visibility: hidden;',
     onclick: () => {
-      currentAvatar = null;
+      currentAvatar = '';
       avatarPreview.innerHTML = '';
-      avatarPreview.appendChild(renderAvatar({ ...currentUser, avatar: null }, 'av-2xl'));
-      removeAvatarBtn.style.display = 'none';
+      avatarPreview.appendChild(renderAvatar({ ...cleanUser, avatar: null }, 'av-2xl'));
+      removeAvatarBtn.style.visibility = 'hidden';
     }
-  }, '기본 프로필로 돌아가기');
+  }, '프로필 제거');
 
   const form = el('form', { onsubmit: async (e) => {
     e.preventDefault();
@@ -1031,7 +1037,7 @@ export function renderEditProfilePage(container) {
       let avatarUrl = currentUser.avatar;
       if (currentAvatar && currentAvatar.startsWith('data:')) {
         avatarUrl = await store._uploadImage(currentAvatar);
-      } else if (currentAvatar === null) {
+      } else if (!currentAvatar) {
         avatarUrl = null;
       } else {
         avatarUrl = currentAvatar;
@@ -1059,15 +1065,15 @@ export function renderEditProfilePage(container) {
     ),
     el('div', { className: 'input-group mb-6' },
       el('label', { className: 'input-label' }, t('nickname')),
-      el('input', { name: 'displayName', className: 'input input-lg', value: currentUser.displayName || '' })
+      el('input', { name: 'displayName', className: 'input input-lg', value: currentDisplayName, required: true })
     ),
     el('div', { className: 'input-group mb-6' },
       el('label', { className: 'input-label' }, t('bio')),
-      el('textarea', { name: 'bio', className: 'textarea', value: currentUser.bio || '', rows: 4 })
+      el('textarea', { name: 'bio', className: 'textarea', value: currentBio, rows: 4 })
     ),
     el('div', { className: 'input-group mb-8' },
       el('label', { className: 'input-label' }, t('website')),
-      el('input', { name: 'website', className: 'input input-lg', value: currentUser.website || '', placeholder: 'https://' })
+      el('input', { name: 'website', className: 'input input-lg', value: currentWebsite, placeholder: 'https://' })
     ),
     el('div', { className: 'flex justify-end' },
       el('button', { type: 'submit', className: 'btn btn-primary btn-lg shadow-md' }, t('saveChanges'))
