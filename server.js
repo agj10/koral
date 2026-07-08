@@ -213,6 +213,84 @@ app.get('/api/users/me', verifyToken, async (req, res) => {
   }
 });
 
+app.put('/api/users/me', verifyToken, async (req, res) => {
+  const { displayName, bio, avatar } = req.body;
+  try {
+    await db.runAsync(
+      'UPDATE users SET displayName = ?, bio = ?, avatar = ? WHERE handle = ?',
+      [displayName, bio, avatar, req.user.handle]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/users/me/password', verifyToken, async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  try {
+    const user = await db.getAsync('SELECT password FROM users WHERE handle = ?', [req.user.handle]);
+    const match = await bcrypt.compare(oldPassword, user.password);
+    if (!match) return res.status(400).json({ error: 'Incorrect old password' });
+    
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await db.runAsync('UPDATE users SET password = ? WHERE handle = ?', [hashed, req.user.handle]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/users/me/handle', verifyToken, async (req, res) => {
+  const { newHandle } = req.body;
+  try {
+    if (!newHandle || newHandle.length < 3) return res.status(400).json({ error: 'Invalid handle' });
+    const existing = await db.getAsync('SELECT id FROM users WHERE handle = ?', [newHandle]);
+    if (existing) return res.status(400).json({ error: 'Handle already taken' });
+    
+    await db.runAsync('UPDATE users SET handle = ? WHERE handle = ?', [newHandle, req.user.handle]);
+    await db.runAsync('UPDATE posts SET authorHandle = ? WHERE authorHandle = ?', [newHandle, req.user.handle]);
+    await db.runAsync('UPDATE comments SET authorHandle = ? WHERE authorHandle = ?', [newHandle, req.user.handle]);
+    await db.runAsync('UPDATE post_likes SET handle = ? WHERE handle = ?', [newHandle, req.user.handle]);
+    await db.runAsync('UPDATE post_bookmarks SET handle = ? WHERE handle = ?', [newHandle, req.user.handle]);
+    await db.runAsync('UPDATE comment_likes SET handle = ? WHERE handle = ?', [newHandle, req.user.handle]);
+    await db.runAsync('UPDATE stories SET authorHandle = ? WHERE authorHandle = ?', [newHandle, req.user.handle]);
+    await db.runAsync('UPDATE story_likes SET handle = ? WHERE handle = ?', [newHandle, req.user.handle]);
+    await db.runAsync('UPDATE story_views SET handle = ? WHERE handle = ?', [newHandle, req.user.handle]);
+    await db.runAsync('UPDATE follows SET follower = ? WHERE follower = ?', [newHandle, req.user.handle]);
+    await db.runAsync('UPDATE follows SET following = ? WHERE following = ?', [newHandle, req.user.handle]);
+    await db.runAsync('UPDATE notifications SET fromHandle = ? WHERE fromHandle = ?', [newHandle, req.user.handle]);
+    await db.runAsync('UPDATE notifications SET toHandle = ? WHERE toHandle = ?', [newHandle, req.user.handle]);
+    await db.runAsync('UPDATE drafts SET authorHandle = ? WHERE authorHandle = ?', [newHandle, req.user.handle]);
+    
+    const token = jwt.sign({ handle: newHandle, id: req.user.id }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, newHandle });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/users/me', verifyToken, async (req, res) => {
+  try {
+    const handle = req.user.handle;
+    await db.runAsync('DELETE FROM users WHERE handle = ?', [handle]);
+    await db.runAsync('DELETE FROM posts WHERE authorHandle = ?', [handle]);
+    await db.runAsync('DELETE FROM comments WHERE authorHandle = ?', [handle]);
+    await db.runAsync('DELETE FROM post_likes WHERE handle = ?', [handle]);
+    await db.runAsync('DELETE FROM post_bookmarks WHERE handle = ?', [handle]);
+    await db.runAsync('DELETE FROM comment_likes WHERE handle = ?', [handle]);
+    await db.runAsync('DELETE FROM stories WHERE authorHandle = ?', [handle]);
+    await db.runAsync('DELETE FROM story_likes WHERE handle = ?', [handle]);
+    await db.runAsync('DELETE FROM story_views WHERE handle = ?', [handle]);
+    await db.runAsync('DELETE FROM follows WHERE follower = ? OR following = ?', [handle, handle]);
+    await db.runAsync('DELETE FROM notifications WHERE fromHandle = ? OR toHandle = ?', [handle, handle]);
+    await db.runAsync('DELETE FROM drafts WHERE authorHandle = ?', [handle]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/users', async (req, res) => {
   try {
     const users = await db.allAsync('SELECT id, handle, displayName, avatar, bio, verified FROM users');
@@ -277,6 +355,36 @@ app.post('/api/posts', verifyToken, async (req, res) => {
       [id, title, req.user.handle, JSON.stringify(images || []), caption, JSON.stringify(tags || []), location, createdAt]
     );
     res.json({ id, title, authorHandle: req.user.handle, images: images || [], caption, tags: tags || [], location, createdAt, likes: [], bookmarks: [] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/posts/:id', verifyToken, async (req, res) => {
+  const { caption, tags } = req.body;
+  try {
+    const post = await db.getAsync('SELECT * FROM posts WHERE id = ?', [req.params.id]);
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    if (post.authorHandle !== req.user.handle) return res.status(403).json({ error: 'Unauthorized' });
+    
+    await db.runAsync('UPDATE posts SET caption = ?, tags = ? WHERE id = ?', [caption, JSON.stringify(tags || []), req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/posts/:id', verifyToken, async (req, res) => {
+  try {
+    const post = await db.getAsync('SELECT * FROM posts WHERE id = ?', [req.params.id]);
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    if (post.authorHandle !== req.user.handle) return res.status(403).json({ error: 'Unauthorized' });
+    
+    await db.runAsync('DELETE FROM posts WHERE id = ?', [req.params.id]);
+    await db.runAsync('DELETE FROM comments WHERE postId = ?', [req.params.id]);
+    await db.runAsync('DELETE FROM post_likes WHERE postId = ?', [req.params.id]);
+    await db.runAsync('DELETE FROM post_bookmarks WHERE postId = ?', [req.params.id]);
+    res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -356,6 +464,35 @@ app.post('/api/comments', verifyToken, async (req, res) => {
   }
 });
 
+app.put('/api/comments/:id', verifyToken, async (req, res) => {
+  const { text } = req.body;
+  try {
+    const comment = await db.getAsync('SELECT * FROM comments WHERE id = ?', [req.params.id]);
+    if (!comment) return res.status(404).json({ error: 'Comment not found' });
+    if (comment.authorHandle !== req.user.handle) return res.status(403).json({ error: 'Unauthorized' });
+    
+    await db.runAsync('UPDATE comments SET text = ? WHERE id = ?', [text, req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/comments/:id', verifyToken, async (req, res) => {
+  try {
+    const comment = await db.getAsync('SELECT * FROM comments WHERE id = ?', [req.params.id]);
+    if (!comment) return res.status(404).json({ error: 'Comment not found' });
+    if (comment.authorHandle !== req.user.handle) return res.status(403).json({ error: 'Unauthorized' });
+    
+    await db.runAsync('DELETE FROM comments WHERE id = ?', [req.params.id]);
+    await db.runAsync('DELETE FROM comments WHERE parentId = ?', [req.params.id]);
+    await db.runAsync('DELETE FROM comment_likes WHERE commentId = ?', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/comments/:id/like', verifyToken, async (req, res) => {
   try {
     const commentId = req.params.id;
@@ -403,6 +540,21 @@ app.post('/api/stories', verifyToken, async (req, res) => {
       [id, req.user.handle, JSON.stringify(layers || []), createdAt.toISOString(), expiresAt]
     );
     res.json({ id, authorHandle: req.user.handle, layers: layers || [], createdAt: createdAt.toISOString(), expiresAt, likes: [], viewers: [] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/stories/:id', verifyToken, async (req, res) => {
+  try {
+    const story = await db.getAsync('SELECT * FROM stories WHERE id = ?', [req.params.id]);
+    if (!story) return res.status(404).json({ error: 'Story not found' });
+    if (story.authorHandle !== req.user.handle) return res.status(403).json({ error: 'Unauthorized' });
+    
+    await db.runAsync('DELETE FROM stories WHERE id = ?', [req.params.id]);
+    await db.runAsync('DELETE FROM story_likes WHERE storyId = ?', [req.params.id]);
+    await db.runAsync('DELETE FROM story_views WHERE storyId = ?', [req.params.id]);
+    res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

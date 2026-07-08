@@ -164,6 +164,31 @@ class Store {
     }
   }
 
+  async deletePost(postId) {
+    try {
+      await this.api(`/posts/${postId}`, 'DELETE');
+      this.state.posts = this.state.posts.filter(p => p.id !== postId);
+      this.state.comments = this.state.comments.filter(c => c.postId !== postId);
+      this._notify();
+    } catch (err) {
+      if(typeof window !== 'undefined' && window.showToast) window.showToast('Failed to delete post');
+    }
+  }
+
+  async editPost(postId, caption, tags) {
+    try {
+      await this.api(`/posts/${postId}`, 'PUT', { caption, tags });
+      const post = this.state.posts.find(p => p.id === postId);
+      if (post) {
+        post.caption = caption;
+        post.tags = tags;
+        this._notify();
+      }
+    } catch (err) {
+      if(typeof window !== 'undefined' && window.showToast) window.showToast('Failed to edit post');
+    }
+  }
+
   async toggleLike(postId) {
     const post = this.state.posts.find(p => p.id === postId);
     if (!post || !this.state.currentUser) return;
@@ -231,6 +256,29 @@ class Store {
     }
   }
 
+  async deleteComment(commentId) {
+    try {
+      await this.api(`/comments/${commentId}`, 'DELETE');
+      this.state.comments = this.state.comments.filter(c => c.id !== commentId && c.parentId !== commentId);
+      this._notify();
+    } catch (err) {
+      if(typeof window !== 'undefined' && window.showToast) window.showToast('Failed to delete comment');
+    }
+  }
+
+  async editComment(commentId, text) {
+    try {
+      await this.api(`/comments/${commentId}`, 'PUT', { text });
+      const comment = this.state.comments.find(c => c.id === commentId);
+      if (comment) {
+        comment.text = text;
+        this._notify();
+      }
+    } catch (err) {
+      if(typeof window !== 'undefined' && window.showToast) window.showToast('Failed to edit comment');
+    }
+  }
+
   async toggleCommentLike(commentId) {
     const comment = this.state.comments.find(c => c.id === commentId);
     if (!comment || !this.state.currentUser) return;
@@ -281,6 +329,10 @@ class Store {
     return arr;
   }
 
+
+  async addStory(layers) {
+    return this.createStory(layers);
+  }
 
   async createStory(layers) {
     try {
@@ -366,6 +418,61 @@ class Store {
     }
   }
 
+  async updateProfile(data) {
+    try {
+      await this.api(`/users/me`, 'PUT', data);
+      const user = this.state.currentUser;
+      if (user) {
+        Object.assign(user, data);
+        const allUser = this.state.users.find(u => u.handle === user.handle);
+        if (allUser) Object.assign(allUser, data);
+        this._notify();
+      }
+    } catch (err) {
+      if(typeof window !== 'undefined' && window.showToast) window.showToast(err.message || 'Failed to update profile');
+      throw err;
+    }
+  }
+
+  async changePassword(oldPassword, newPassword) {
+    await this.api(`/users/me/password`, 'PUT', { oldPassword, newPassword });
+  }
+
+  async changeHandle(newHandle) {
+    const res = await this.api(`/users/me/handle`, 'PUT', { newHandle });
+    this.token = res.token;
+    if (typeof localStorage !== 'undefined') localStorage.setItem('koral_token', res.token);
+    
+    const oldHandle = this.state.currentUser.handle;
+    this.state.currentUser.handle = newHandle;
+    
+    this.state.posts.forEach(p => { if (p.authorHandle === oldHandle) p.authorHandle = newHandle; });
+    this.state.comments.forEach(c => { if (c.authorHandle === oldHandle) c.authorHandle = newHandle; });
+    this.state.stories.forEach(s => { if (s.authorHandle === oldHandle) s.authorHandle = newHandle; });
+    this.state.users.forEach(u => { if (u.handle === oldHandle) u.handle = newHandle; });
+    this._notify();
+  }
+
+  async deleteAccount() {
+    await this.api(`/users/me`, 'DELETE');
+    this.logout();
+  }
+
+  searchUsers(q) {
+    if (!q) return [];
+    q = q.toLowerCase();
+    return this.state.users.filter(u => 
+      u.handle.toLowerCase().includes(q) || 
+      (u.displayName && u.displayName.toLowerCase().includes(q))
+    );
+  }
+
+  isFollowing(handle) {
+    const me = this.state.currentUser;
+    if (!me || !me.following) return false;
+    return me.following.includes(handle);
+  }
+
   getUser(handle) {
     return this.state.users.find(u => u.handle === handle);
   }
@@ -436,6 +543,38 @@ class Store {
     } else {
       isDark = theme === 'dark';
     }
+    
+    if (typeof document !== 'undefined') {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+    this._notify();
+  }
+
+  async deleteDraft(draftId) {
+    try {
+      await this.api(`/drafts/${draftId}`, 'DELETE');
+      if (this.state.drafts[draftId]) {
+        delete this.state.drafts[draftId];
+        this._notify();
+      }
+    } catch(err) {}
+  }
+
+  _save() {
+    // No-op for compatibility with old components.js logic
+  }
+
+  setTheme(themeId) {
+    this.state.theme = themeId;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('koral_theme', themeId);
+    }
+    const isDark = themeId === 'dark' || 
+      (themeId === 'system' && typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
     
     if (typeof document !== 'undefined') {
       if (isDark) {
