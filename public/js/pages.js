@@ -976,18 +976,66 @@ export function renderEditProfilePage(container) {
   const content = el('div');
   content.appendChild(el('h3', { className: 'text-2xl font-bold mb-8 text-tx' }, t('editProfile')));
   
-  const form = el('form', { onsubmit: (e) => {
+  let currentAvatar = currentUser.avatar;
+  const avatarImg = el('img', { 
+    src: currentAvatar || 'https://api.dicebear.com/7.x/notionists/svg?seed=' + currentUser.handle, 
+    className: 'w-24 h-24 rounded-full object-cover cursor-pointer border border-base hover:opacity-80 transition-opacity shadow-sm',
+    onclick: () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = (ev) => {
+        const file = ev.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          currentAvatar = e.target.result;
+          avatarImg.src = currentAvatar;
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    },
+    title: '프로필 사진 변경'
+  });
+
+  const form = el('form', { onsubmit: async (e) => {
     e.preventDefault();
-    store.updateProfile({
-      displayName: e.target.displayName.value,
-      bio: e.target.bio.value,
-      website: e.target.website.value
-    });
-    toast(localStorage.getItem('koral_language') === 'en' ? 'Profile updated successfully.' : '프로필이 업데이트되었습니다.', 'success');
-    window.navigateTo(`profile/${currentUser.handle.substring(1)}`);
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.textContent;
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+
+    try {
+      let avatarUrl = currentUser.avatar;
+      if (currentAvatar && currentAvatar.startsWith('data:')) {
+        avatarUrl = await store._uploadImage(currentAvatar);
+      } else if (currentAvatar) {
+        avatarUrl = currentAvatar;
+      }
+
+      await store.updateProfile({
+        displayName: e.target.displayName.value,
+        bio: e.target.bio.value,
+        website: e.target.website.value,
+        avatar: avatarUrl
+      });
+      toast(localStorage.getItem('koral_language') === 'en' ? 'Profile updated successfully.' : '프로필이 업데이트되었습니다.', 'success');
+      window.navigateTo(`profile/${currentUser.handle.substring(1)}`);
+    } catch (err) {
+      toast('Failed to update profile.', 'error');
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
   }});
 
   form.append(
+    el('div', { className: 'flex justify-center mb-8' },
+      el('div', { className: 'relative' },
+        avatarImg,
+        el('div', { className: 'absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full pointer-events-none shadow-md', innerHTML: icons.image(16) })
+      )
+    ),
     el('div', { className: 'input-group mb-6' },
       el('label', { className: 'input-label' }, t('nickname')),
       el('input', { name: 'displayName', className: 'input input-lg', value: currentUser.displayName })
