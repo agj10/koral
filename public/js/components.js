@@ -880,6 +880,57 @@ export function renderSuggestSidebar() {
     e.stopPropagation();
     showMoreModal();
   };
+
+  const myProfile = el('div', { className: 'aside-profile flex items-center justify-between mb-6', style: { position: 'relative' } },
+    el('div', { className: 'flex items-center gap-3' },
+      renderAvatar(currentUser, 'av-lg'),
+      el('div', { className: 'aside-profile-info' },
+        el('div', { className: 'aside-profile-name font-bold cursor-pointer hover:underline', onclick: () => window.navigateTo(`profile/${currentUser.handle.replace(/^@/, '')}`) }, currentUser.handle.startsWith('@') ? currentUser.handle : '@' + currentUser.handle),
+        el('div', { className: 'aside-profile-handle text-sm text-tx-2', innerHTML: renderMarkdown(currentUser.displayName).replace(/^<p>/, '').replace(/<\/p>$/,'') })
+      )
+    ),
+    asideSwitch
+  );
+
+  const suggestBox = el('div', { className: 'suggest-card' },
+    el('div', { className: 'suggest-header' },
+      el('h4', { textContent: recTitle }),
+      el('a', { textContent: viewAll, style: { cursor: 'pointer' } })
+    )
+  );
+
+  const suggested = store.getSuggestedUsers();
+  suggested.forEach(user => {
+    const item = el('div', { className: 'suggest-user' },
+      renderAvatar(user, 'av-md', true),
+      el('div', { className: 'suggest-user-info' },
+        el('div', { className: 'suggest-user-name', onclick: () => window.navigateTo(`profile/${user.handle.replace(/^@/, '')}`) }, user.handle.startsWith('@') ? user.handle : '@' + user.handle),
+        el('div', { className: 'suggest-user-sub' }, recTitle)
+      ),
+      el('button', { 
+        className: 'btn-ghost btn-sm', 
+        style: { color: 'var(--tx-br)', fontWeight: '600' },
+        onclick: (e) => {
+          store.toggleFollow(user.handle);
+          e.target.textContent = store.isFollowing(user.handle) ? followingLabel : followLabel;
+          e.target.style.color = store.isFollowing(user.handle) ? 'var(--tx-3)' : 'var(--tx-br)';
+        }
+      }, store.isFollowing(user.handle) ? followingLabel : followLabel)
+    );
+    suggestBox.appendChild(item);
+  });
+
+  const footer = el('div', { 
+    className: 'aside-footer pt-6 text-xs text-tx-3',
+    style: { marginTop: 'auto' }
+  },
+    footerText,
+    el('br'), el('br'),
+    '© 2026 koral'
+  );
+
+  container.append(myProfile, suggestBox, footer);
+  return container;
 }
 
 export function showMoreModal() {
@@ -938,60 +989,11 @@ export function showMoreModal() {
   
   moreWrap.append(switchBtn, logoutBtn);
   const modal = showModal(moreWrap, { className: 'w-full max-w-sm' });
-
-
-
-  const myProfile = el('div', { className: 'aside-profile flex items-center justify-between mb-6', style: { position: 'relative' } },
-    el('div', { className: 'flex items-center gap-3' },
-      renderAvatar(currentUser, 'av-lg'),
-      el('div', { className: 'aside-profile-info' },
-        el('div', { className: 'aside-profile-name font-bold cursor-pointer hover:underline', onclick: () => window.navigateTo(`profile/${currentUser.handle.replace(/^@/, '')}`) }, currentUser.handle.startsWith('@') ? currentUser.handle : '@' + currentUser.handle),
-        el('div', { className: 'aside-profile-handle text-sm text-tx-2', innerHTML: renderMarkdown(currentUser.displayName).replace(/^<p>/, '').replace(/<\/p>$/,'') })
-      )
-    ),
-    asideSwitch
-  );
-
-  const suggestBox = el('div', { className: 'suggest-card' },
-    el('div', { className: 'suggest-header' },
-      el('h4', { textContent: recTitle }),
-      el('a', { textContent: viewAll, style: { cursor: 'pointer' } })
-    )
-  );
-
-  const suggested = store.getSuggestedUsers();
-  suggested.forEach(user => {
-    const item = el('div', { className: 'suggest-user' },
-      renderAvatar(user, 'av-md', true),
-      el('div', { className: 'suggest-user-info' },
-        el('div', { className: 'suggest-user-name', onclick: () => window.navigateTo(`profile/${user.handle.replace(/^@/, '')}`) }, user.handle.startsWith('@') ? user.handle : '@' + user.handle),
-        el('div', { className: 'suggest-user-sub' }, recTitle)
-      ),
-      el('button', { 
-        className: 'btn-ghost btn-sm', 
-        style: { color: 'var(--tx-br)', fontWeight: '600' },
-        onclick: (e) => {
-          store.toggleFollow(user.handle);
-          e.target.textContent = store.isFollowing(user.handle) ? followingLabel : followLabel;
-          e.target.style.color = store.isFollowing(user.handle) ? 'var(--tx-3)' : 'var(--tx-br)';
-        }
-      }, store.isFollowing(user.handle) ? followingLabel : followLabel)
-    );
-    suggestBox.appendChild(item);
-  });
-
-  const footer = el('div', { 
-    className: 'aside-footer pt-6 text-xs text-tx-3',
-    style: { marginTop: 'auto' }
-  },
-    footerText,
-    el('br'), el('br'),
-    '© 2026 koral'
-  );
-
-  container.append(myProfile, suggestBox, footer);
-  return container;
 }
+
+
+
+
 
 export function renderThemeSelector() {
   const container = el('div', { className: 'theme-options' });
