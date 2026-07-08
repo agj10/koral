@@ -977,9 +977,9 @@ export function renderEditProfilePage(container) {
   content.appendChild(el('h3', { className: 'text-2xl font-bold mb-8 text-tx' }, t('editProfile')));
   
   let currentAvatar = currentUser.avatar;
-  const avatarImg = el('img', { 
-    src: currentAvatar || 'https://api.dicebear.com/7.x/notionists/svg?seed=' + currentUser.handle, 
-    className: 'w-24 h-24 rounded-full object-cover cursor-pointer border border-base hover:opacity-80 transition-opacity shadow-sm',
+  const avatarImg = el('div', { 
+    className: 'w-24 h-24 rounded-full flex items-center justify-center text-4xl font-bold cursor-pointer hover:opacity-80 transition-opacity shadow-sm',
+    style: currentAvatar ? `background: url(${currentAvatar}) center/cover;` : 'background: var(--bg-hover); color: var(--tx-muted); border: 1px solid var(--border-base);',
     onclick: () => {
       const input = document.createElement('input');
       input.type = 'file';
@@ -990,7 +990,8 @@ export function renderEditProfilePage(container) {
         const reader = new FileReader();
         reader.onload = (e) => {
           currentAvatar = e.target.result;
-          avatarImg.src = currentAvatar;
+          avatarImg.style.background = `url(${currentAvatar}) center/cover`;
+          avatarImg.textContent = ''; // hide the initial
         };
         reader.readAsDataURL(file);
       };
@@ -998,6 +999,10 @@ export function renderEditProfilePage(container) {
     },
     title: '프로필 사진 변경'
   });
+  
+  if (!currentAvatar) {
+    avatarImg.textContent = currentUser.displayName ? currentUser.displayName.charAt(0).toUpperCase() : '?';
+  }
 
   const form = el('form', { onsubmit: async (e) => {
     e.preventDefault();
