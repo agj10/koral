@@ -339,7 +339,7 @@ app.post('/api/stories', verifyToken, async (req, res) => {
 
 app.post('/api/stories/:id/view', verifyToken, async (req, res) => {
   try {
-    await db.runAsync('INSERT OR IGNORE INTO story_views (storyId, handle) VALUES (?, ?)', [req.params.id, req.user.handle]);
+    await db.runAsync('INSERT INTO story_views (storyId, handle) VALUES (?, ?) ON CONFLICT DO NOTHING', [req.params.id, req.user.handle]);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

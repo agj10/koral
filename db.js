@@ -1,20 +1,33 @@
-import sqlite3Pkg from 'sqlite3';
-const sqlite3 = sqlite3Pkg.verbose();
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-import util from 'util';
+import pg from 'pg';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const { Pool } = pg;
 
-const dbPath = path.join(__dirname, 'koral.db');
-const db = new sqlite3.Database(dbPath);
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/koral',
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+});
 
-db.runAsync = util.promisify(db.run).bind(db);
-db.getAsync = util.promisify(db.get).bind(db);
-db.allAsync = util.promisify(db.all).bind(db);
+const convertQuery = (sql) => {
+  let count = 1;
+  return sql.replace(/\?/g, () => `$${count++}`);
+};
 
+const db = {
+  async runAsync(sql, params = []) {
+    const res = await pool.query(convertQuery(sql), params);
+    return res;
+  },
+  async getAsync(sql, params = []) {
+    const res = await pool.query(convertQuery(sql), params);
+    return res.rows[0];
+  },
+  async allAsync(sql, params = []) {
+    const res = await pool.query(convertQuery(sql), params);
+    return res.rows;
+  }
+};
 const initDb = async () => {
   await db.runAsync(`
     CREATE TABLE IF NOT EXISTS users (
