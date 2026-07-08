@@ -8,9 +8,14 @@ import multer from 'multer';
 import { fileURLToPath } from 'url';
 import db from './db.js';
 import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 import dns from 'dns';
 
 dns.setDefaultResultOrder('ipv4first');
+
+if (process.env.SMTP_HOST === 'smtp.sendgrid.net') {
+  sgMail.setApiKey(process.env.SMTP_PASS);
+}
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
