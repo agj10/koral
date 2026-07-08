@@ -86,23 +86,24 @@ app.post('/api/auth/send-verification', async (req, res) => {
     );
 
     const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@koral.com';
+    const fromName = process.env.SMTP_FROM_NAME || 'koral';
     const subject = '[koral] 이메일 인증 코드';
     const text = `koral에 가입해 주셔서 감사합니다!\n\n인증 코드: ${code}\n\n이 코드는 5분간 유효합니다.`;
 
-    console.log(`[DEBUG] Attempting to send email to ${email} from ${fromAddress}`);
+    console.log(`[DEBUG] Attempting to send email to ${email} from ${fromName} <${fromAddress}>`);
 
     if (process.env.SMTP_HOST === 'smtp.sendgrid.net') {
       console.log(`[DEBUG] Using SendGrid HTTP API`);
       await sgMail.send({
         to: email,
-        from: `"koral" <${fromAddress}>`,
+        from: `"${fromName}" <${fromAddress}>`,
         subject,
         text
       });
     } else {
       console.log(`[DEBUG] Attempting to connect to SMTP: ${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`);
       await transporter.sendMail({
-        from: `"koral" <${fromAddress}>`,
+        from: `"${fromName}" <${fromAddress}>`,
         to: email,
         subject,
         text
