@@ -81,7 +81,7 @@ app.post('/api/auth/send-verification', async (req, res) => {
     );
 
     const mailOptions = {
-      from: `"koral" <${process.env.SMTP_USER || 'noreply@koral.com'}>`,
+      from: `"koral" <${process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@koral.com'}>`,
       to: email,
       subject: '[koral] 이메일 인증 코드',
       text: `koral에 가입해 주셔서 감사합니다!\n\n인증 코드: ${code}\n\n이 코드는 5분간 유효합니다.`
