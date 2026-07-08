@@ -429,6 +429,7 @@ class Store {
       } else {
         targetUser.followers = targetUser.followers.filter(h => h !== myHandle);
         this.state.currentUser.following = this.state.currentUser.following.filter(h => h !== handle);
+      }
       this._notify();
     }
   }
