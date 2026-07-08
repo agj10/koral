@@ -264,11 +264,49 @@ export function renderProfilePage(container, { handle }) {
     el('div', { className: 'profile-stat', onclick: () => toast(t('featureReadyInfo')) }, el('span', { className: 'font-semibold text-base' }, user.following?.length || 0), t('statFollowing'))
   );
   
-  const nameBio = el('div', {},
-    el('div', { className: 'profile-name', innerHTML: renderMarkdown(user.displayName).replace(/^<p>/, '').replace(/<\/p>$/,'') }),
-    el('div', { className: 'profile-bio' }, user.bio || ''),
-    user.website ? el('a', { className: 'profile-bio-link', href: user.website, target: '_blank' }, user.website.replace(/^https?:\/\//, '')) : null
-  );
+  const nameBio = el('div', { className: 'w-full min-w-0 flex flex-col gap-1 mt-2' });
+  nameBio.appendChild(el('div', { className: 'profile-name text-2xl font-bold break-words whitespace-pre-wrap leading-tight', innerHTML: renderMarkdown(user.displayName).replace(/^<p>/, '').replace(/<\/p>$/,'') }));
+  
+  if (user.bio) {
+    const isLongBio = user.bio.length > 150 || (user.bio.match(/\n/g) || []).length > 3;
+    const bioSpan = el('div', { className: 'profile-bio text-base break-words whitespace-pre-wrap text-tx-2', innerHTML: renderMarkdown(user.bio).replace(/^<p>/, '').replace(/<\/p>$/, '') });
+    const toggleMoreBtn = isLongBio ? el('button', { className: 'text-sm font-bold text-tx-3 hover:text-tx bg-transparent p-0 border-none cursor-pointer mt-1' }, '자세히 보기') : null;
+    
+    if (isLongBio) {
+      bioSpan.style.display = '-webkit-box';
+      bioSpan.style.webkitBoxOrient = 'vertical';
+      bioSpan.style.overflow = 'hidden';
+      bioSpan.style.webkitLineClamp = '3';
+      
+      let expanded = false;
+      toggleMoreBtn.onclick = (e) => {
+        e.stopPropagation();
+        expanded = !expanded;
+        if (expanded) {
+          bioSpan.style.display = 'block';
+          bioSpan.style.webkitLineClamp = 'unset';
+          toggleMoreBtn.textContent = '간단히 보기';
+        } else {
+          bioSpan.style.display = '-webkit-box';
+          bioSpan.style.webkitLineClamp = '3';
+          toggleMoreBtn.textContent = '자세히 보기';
+        }
+      };
+    }
+    
+    const bioWrap = el('div', { className: 'w-full min-w-0 mt-1 mb-1' },
+      bioSpan,
+      isLongBio ? el('div', {}, toggleMoreBtn) : null
+    );
+    nameBio.appendChild(bioWrap);
+  }
+
+  if (user.website) {
+    nameBio.appendChild(el('a', { className: 'profile-bio-link flex items-center gap-1 text-brand hover:underline break-words text-sm mt-1', href: user.website.startsWith('http') ? user.website : 'https://' + user.website, target: '_blank' }, 
+      el('span', { innerHTML: icons.link ? icons.link(14) : '🔗' }),
+      user.website.replace(/^https?:\/\//, '')
+    ));
+  }
   
   info.append(row1, stats, nameBio);
   header.append(avatarWrap, info);
@@ -993,17 +1031,18 @@ export function renderEditProfilePage(container) {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
-      input.onchange = (ev) => {
+      input.onchange = async (ev) => {
         const file = ev.target.files[0];
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          currentAvatar = e.target.result;
+        try {
+          const dataUrl = await resizeImage(file, 400);
+          currentAvatar = dataUrl;
           avatarPreview.innerHTML = '';
           avatarPreview.appendChild(renderAvatar({ ...cleanUser, avatar: currentAvatar }, 'av-2xl'));
           removeAvatarBtn.style.visibility = 'visible';
-        };
-        reader.readAsDataURL(file);
+        } catch (err) {
+          toast('이미지 처리에 실패했습니다.', 'error');
+        }
       };
       input.click();
     }
@@ -1016,7 +1055,7 @@ export function renderEditProfilePage(container) {
 
   const removeAvatarBtn = el('button', {
     type: 'button',
-    className: 'btn btn-ghost text-red-500 mt-2 text-sm font-medium',
+    className: 'btn btn-ghost text-red-500 mt-4 text-sm font-medium',
     style: currentAvatar ? 'visibility: visible;' : 'visibility: hidden;',
     onclick: () => {
       currentAvatar = '';

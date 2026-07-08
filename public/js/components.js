@@ -9,10 +9,8 @@ export function renderAvatar(user, sizeClass = 'av-md', hasStoryRing = false) {
   
   const inner = el('div', { className: hasStoryRing ? 'av-inner' : `avatar ${sizeClass}` });
   
-  if (user.avatar && user.avatar.startsWith('data:')) {
-    inner.appendChild(el('img', { src: user.avatar, alt: user.displayName }));
-  } else if (user.avatar) {
-    inner.style.background = `url(${user.avatar}) center/cover`;
+  if (user.avatar) {
+    inner.style.background = `url("${user.avatar}") center/cover`;
   } else {
     inner.textContent = getInitials(user.displayName);
   }

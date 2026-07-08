@@ -99,6 +99,8 @@ export function el(tag, attrs = {}, ...children) {
       element.innerHTML = value;
     } else if (key === 'textContent') {
       element.textContent = value;
+    } else if (key === 'value') {
+      element.value = value;
     } else {
       element.setAttribute(key, value);
     }

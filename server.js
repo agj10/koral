@@ -215,11 +215,11 @@ app.get('/api/users/me', verifyToken, async (req, res) => {
 });
 
 app.put('/api/users/me', verifyToken, async (req, res) => {
-  const { displayName, bio, avatar } = req.body;
+  const { displayName, bio, website, avatar } = req.body;
   try {
     await db.runAsync(
-      'UPDATE users SET displayName = ?, bio = ?, avatar = ? WHERE handle = ?',
-      [displayName, bio, avatar, req.user.handle]
+      'UPDATE users SET displayName = ?, bio = ?, website = ?, avatar = ? WHERE handle = ?',
+      [displayName, bio, website, avatar, req.user.handle]
     );
     res.json({ ok: true });
   } catch (err) {
