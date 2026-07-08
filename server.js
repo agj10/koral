@@ -8,6 +8,9 @@ import multer from 'multer';
 import { fileURLToPath } from 'url';
 import db from './db.js';
 import nodemailer from 'nodemailer';
+import dns from 'dns';
+
+dns.setDefaultResultOrder('ipv4first');
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
