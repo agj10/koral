@@ -236,9 +236,10 @@ export function renderProfilePage(container, { handle }) {
   const info = el('div', { className: 'profile-info' });
   const row1 = el('div', { className: 'profile-row1' });
   
-  row1.appendChild(el('h2', { className: 'profile-handle' }, 
-    user.handle.startsWith('@') ? user.handle : '@' + user.handle,
-    user.verified ? el('span', { className: 'verified ml-2', innerHTML: icons.verified(18) }) : null
+  row1.appendChild(el('h2', { className: 'profile-handle flex items-center flex-wrap gap-2' }, 
+    el('span', { className: 'font-bold' }, user.displayName),
+    el('span', { className: 'opacity-80' }, user.handle.startsWith('@') ? user.handle : '@' + user.handle),
+    user.verified ? el('span', { className: 'verified flex-shrink-0', innerHTML: icons.verified(18) }) : null
   ));
   
   const actions = el('div', { className: 'profile-actions ml-4' });
@@ -268,7 +269,6 @@ export function renderProfilePage(container, { handle }) {
   );
   
   const nameBio = el('div', { className: 'w-full min-w-0 flex flex-col gap-1 mt-3' });
-  nameBio.appendChild(el('div', { className: 'profile-name text-2xl font-bold break-words whitespace-pre-wrap leading-tight' }, user.displayName));
   
   if (user.bio) {
     const isLongBio = user.bio.length > 150 || (user.bio.match(/\n/g) || []).length > 3;
