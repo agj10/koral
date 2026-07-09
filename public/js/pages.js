@@ -238,13 +238,28 @@ function showUserListModal(title, handles) {
             followBtn.className = `btn btn-sm ${following ? 'btn-secondary' : 'btn-primary'}`;
             followBtn.textContent = following ? t('following') : t('follow');
             
-            // update current profile's followers count if it's the current profile being viewed
             const match = window.location.hash.match(/^#profile\/([^/]+)/);
-            if (match && match[1] === u.handle) {
+            if (match) {
+              const viewedHandle = match[1];
               const profileStats = document.querySelector('.profile-stats');
-              if (profileStats && profileStats.children[1]) {
-                const countEl = profileStats.children[1].querySelector('.font-semibold');
-                if (countEl) countEl.textContent = store.getUser(u.handle).followers?.length || 0;
+              if (profileStats) {
+                // If viewing u's profile, update their followers count
+                if (viewedHandle === u.handle && profileStats.children[1]) {
+                  const countEl = profileStats.children[1].querySelector('.font-semibold');
+                  if (countEl) countEl.textContent = store.getUser(u.handle).followers?.length || 0;
+                  
+                  // Also update the main profile follow button
+                  const mainFollowBtn = document.querySelector('.profile-actions .btn');
+                  if (mainFollowBtn && mainFollowBtn.textContent !== t('message')) {
+                    mainFollowBtn.className = `btn btn-sm ${following ? 'btn-secondary' : 'btn-primary'}`;
+                    mainFollowBtn.textContent = following ? t('following') : t('follow');
+                  }
+                }
+                // If viewing own profile, update my following count
+                if (currentUser && viewedHandle === currentUser.handle && profileStats.children[2]) {
+                  const countEl = profileStats.children[2].querySelector('.font-semibold');
+                  if (countEl) countEl.textContent = store.getUser(currentUser.handle).following?.length || 0;
+                }
               }
             }
           }
@@ -311,7 +326,10 @@ export function renderProfilePage(container, { handle }) {
         const following = store.isFollowing(user.handle);
         e.target.className = `btn btn-sm ${following ? 'btn-secondary' : 'btn-primary'}`;
         e.target.textContent = following ? t('following') : t('follow');
-        if (stats) stats.children[1].children[0].textContent = user.followers?.length || 0;
+        if (stats && stats.children[1]) {
+          const countEl = stats.children[1].querySelector('.font-semibold');
+          if (countEl) countEl.textContent = store.getUser(user.handle).followers?.length || 0;
+        }
       }
     }, isFollowing ? t('following') : t('follow'));
     actions.appendChild(followBtn);
