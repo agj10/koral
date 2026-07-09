@@ -952,10 +952,7 @@ export function showMoreModal() {
     
     otherUsers.forEach(u => {
       const item = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 text-left p-3', onclick: () => {
-        store.getState().currentUser = u;
-        store._save();
-        window.location.hash = '';
-        window.location.reload();
+        store.switchAccount(u);
       }},
         renderAvatar(u, 'av-sm'),
         el('div', { className: 'font-semibold text-tx text-sm' }, u.handle)

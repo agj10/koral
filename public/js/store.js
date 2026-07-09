@@ -104,10 +104,13 @@ class Store {
       this.state.currentUser = res.user;
       
       const saved = JSON.parse(storage.getItem('koral_saved_accounts') || '[]');
-      if (!saved.find(u => u.id === res.user.id)) {
-        saved.push(res.user);
-        storage.setItem('koral_saved_accounts', JSON.stringify(saved));
+      const existingIdx = saved.findIndex(u => u.id === res.user.id);
+      if (existingIdx === -1) {
+        saved.push({ ...res.user, token: res.token });
+      } else {
+        saved[existingIdx] = { ...res.user, token: res.token };
       }
+      storage.setItem('koral_saved_accounts', JSON.stringify(saved));
       
       const notifsRes = await this.api('/notifications');
       this.state.notifications = notifsRes.notifications || [];
@@ -143,10 +146,13 @@ class Store {
       this.state.users.push(res.user);
       
       const saved = JSON.parse(storage.getItem('koral_saved_accounts') || '[]');
-      if (!saved.find(u => u.id === res.user.id)) {
-        saved.push(res.user);
-        storage.setItem('koral_saved_accounts', JSON.stringify(saved));
+      const existingIdx = saved.findIndex(u => u.id === res.user.id);
+      if (existingIdx === -1) {
+        saved.push({ ...res.user, token: res.token });
+      } else {
+        saved[existingIdx] = { ...res.user, token: res.token };
       }
+      storage.setItem('koral_saved_accounts', JSON.stringify(saved));
       
       this._notify();
       return { ok: true };
@@ -163,6 +169,20 @@ class Store {
     this.state.drafts = [];
     this._notify();
     window.location.reload();
+  }
+
+  switchAccount(user) {
+    if (user && user.token) {
+      storage.setItem('koral_token', user.token);
+      this.token = user.token;
+      window.location.hash = '';
+      window.location.reload();
+    } else {
+      // Fallback if token is missing (old data)
+      storage.removeItem('koral_token');
+      window.location.hash = '#login';
+      window.location.reload();
+    }
   }
 
   // --- Posts ---
