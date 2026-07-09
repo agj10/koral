@@ -553,18 +553,24 @@ class Store {
     this.state.theme = theme;
     storage.setItem('koral_theme', theme);
     
-    let isDark = false;
-    if (theme === 'system') {
-      isDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    } else {
-      isDark = theme === 'dark';
-    }
-    
     if (typeof document !== 'undefined') {
-      if (isDark) {
+      document.body.classList.remove('theme-light', 'theme-dark', 'theme-system');
+      document.documentElement.classList.remove('dark', 'light');
+      
+      if (theme === 'light') {
+        document.body.classList.add('theme-light');
+        document.documentElement.classList.add('light');
+      } else if (theme === 'dark') {
         document.body.classList.add('theme-dark');
+        document.documentElement.classList.add('dark');
       } else {
-        document.body.classList.remove('theme-dark');
+        document.body.classList.add('theme-system');
+        const isDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.add('light');
+        }
       }
     }
     this._notify();
@@ -585,21 +591,7 @@ class Store {
   }
 
   setTheme(themeId) {
-    this.state.theme = themeId;
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('koral_theme', themeId);
-    }
-    const isDark = themeId === 'dark' || 
-      (themeId === 'system' && typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    
-    if (typeof document !== 'undefined') {
-      if (isDark) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    }
-    this._notify();
+    this.applyTheme(themeId);
   }
 
   // --- Compatibility methods for existing frontend code ---

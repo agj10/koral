@@ -267,7 +267,7 @@ export function renderProfilePage(container, { handle }) {
     el('div', { className: 'profile-stat', onclick: () => toast(t('featureReadyInfo')) }, el('span', { className: 'font-semibold text-base' }, user.following?.length || 0), t('statFollowing'))
   );
   
-  const nameBio = el('div', { className: 'w-full min-w-0 flex flex-col gap-3 mt-4' });
+  const nameBio = el('div', { className: 'w-full min-w-0 flex flex-col gap-1 mt-3' });
   nameBio.appendChild(el('div', { className: 'profile-name text-2xl font-bold break-words whitespace-pre-wrap leading-tight' }, user.displayName));
   
   if (user.bio) {
@@ -301,14 +301,17 @@ export function renderProfilePage(container, { handle }) {
       );
       nameBio.appendChild(bioWrap);
     } else {
-      nameBio.appendChild(el('div', { className: 'w-full min-w-0 mt-1 mb-1' }, bioText));
+      nameBio.appendChild(el('div', { className: 'w-full min-w-0 mb-1' }, bioText));
     }
   }
 
   if (user.website) {
-    nameBio.appendChild(el('a', { className: 'profile-bio-link flex items-center gap-1 text-brand hover:underline break-words text-sm mt-1', href: user.website.startsWith('http') ? user.website : 'https://' + user.website, target: '_blank' }, 
-      el('span', { innerHTML: icons.link ? icons.link(14) : '🔗' }),
-      user.website.replace(/^https?:\/\//, '')
+    nameBio.appendChild(el('a', { 
+      className: 'profile-bio-link hover:underline break-words text-sm text-tx-2 block', 
+      href: user.website.startsWith('http') ? user.website : 'https://' + user.website, target: '_blank' 
+    }, 
+      el('span', { innerHTML: icons.link ? icons.link(14) : '🔗', className: 'inline-block align-middle mr-1' }),
+      el('span', { className: 'align-middle' }, user.website.replace(/^https?:\/\//, ''))
     ));
   }
   
