@@ -44,7 +44,7 @@
 }
 .profile-handle { font-size: var(--text-xl); font-weight: 400; color: var(--tx); }
 .profile-actions { display: flex; gap: var(--s2); }
-.profile-bio { font-size: var(--text-sm); color: var(--tx-2); line-height: 1.6; margin-top: var(--s3); }
+.profile-bio { font-size: var(--text-sm); color: var(--tx-2); line-height: 1.6; margin-top: var(--s3); white-space: pre-wrap; }
 .profile-bio-link { color: var(--tx-link); font-weight: 600; }
 .profile-bio-link:hover { text-decoration: underline; }
 .profile-name { font-size: var(--text-sm); font-weight: 700; color: var(--tx); margin-top: var(--s2); }
