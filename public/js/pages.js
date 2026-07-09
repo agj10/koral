@@ -207,6 +207,63 @@ export function renderExplorePage(container) {
   container.appendChild(wrap);
 }
 
+function showUserListModal(title, handles) {
+  const listWrap = el('div', { className: 'flex flex-col gap-4 max-h-[60vh] overflow-y-auto' });
+  
+  if (!handles || handles.length === 0) {
+    listWrap.appendChild(el('div', { className: 'text-center text-tx-3 py-8' }, '사용자가 없습니다.'));
+  } else {
+    handles.forEach(handle => {
+      const u = store.getUser(handle);
+      if (!u) return;
+      
+      const item = el('div', { className: 'flex items-center justify-between' });
+      const profileInfo = el('div', { className: 'flex items-center gap-3 cursor-pointer', onclick: () => { modal.close(); window.navigateTo('profile/' + u.handle); } });
+      profileInfo.appendChild(renderAvatar(u, 'av-md', true));
+      profileInfo.appendChild(el('div', { className: 'flex flex-col' },
+        el('span', { className: 'font-bold text-sm text-tx' }, u.displayName),
+        el('span', { className: 'text-xs text-tx-2' }, '@' + u.handle)
+      ));
+      item.appendChild(profileInfo);
+      
+      const currentUser = store.getState().currentUser;
+      if (currentUser && currentUser.handle !== u.handle) {
+        const isFollowing = store.isFollowing(u.handle);
+        const followBtn = el('button', {
+          className: `btn btn-sm ${isFollowing ? 'btn-secondary' : 'btn-primary'}`,
+          onclick: (e) => {
+            e.stopPropagation();
+            store.toggleFollow(u.handle);
+            const following = store.isFollowing(u.handle);
+            followBtn.className = `btn btn-sm ${following ? 'btn-secondary' : 'btn-primary'}`;
+            followBtn.textContent = following ? t('following') : t('follow');
+            
+            // update current profile's followers count if it's the current profile being viewed
+            const match = window.location.hash.match(/^#profile\/([^/]+)/);
+            if (match && match[1] === u.handle) {
+              const profileStats = document.querySelector('.profile-stats');
+              if (profileStats && profileStats.children[1]) {
+                const countEl = profileStats.children[1].querySelector('.font-semibold');
+                if (countEl) countEl.textContent = store.getUser(u.handle).followers?.length || 0;
+              }
+            }
+          }
+        }, isFollowing ? t('following') : t('follow'));
+        item.appendChild(followBtn);
+      }
+      
+      listWrap.appendChild(item);
+    });
+  }
+  
+  const wrap = el('div', { className: 'p-6 flex flex-col gap-4' },
+    el('h2', { className: 'text-xl font-bold text-tx mb-2' }, title),
+    listWrap
+  );
+  
+  const modal = showModal(wrap, { className: 'w-full max-w-sm' });
+}
+
 export function renderProfilePage(container, { handle }) {
   container.innerHTML = '';
   const user = store.getUser(handle.replace(/^@/, ''));
@@ -238,7 +295,7 @@ export function renderProfilePage(container, { handle }) {
   
   row1.appendChild(el('h2', { className: 'profile-handle flex items-center flex-wrap gap-2' }, 
     el('span', { className: 'font-bold' }, user.displayName),
-    el('span', { className: 'opacity-80' }, user.handle.startsWith('@') ? user.handle : '@' + user.handle),
+    el('span', { className: 'opacity-80 ml-2' }, user.handle.startsWith('@') ? user.handle : '@' + user.handle),
     user.verified ? el('span', { className: 'verified flex-shrink-0', innerHTML: icons.verified(18) }) : null
   ));
   
@@ -263,9 +320,9 @@ export function renderProfilePage(container, { handle }) {
   row1.appendChild(actions);
   
   const stats = el('div', { className: 'profile-stats mb-4' },
-    el('div', { className: 'profile-stat' }, el('span', { className: 'font-semibold text-base' }, posts.length), t('statReefs')),
-    el('div', { className: 'profile-stat', onclick: () => toast(t('featureReadyInfo')) }, el('span', { className: 'font-semibold text-base' }, user.followers?.length || 0), t('statFollowers')),
-    el('div', { className: 'profile-stat', onclick: () => toast(t('featureReadyInfo')) }, el('span', { className: 'font-semibold text-base' }, user.following?.length || 0), t('statFollowing'))
+    el('div', { className: 'profile-stat' }, el('span', { className: 'text-tx-2 text-sm mr-1' }, t('statReefs').trim()), el('span', { className: 'font-semibold text-base' }, posts.length)),
+    el('div', { className: 'profile-stat', onclick: () => showUserListModal(t('statFollowers').trim(), user.followers || []) }, el('span', { className: 'text-tx-2 text-sm mr-1' }, t('statFollowers').trim()), el('span', { className: 'font-semibold text-base' }, user.followers?.length || 0)),
+    el('div', { className: 'profile-stat', onclick: () => showUserListModal(t('statFollowing').trim(), user.following || []) }, el('span', { className: 'text-tx-2 text-sm mr-1' }, t('statFollowing').trim()), el('span', { className: 'font-semibold text-base' }, user.following?.length || 0))
   );
   
   const nameBio = el('div', { className: 'w-full min-w-0 flex flex-col gap-1 mt-3' });
