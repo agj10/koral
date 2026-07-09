@@ -951,13 +951,26 @@ export function showMoreModal() {
     const otherUsers = saved.filter(u => u.id !== currentUser.id);
     
     otherUsers.forEach(u => {
-      const item = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 text-left p-3', onclick: () => {
+      const itemWrap = el('div', { className: 'w-full flex items-center justify-between group hover:bg-base p-1 rounded-xl' });
+      
+      const item = el('div', { className: 'flex-1 flex items-center gap-3 text-left p-2 cursor-pointer', onclick: () => {
         store.switchAccount(u);
       }},
         renderAvatar(u, 'av-sm'),
         el('div', { className: 'font-semibold text-tx text-sm' }, u.handle)
       );
-      wrap.appendChild(item);
+      
+      const removeBtn = el('button', { className: 'btn-icon btn-ghost p-2 opacity-50 hover:opacity-100 text-red-500', onclick: (e) => {
+        e.stopPropagation();
+        const saved = JSON.parse(localStorage.getItem('koral_saved_accounts') || '[]');
+        const updated = saved.filter(savedUser => savedUser.id !== u.id);
+        localStorage.setItem('koral_saved_accounts', JSON.stringify(updated));
+        switchModal.close();
+        showSwitcherModal();
+      }}, el('span', { innerHTML: icons.trash(16) }));
+      
+      itemWrap.append(item, removeBtn);
+      wrap.appendChild(itemWrap);
     });
     
     const addBtn = el('button', { className: 'btn btn-ghost w-full flex items-center justify-start gap-3 p-3 mt-1 border-t border-base rounded-none text-brand', onclick: () => {
