@@ -1,9 +1,9 @@
-import { icons } from './icons.js';
-import { el, $, $$, timeAgo, renderMarkdown, escapeHtml, getInitials, toast, showModal, confirmDialog, resizeImage, uid, debounce } from './utils.js';
-import { store } from './store.js';
-import { t } from './lang.js';
-import { renderAvatar, renderPostCard, renderPostPreviewCard, renderStoryRow, renderSuggestSidebar, renderThemeSelector, renderCommentSection, createDropdownSelect } from './components.js';
-import { createRichTextEditor } from './editor.js';
+import { icons } from './icons.js?v=8';
+import { el, $, $$, timeAgo, renderMarkdown, escapeHtml, getInitials, toast, showModal, confirmDialog, resizeImage, uid, debounce } from './utils.js?v=8';
+import { store } from './store.js?v=8';
+import { t } from './lang.js?v=8';
+import { renderAvatar, renderPostCard, renderPostPreviewCard, renderStoryRow, renderSuggestSidebar, renderThemeSelector, renderCommentSection, createDropdownSelect } from './components.js?v=8';
+import { createRichTextEditor } from './editor.js?v=8';
 
 export function renderFeedPage(container, params = {}) {
   try {
@@ -45,9 +45,9 @@ export function renderFeedPage(container, params = {}) {
       });
 
       colsContainer.append(
-        createCol('쉼터 산책', 'user', c1),
-        createCol('연안 관광', 'hash', c2),
-        createCol('수중 탐사', 'compass', c3)
+        createCol(t('restWalk'), 'user', c1),
+        createCol(t('coastTour'), 'hash', c2),
+        createCol(t('underwaterExplore'), 'compass', c3)
       );
       main.appendChild(colsContainer);
     }
@@ -59,7 +59,7 @@ export function renderFeedPage(container, params = {}) {
     container.appendChild(feedLayout);
   } catch (err) {
     console.error(err);
-    container.innerHTML = `<div class="p-8 text-center text-red-500">피드 렌더링 에러: ${err.message}</div>`;
+    container.innerHTML = `<div class="p-8 text-center text-red-500">' + t('feedError') + ' ${err.message}</div>`;
   }
 }
 
@@ -76,16 +76,16 @@ export function renderExplorePage(container) {
     type: 'text', 
     className: 'input w-full py-3 rounded-2xl bg-element border-base text-lg font-semibold', 
     style: { paddingLeft: '48px' },
-    placeholder: '검색어를 입력하세요...' 
+    placeholder: t('placeholderSearch') 
   });
   const searchIcon = el('div', { className: 'absolute text-tx-3', style: { left: '16px', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', pointerEvents: 'none' }, innerHTML: icons.search(22) });
   searchWrap.append(searchIcon, searchInput);
   
-  const categoryOptions = ['전체', '사진', '일상', '개발', '디자인', '기타'].map(cat => ({ value: cat, label: cat }));
+  const categoryOptions = [t('catAll'), t('catPhoto'), t('catDaily'), t('catDev'), t('catDesign'), t('catEtc')].map(cat => ({ value: cat, label: cat }));
   const categorySelectWrap = el('div', { className: 'w-[120px] flex-shrink-0' });
-  const categorySelect = createDropdownSelect(categoryOptions, '전체', (val) => {
+  const categorySelect = createDropdownSelect(categoryOptions, t('catAll'), (val) => {
     // filter logic here
-  }, '카테고리');
+  }, t('category'));
   categorySelectWrap.appendChild(categorySelect);
   
   searchHeader.append(searchWrap, categorySelectWrap);
@@ -103,13 +103,13 @@ export function renderExplorePage(container) {
     // Recent Searches
     const recentWrap = el('div', { className: 'flex flex-col gap-4 w-full' });
     recentWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3 flex justify-between items-center' }, 
-      '최근 검색어',
-      el('button', { className: 'text-sm text-tx-3 hover:text-tx btn-text-link', onclick: () => { localStorage.removeItem('koral_recent_searches'); renderDefaultView(); } }, '전체 삭제')
+      t('recentSearches'),
+      el('button', { className: 'text-sm text-tx-3 hover:text-tx btn-text-link', onclick: () => { localStorage.removeItem('koral_recent_searches'); renderDefaultView(); } }, t('clearAll'))
     ));
     
     const savedRecent = JSON.parse(localStorage.getItem('koral_recent_searches') || '[]');
     if (savedRecent.length === 0) {
-      recentWrap.appendChild(el('div', { className: 'text-tx-3 text-sm py-4 text-center' }, '최근 검색 기록이 없습니다.'));
+      recentWrap.appendChild(el('div', { className: 'text-tx-3 text-sm py-4 text-center' }, t('noRecentSearches')));
     } else {
       const recentList = el('div', { className: 'flex flex-col gap-2' });
       savedRecent.forEach(kw => {
@@ -137,9 +137,9 @@ export function renderExplorePage(container) {
     
     // Recommended Searches
     const recWrap = el('div', { className: 'flex flex-col gap-4 w-full' });
-    recWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3' }, '추천 검색어'));
+    recWrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3' }, t('recommendedSearches')));
     const recList = el('div', { className: 'flex flex-col gap-2' });
-    ['#프론트엔드', '#감성사진', '#카페투어', 'OOTD', '포트폴리오', 'AI 활용법'].forEach(kw => {
+    [t('kwFrontend'), t('kwPhoto'), t('kwCafe'), t('kwOotd'), t('kwPortfolio'), t('kwAi')].forEach(kw => {
       recList.appendChild(el('div', { className: 'search-keyword-card font-medium', textContent: kw, onclick: () => {
         searchInput.value = kw;
         renderSearchResults(kw);
@@ -151,7 +151,7 @@ export function renderExplorePage(container) {
     defWrap.appendChild(keywordsRow);
     
     const suggestedWrap = el('div', { className: 'flex flex-col gap-6 mt-4 w-full' });
-    suggestedWrap.appendChild(el('div', { className: 'font-bold text-2xl text-tx' }, '탐색 추천'));
+    suggestedWrap.appendChild(el('div', { className: 'font-bold text-2xl text-tx' }, t('exploreSuggestions')));
     const grid = el('div', { className: 'grid gap-6 w-full', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' } });
     posts.slice(0, 6).forEach(post => {
       grid.appendChild(renderPostPreviewCard(post));
@@ -172,7 +172,7 @@ export function renderExplorePage(container) {
 
     contentArea.innerHTML = '';
     const resWrap = el('div', { className: 'flex flex-col gap-6 w-full' });
-    resWrap.appendChild(el('div', { className: 'font-bold text-xl text-tx border-b border-base pb-3' }, `'${query}' 검색 결과`));
+    resWrap.appendChild(el('div', { className: 'font-bold text-xl text-tx border-b border-base pb-3' }, `'${query}' ` + t('searchResultsFor')));
     
     const grid = el('div', { className: 'grid gap-6 w-full', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' } });
     const lowerQuery = query.toLowerCase();
@@ -211,7 +211,7 @@ function showUserListModal(title, handles) {
   const listWrap = el('div', { className: 'flex flex-col gap-4 max-h-[60vh] overflow-y-auto' });
   
   if (!handles || handles.length === 0) {
-    listWrap.appendChild(el('div', { className: 'text-center text-tx-3 py-8' }, '사용자가 없습니다.'));
+    listWrap.appendChild(el('div', { className: 'text-center text-tx-3 py-8' }, t('noUsersFound')));
   } else {
     handles.forEach(handle => {
       const u = store.getUser(handle);
@@ -316,7 +316,7 @@ export function renderProfilePage(container, { handle }) {
   
   const actions = el('div', { className: 'profile-actions ml-4' });
   if (isOwn) {
-    actions.appendChild(el('button', { className: 'btn-icon btn-ghost', onclick: () => window.navigateTo('settings/profile'), title: '프로필 편집' }, el('span', { innerHTML: icons.edit(24) })));
+    actions.appendChild(el('button', { className: 'btn-icon btn-ghost', onclick: () => window.navigateTo('settings/profile'), title: t('editProfile') }, el('span', { innerHTML: icons.edit(24) })));
   } else if (currentUser) {
     const isFollowing = store.isFollowing(user.handle);
     const followBtn = el('button', { 
@@ -339,8 +339,8 @@ export function renderProfilePage(container, { handle }) {
   
   const stats = el('div', { className: 'profile-stats mb-4' },
     el('div', { className: 'profile-stat' }, el('span', { className: 'text-tx-2 text-sm mr-1' }, t('statReefs').trim()), el('span', { className: 'font-semibold text-base' }, posts.length)),
-    el('div', { className: 'profile-stat', onclick: () => showUserListModal(t('statFollowers').trim(), user.followers || []) }, el('span', { className: 'text-tx-2 text-sm mr-1' }, t('statFollowers').trim()), el('span', { className: 'font-semibold text-base' }, user.followers?.length || 0)),
-    el('div', { className: 'profile-stat', onclick: () => showUserListModal(t('statFollowing').trim(), user.following || []) }, el('span', { className: 'text-tx-2 text-sm mr-1' }, t('statFollowing').trim()), el('span', { className: 'font-semibold text-base' }, user.following?.length || 0))
+    el('div', { className: 'profile-stat', onclick: () => showUserListModal(t('statFollowers').trim(), store.getUser(user.handle).followers || []) }, el('span', { className: 'text-tx-2 text-sm mr-1' }, t('statFollowers').trim()), el('span', { className: 'font-semibold text-base' }, user.followers?.length || 0)),
+    el('div', { className: 'profile-stat', onclick: () => showUserListModal(t('statFollowing').trim(), store.getUser(user.handle).following || []) }, el('span', { className: 'text-tx-2 text-sm mr-1' }, t('statFollowing').trim()), el('span', { className: 'font-semibold text-base' }, user.following?.length || 0))
   );
   
   const nameBio = el('div', { className: 'w-full min-w-0 flex flex-col gap-1 mt-3' });
@@ -358,16 +358,16 @@ export function renderProfilePage(container, { handle }) {
       bioText.style.webkitLineClamp = '3';
       bioText.style.overflow = 'hidden';
       
-      const toggleMoreBtn = el('button', { className: 'text-sm font-bold text-brand bg-transparent p-0 border-none cursor-pointer mt-1' }, '자세히 보기');
+      const toggleMoreBtn = el('button', { className: 'text-sm font-bold text-brand bg-transparent p-0 border-none cursor-pointer mt-1' }, t('viewMore'));
       let expanded = false;
       toggleMoreBtn.onclick = () => {
         expanded = !expanded;
         if (expanded) {
           bioText.style.webkitLineClamp = 'unset';
-          toggleMoreBtn.textContent = '간략히 보기';
+          toggleMoreBtn.textContent = t('viewLess');
         } else {
           bioText.style.webkitLineClamp = '3';
-          toggleMoreBtn.textContent = '자세히 보기';
+          toggleMoreBtn.textContent = t('viewMore');
         }
       };
       const bioWrap = el('div', { className: 'flex flex-col items-start w-full min-w-0 mt-1 mb-1' },
@@ -447,7 +447,7 @@ export function renderProfilePage(container, { handle }) {
           onclick: () => window.navigateTo(`create/draft/${draft.id}`) 
         });
         
-        cell.appendChild(el('div', { className: 'absolute top-2 left-2 bg-brand px-2 py-1 rounded-full text-xs font-bold text-white z-10' }, '작성 중'));
+        cell.appendChild(el('div', { className: 'absolute top-2 left-2 bg-brand px-2 py-1 rounded-full text-xs font-bold text-white z-10' }, t('draftBadge')));
         cell.appendChild(el('div', { className: 'absolute top-2 right-2 bg-black/60 px-2 py-1 rounded-full text-xs font-bold text-white z-10' }, draft.type === 'story' ? t('shellLabel').split(' ')[0] : t('reefLabel').split(' ')[0]));
         
         if (draft.type === 'story' && draft.data && draft.data.layers) {
@@ -462,7 +462,7 @@ export function renderProfilePage(container, { handle }) {
             cell.appendChild(el('img', { src: draft.data.images[0], className: 'opacity-70 group-hover:scale-105 transition-transform w-full h-full object-cover' }));
           } else {
             cell.appendChild(el('div', { className: 'w-full h-full flex items-center justify-center bg-subtle p-4 opacity-70' }, 
-              el('p', { className: 'text-sm text-tx-2 line-clamp-3 text-center' }, draft.data.caption || '내용 없음')
+              el('p', { className: 'text-sm text-tx-2 line-clamp-3 text-center' }, draft.data.caption || t('noContent'))
             ));
           }
         }
@@ -487,7 +487,7 @@ export function renderProfilePage(container, { handle }) {
           onclick: () => {
             const clickedIndex = userStories.indexOf(story);
             const groupedStories = [{ authorHandle: user.handle, stories: userStories }];
-            import('./components.js').then(m => m.renderStoryViewer(0, groupedStories, clickedIndex));
+            import('./components.js?v=8').then(m => m.renderStoryViewer(0, groupedStories, clickedIndex));
           } 
         });
         const bgLayer = story.layers?.find(l => l.type === 'image');
@@ -613,7 +613,7 @@ export function renderPostPage(container, { postId }) {
     container.appendChild(wrap);
   } catch (err) {
     console.error(err);
-    container.innerHTML = `<div class="p-8 text-center text-red-500">포스트 렌더링 에러: ${err.message}</div>`;
+    container.innerHTML = `<div class="p-8 text-center text-red-500">' + t('postError') + ' ${err.message}</div>`;
   }
 }
 
@@ -637,12 +637,9 @@ function createAuthLanguageBar() {
       style: { border: 'none', background: isSel ? 'var(--brand-a, #ff7171)' : 'transparent' },
       onclick: () => {
         if (currentLang !== l.id) {
-          localStorage.setItem('koral_language', l.id);
-          let msg = '';
-          if (l.id === 'ko') msg = '한국어로 변경되었습니다.';
-          else if (l.id === 'en') msg = 'Language changed to English.';
-          else if (l.id === 'ja') msg = '日本語に変更されました。';
-          else msg = '语言已更改为简体中文。';
+          store.setLanguage(l.id);
+          const msg = t('langChanged');
+          
           toast(msg, 'success');
           setTimeout(() => {
             window.location.reload();
@@ -682,16 +679,8 @@ function createAuthLanguageBar() {
       
       themeBtn.innerHTML = nextTheme === 'dark' ? icons.sun(16) : icons.moon(16);
       
-      let msg = '';
-      if (localStorage.getItem('koral_language') === 'ko') {
-        msg = nextTheme === 'dark' ? '다크 모드로 변경되었습니다.' : '라이트 모드로 변경되었습니다.';
-      } else if (localStorage.getItem('koral_language') === 'ja') {
-        msg = nextTheme === 'dark' ? 'ダークモードに変更されました。' : 'ライトモードに変更されました。';
-      } else if (localStorage.getItem('koral_language') === 'zh') {
-        msg = nextTheme === 'dark' ? '已切换至深色模式。' : '已切换至浅色模式。';
-      } else {
-        msg = nextTheme === 'dark' ? 'Changed to Dark Mode.' : 'Changed to Light Mode.';
-      }
+      let msg = t(nextTheme === 'dark' ? 'themeChangedDark' : 'themeChangedLight');
+      
       toast(msg, 'success');
     }
   });
@@ -706,8 +695,8 @@ export function renderLoginPage(container, isAddAccount = false) {
   container.innerHTML = '';
   
   const currentLang = localStorage.getItem('koral_language') || 'ko';
-  const addAccountTitle = currentLang === 'ko' ? '계정 추가' : currentLang === 'ja' ? 'アカウント追加' : currentLang === 'zh' ? '添加账号' : 'Add Account';
-  const addAccountSub = currentLang === 'ko' ? '기존 계정으로 로그인하여 여러 계정을 쉽게 전환하세요.' : currentLang === 'ja' ? '既存のアカウントでログインして、簡単に切り替えます。' : currentLang === 'zh' ? '登录现有账号以轻松切换。' : 'Log in to an existing account to easily switch between them.';
+  const addAccountTitle = t('addAccountTitle');
+  const addAccountSub = t('addAccountSub');
   
   const shell = el('div', { className: 'auth-shell' },
     createAuthLanguageBar(),
@@ -782,7 +771,7 @@ export function renderSignupPage(container) {
             if (!handle.startsWith('@')) handle = '@' + handle;
             
             if (t.pw.value !== t.pwConfirm.value) {
-              toast('비밀번호가 일치하지 않습니다.', 'error');
+              toast(t('passwordMismatch'), 'error');
               return;
             }
             
@@ -806,17 +795,17 @@ export function renderSignupPage(container) {
                 const emailInput = e.target.previousElementSibling;
                 const email = emailInput.value.trim();
                 if (!email || !email.includes('@')) {
-                  toast('유효한 이메일을 입력해주세요.', 'error');
+                  toast(t('invalidEmail'), 'error');
                   return;
                 }
                 const btn = e.target;
                 btn.disabled = true;
-                btn.textContent = '발송중...';
+                btn.textContent = t('sending');
                 
                 const res = await store.sendVerificationCode(email);
                 if (res.ok) {
-                  toast('입력하신 이메일로 인증코드가 발송되었습니다.', 'success');
-                  btn.textContent = '재발송';
+                  toast(t('codeSent'), 'success');
+                  btn.textContent = t('resend');
                   
                   // Show OTP container with animation
                   const otpWrap = btn.closest('.auth-form').querySelector('.otp-container');
@@ -826,11 +815,11 @@ export function renderSignupPage(container) {
                     otpWrap.querySelector('input').focus();
                   }
                 } else {
-                  toast(res.error || '발송 실패', 'error');
-                  btn.textContent = '인증 발송';
+                  toast(res.error || t('sendFailed'), 'error');
+                  btn.textContent = t('sendCode');
                 }
                 btn.disabled = false;
-              } }, '인증 발송')
+              } }, t('sendCode'))
             ),
             
             (() => {
@@ -874,7 +863,7 @@ export function renderSignupPage(container) {
                 boxContainer.appendChild(box);
               });
               
-              otpContainer.append(el('label', { className: 'input-label text-sm mb-2 block' }, '인증코드 6자리'), boxContainer, hiddenInput);
+              otpContainer.append(el('label', { className: 'input-label text-sm mb-2 block' }, t('verificationCode')), boxContainer, hiddenInput);
               return otpContainer;
             })(),
             
@@ -886,7 +875,7 @@ export function renderSignupPage(container) {
               )
             ),
             el('div', { className: 'input-group mb-3' }, el('input', { name: 'pw', type: 'password', className: 'input', placeholder: t('password'), required: true, minLength: 4 })),
-            el('div', { className: 'input-group mb-6' }, el('input', { name: 'pwConfirm', type: 'password', className: 'input', placeholder: '비밀번호 확인', required: true, minLength: 4 })),
+            el('div', { className: 'input-group mb-6' }, el('input', { name: 'pwConfirm', type: 'password', className: 'input', placeholder: t('confirmPassword'), required: true, minLength: 4 })),
             el('label', { className: 'custom-checkbox mb-6' },
               el('input', { type: 'checkbox', required: true }),
               el('div', { className: 'checkbox-box' }),
@@ -904,7 +893,7 @@ export function renderSignupPage(container) {
                         e.preventDefault();
                         showModal(el('div', { className: 'p-6' }, 
                           el('h3', { className: 'text-xl font-bold mb-4' }, t('acceptTerms') + ' koral'),
-                          el('p', { className: 'text-sm text-tx-2 leading-relaxed' }, 'koral은 개발자를 위한 마크다운 기반 SNS입니다. 건전한 코드 공유 문화를 위해 타인을 비방하거나 악의적인 코드를 공유하지 않을 것에 동의합니다. 사용자의 데이터는 안전하게 보관되며 맞춤형 피드 제공을 위해 쿠키가 사용될 수 있습니다.')
+                          el('p', { className: 'text-sm text-tx-2 leading-relaxed' }, t('termsText'))
                         ));
                       }
                     }, termsWord),
@@ -939,7 +928,7 @@ export function renderSignupPage(container) {
         preview.innerHTML = '';
         preview.appendChild(el('img', { src: avatarDataUrl }));
       } catch (err) {
-        toast('이미지 처리 중 오류가 발생했습니다.', 'error');
+        toast(t('imageError'), 'error');
       }
     }
   }});
@@ -977,7 +966,7 @@ export function renderLandingPage(container) {
 
 export function renderCreatePage(container, options = {}) {
   if (options.subRoute === 'story' || (options.subRoute === 'draft' && store.getDraft(options.draftId)?.type === 'story')) {
-    import('./components.js').then(m => m.renderStoryCreator(container, options));
+    import('./components.js?v=8').then(m => m.renderStoryCreator(container, options));
     return;
   }
   if (options.subRoute === 'post' || (options.subRoute === 'draft' && store.getDraft(options.draftId)?.type === 'post')) {
@@ -1028,7 +1017,7 @@ function renderPostEditor(container, options = {}) {
   const wrap = el('div', { className: 'page-container anim-fade', style: { maxWidth: '768px' } });
   const form = el('form', { className: 'w-full flex flex-col', onsubmit: (e) => e.preventDefault() });
   const editorHeader = el('div', { className: 'mb-6 flex items-center justify-between' },
-    el('h2', { className: 'text-2xl font-bold text-tx' }, options.draftId ? t('editDraft', '임시저장 편집') : t('newReef'))
+    el('h2', { className: 'text-2xl font-bold text-tx' }, options.draftId ? t('editDraft') : t('newReef'))
   );
   
   const currentUser = store.getState().currentUser;
@@ -1055,7 +1044,7 @@ function renderPostEditor(container, options = {}) {
       onDraftSave: (text, title) => {
         const postDraft = { title, caption: text };
         store.saveDraft('post', postDraft, options.draftId);
-        toast(currentLang === 'ko' ? '임시저장 되었습니다.' : 'Draft saved.', 'success');
+        toast(t('draftSaved'), 'success');
       },
       onSubmit: async (text, title) => {
         const imgMatches = [...text.matchAll(/!\[.*?\]\((.*?)\)/g)];
@@ -1066,7 +1055,7 @@ function renderPostEditor(container, options = {}) {
 
         const result = await store.createPost({ title, images, caption: text, location: '', tags });
         if (result && result.ok) {
-          toast(currentLang === 'ko' ? '리프가 생성되었습니다.' : 'Reef created successfully.', 'success');
+          toast(t('reefCreated'), 'success');
           localStorage.removeItem(`koral_editor_draft_create_post_${currentUser ? currentUser.id : 'guest'}`);
           if (options.draftId) {
             store.removeDraft(options.draftId);
@@ -1168,7 +1157,7 @@ export function renderEditProfilePage(container) {
   
   const avatarWrap = el('div', { 
     className: 'relative cursor-pointer hover:opacity-80 transition-opacity inline-block',
-    title: '프로필 사진 변경',
+    title: t('changeProfilePhoto'),
     onclick: () => {
       const input = document.createElement('input');
       input.type = 'file';
@@ -1186,7 +1175,7 @@ export function renderEditProfilePage(container) {
           avatarPreview.appendChild(renderAvatar({ ...cleanUser, avatar: currentAvatar }, 'av-2xl'));
           removeAvatarBtn.style.visibility = 'visible';
         } catch (err) {
-          toast('이미지 처리에 실패했습니다.', 'error');
+          toast(t('imageProcessFail'), 'error');
         }
       };
       input.click();
@@ -1194,8 +1183,7 @@ export function renderEditProfilePage(container) {
   });
 
   avatarWrap.append(
-    avatarPreview,
-    el('div', { className: 'absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full pointer-events-none shadow-md', innerHTML: icons.image(16) })
+    avatarPreview
   );
 
   const removeAvatarBtn = el('button', {
@@ -1208,7 +1196,7 @@ export function renderEditProfilePage(container) {
       avatarPreview.appendChild(renderAvatar({ ...cleanUser, avatar: null }, 'av-2xl'));
       removeAvatarBtn.style.visibility = 'hidden';
     }
-  }, '프로필 제거');
+  }, t('removeProfilePhoto'));
 
   const form = el('form', { onsubmit: async (e) => {
     e.preventDefault();
@@ -1233,7 +1221,7 @@ export function renderEditProfilePage(container) {
         website: e.target.website.value,
         avatar: avatarUrl
       });
-      toast(localStorage.getItem('koral_language') === 'en' ? 'Profile updated successfully.' : '프로필이 업데이트되었습니다.', 'success');
+      toast(t('profileUpdated'), 'success');
       window.navigateTo(`profile/${currentUser.handle.replace(/^@/, '')}`);
     } catch (err) {
       toast('Failed to update profile.', 'error');
@@ -1271,8 +1259,8 @@ export function renderEditProfilePage(container) {
 
 export function renderThemeSettingsPage(container) {
   const content = el('div');
-  content.appendChild(el('h3', { className: 'text-2xl font-bold mb-2 text-tx' }, '테마'));
-  content.appendChild(el('p', { className: 'text-tx-3 mb-8' }, '앱의 화면 모드를 설정하세요.'));
+  content.appendChild(el('h3', { className: 'text-2xl font-bold mb-2 text-tx' }, t('themeTitle')));
+  content.appendChild(el('p', { className: 'text-tx-3 mb-8' }, t('themeSub')));
   content.appendChild(renderThemeSelector());
   renderSettingsLayout(container, 'theme', content);
 }
@@ -1282,7 +1270,7 @@ export function renderSecurityPage(container) {
   if (!currentUser) return window.navigateTo('login');
 
   const content = el('div');
-  content.appendChild(el('h3', { className: 'text-2xl font-bold mb-8 text-tx' }, '계정 보안'));
+  content.appendChild(el('h3', { className: 'text-2xl font-bold mb-8 text-tx' }, t('accSecurity')));
   
   const actionsWrap = el('div', { className: 'flex flex-col gap-4' });
   
@@ -1296,28 +1284,28 @@ export function renderSecurityPage(container) {
         
         const res = store.changeHandle(currentPw, newHandle);
         if (res.ok) {
-          toast('핸들이 변경되었습니다.', 'success');
+          toast(t('handleChangedMsg'), 'success');
           modal.close();
           window.navigateTo('settings/security');
         } else {
           toast(res.error, 'error');
         }
       }},
-        el('h3', { className: 'text-2xl font-bold mb-6' }, '핸들 변경'),
+        el('h3', { className: 'text-2xl font-bold mb-6' }, t('changeHandle')),
         el('div', { className: 'input-group mb-5' },
-          el('label', { className: 'input-label' }, '새 핸들'),
+          el('label', { className: 'input-label' }, t('newHandle')),
           el('div', { className: 'input-wrap' },
             el('div', { className: 'input-prefix' }, '@'),
-            el('input', { name: 'newHandle', className: 'input input-lg', placeholder: '새 핸들', required: true })
+            el('input', { name: 'newHandle', className: 'input input-lg', placeholder: t('newHandle'), required: true })
           )
         ),
         el('div', { className: 'input-group mb-8' },
-          el('label', { className: 'input-label' }, '현재 비밀번호'),
-          el('input', { name: 'currentPw', type: 'password', className: 'input input-lg', placeholder: '비밀번호 입력', required: true })
+          el('label', { className: 'input-label' }, t('currentPw')),
+          el('input', { name: 'currentPw', type: 'password', className: 'input input-lg', placeholder: t('pwPlaceholder'), required: true })
         ),
         el('div', { className: 'flex justify-end gap-3' },
-          el('button', { type: 'button', className: 'btn btn-ghost', onclick: () => modal.close() }, '취소'),
-          el('button', { type: 'submit', className: 'btn btn-primary' }, '변경하기')
+          el('button', { type: 'button', className: 'btn btn-ghost', onclick: () => modal.close() }, t('cancel')),
+          el('button', { type: 'submit', className: 'btn btn-primary' }, t('changeBtn'))
         )
       )
     );
@@ -1332,25 +1320,25 @@ export function renderSecurityPage(container) {
         
         const res = store.changePassword(currentPw, newPw);
         if (res.ok) {
-          toast('비밀번호가 변경되었습니다.', 'success');
+          toast(t('pwChangedMsg'), 'success');
           modal.close();
           window.navigateTo('settings/security');
         } else {
           toast(res.error, 'error');
         }
       }},
-        el('h3', { className: 'text-2xl font-bold mb-6' }, '비밀번호 변경'),
+        el('h3', { className: 'text-2xl font-bold mb-6' }, t('changePwTitle')),
         el('div', { className: 'input-group mb-5' },
-          el('label', { className: 'input-label' }, '현재 비밀번호'),
-          el('input', { name: 'currentPw', type: 'password', className: 'input input-lg', placeholder: '현재 비밀번호', required: true })
+          el('label', { className: 'input-label' }, t('currentPw')),
+          el('input', { name: 'currentPw', type: 'password', className: 'input input-lg', placeholder: t('currentPw'), required: true })
         ),
         el('div', { className: 'input-group mb-8' },
-          el('label', { className: 'input-label' }, '새 비밀번호'),
-          el('input', { name: 'newPw', type: 'password', className: 'input input-lg', placeholder: '특수문자 포함 8자 이상', required: true })
+          el('label', { className: 'input-label' }, t('newPw')),
+          el('input', { name: 'newPw', type: 'password', className: 'input input-lg', placeholder: t('pwReqs'), required: true })
         ),
         el('div', { className: 'flex justify-end gap-3' },
-          el('button', { type: 'button', className: 'btn btn-ghost', onclick: () => modal.close() }, '취소'),
-          el('button', { type: 'submit', className: 'btn btn-primary' }, '변경하기')
+          el('button', { type: 'button', className: 'btn btn-ghost', onclick: () => modal.close() }, t('cancel')),
+          el('button', { type: 'submit', className: 'btn btn-primary' }, t('changeBtn'))
         )
       )
     );
@@ -1361,10 +1349,10 @@ export function renderSecurityPage(container) {
       el('form', { className: 'p-8', onsubmit: (e) => {
         e.preventDefault();
         const currentPw = e.target.currentPw.value;
-        if (confirm('정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+        if (confirm(t('delAccConfirmMsg'))) {
           const res = store.deleteAccount(currentPw);
           if (res.ok) {
-            toast('계정이 삭제되었습니다. 이용해 주셔서 감사합니다.', 'success');
+            toast(t('accDeletedMsg'), 'success');
             modal.close();
             window.navigateTo('login');
           } else {
@@ -1372,15 +1360,15 @@ export function renderSecurityPage(container) {
           }
         }
       }},
-        el('h3', { className: 'text-2xl font-bold mb-4 text-red-500' }, '계정 삭제'),
-        el('p', { className: 'text-sm text-tx-2 mb-6' }, '계정을 삭제하려면 현재 비밀번호를 입력하세요. 삭제된 계정은 복구할 수 없습니다.'),
+        el('h3', { className: 'text-2xl font-bold mb-4 text-red-500' }, t('delAccTitle')),
+        el('p', { className: 'text-sm text-tx-2 mb-6' }, t('accDelWarning')),
         el('div', { className: 'input-group mb-8' },
-          el('label', { className: 'input-label' }, '현재 비밀번호'),
-          el('input', { name: 'currentPw', type: 'password', className: 'input input-lg', placeholder: '비밀번호 입력', required: true })
+          el('label', { className: 'input-label' }, t('currentPw')),
+          el('input', { name: 'currentPw', type: 'password', className: 'input input-lg', placeholder: t('pwPlaceholder'), required: true })
         ),
         el('div', { className: 'flex justify-end gap-3' },
-          el('button', { type: 'button', className: 'btn btn-ghost', onclick: () => modal.close() }, '취소'),
-          el('button', { type: 'submit', className: 'btn btn-danger', style: { backgroundColor: 'var(--accent-red)', color: '#fff' } }, '계정 삭제하기')
+          el('button', { type: 'button', className: 'btn btn-ghost', onclick: () => modal.close() }, t('cancel')),
+          el('button', { type: 'submit', className: 'btn btn-danger', style: { backgroundColor: 'var(--accent-red)', color: '#fff' } }, t('delAccBtn'))
         )
       )
     );
@@ -1393,8 +1381,8 @@ export function renderSecurityPage(container) {
     },
       el('div', { className: 'w-12 h-12 rounded-xl bg-element flex items-center justify-center text-tx-2 shadow-sm' }, el('span', { innerHTML: icons.atSign(24) })),
       el('div', { className: 'flex-1' }, 
-        el('div', { className: 'font-bold text-tx text-lg' }, '핸들 변경'),
-        el('div', { className: 'text-sm text-tx-3 mt-1' }, '고유한 사용자 아이디를 변경합니다.')
+        el('div', { className: 'font-bold text-tx text-lg' }, t('changeHandle')),
+        el('div', { className: 'text-sm text-tx-3 mt-1' }, t('changeHandleSub'))
       ),
       el('div', { className: 'text-tx-3' }, el('span', { innerHTML: icons.chevronRight(24) }))
     ),
@@ -1404,8 +1392,8 @@ export function renderSecurityPage(container) {
     },
       el('div', { className: 'w-12 h-12 rounded-xl bg-element flex items-center justify-center text-tx-2 shadow-sm' }, el('span', { innerHTML: icons.lock(24) })),
       el('div', { className: 'flex-1' }, 
-        el('div', { className: 'font-bold text-tx text-lg' }, '비밀번호 변경'),
-        el('div', { className: 'text-sm text-tx-3 mt-1' }, '계정의 비밀번호를 안전하게 재설정합니다.')
+        el('div', { className: 'font-bold text-tx text-lg' }, t('changePwTitle')),
+        el('div', { className: 'text-sm text-tx-3 mt-1' }, t('changePwSub'))
       ),
       el('div', { className: 'text-tx-3' }, el('span', { innerHTML: icons.chevronRight(24) }))
     ),
@@ -1416,8 +1404,8 @@ export function renderSecurityPage(container) {
     },
       el('div', { className: 'w-12 h-12 rounded-xl flex items-center justify-center shadow-sm', style: { backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--accent-red)' } }, el('span', { innerHTML: icons.trash(24) })),
       el('div', { className: 'flex-1' }, 
-        el('div', { className: 'font-bold text-lg', style: { color: 'var(--accent-red)' } }, '계정 삭제'),
-        el('div', { className: 'text-sm mt-1', style: { color: 'rgba(239, 68, 68, 0.8)' } }, '계정과 모든 데이터를 영구적으로 삭제합니다.')
+        el('div', { className: 'font-bold text-lg', style: { color: 'var(--accent-red)' } }, t('delAccTitle')),
+        el('div', { className: 'text-sm mt-1', style: { color: 'rgba(239, 68, 68, 0.8)' } }, t('delAccDesc'))
       ),
       el('div', { style: { color: 'rgba(239, 68, 68, 0.5)' } }, el('span', { innerHTML: icons.chevronRight(24) }))
     )
@@ -1437,10 +1425,10 @@ export function renderLanguageSettingsPage(container) {
   const currentLang = localStorage.getItem('koral_language') || 'ko';
   
   const languages = [
-    { id: 'ko', icon: '🇰🇷', label: '한국어', desc: 'Korean' },
-    { id: 'en', icon: '🇺🇸', label: 'English', desc: '영어' },
-    { id: 'ja', icon: '🇯🇵', label: '日本語', desc: '일본어' },
-    { id: 'zh', icon: '🇨🇳', label: '简体中文', desc: '중국어 간체' }
+    { id: 'ko', icon: '🇰🇷', label: t('langKo'), desc: t('langKo') },
+    { id: 'en', icon: '🇺🇸', label: t('langEn'), desc: t('langEn') },
+    { id: 'ja', icon: '🇯🇵', label: t('langJa'), desc: t('langJa') },
+    { id: 'zh', icon: '🇨🇳', label: t('langZh'), desc: t('langZh') }
   ];
   
   languages.forEach(lang => {
@@ -1448,15 +1436,12 @@ export function renderLanguageSettingsPage(container) {
     const card = el('div', { 
       className: `theme-option ${isSel ? 'selected' : ''}`,
       onclick: () => {
-        localStorage.setItem('koral_language', lang.id);
+        store.setLanguage(lang.id);
         $$('.theme-option', containerSelect).forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
         
-        let msg = '';
-        if (lang.id === 'ko') msg = '한국어로 변경되었습니다.';
-        else if (lang.id === 'en') msg = 'Language changed to English.';
-        else if (lang.id === 'ja') msg = '日本語に変更されました。';
-        else msg = '语言已更改为简体中文。';
+        const msg = t('langChanged');
+        
         toast(msg, 'success');
         
         setTimeout(() => {

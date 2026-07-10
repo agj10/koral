@@ -143,7 +143,8 @@ app.post('/api/auth/register', async (req, res) => {
     );
     
     const token = jwt.sign({ handle, id: userId }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: userId, handle, displayName, email, avatar, joinedAt, following: [], followers: [] } });
+    const user = { id: userId, handle, displayName, email, avatar, joinedAt, followers: [], following: [], settings: {} };
+    res.json({ token, user });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -174,6 +175,11 @@ app.post('/api/auth/login', async (req, res) => {
     user.followers = followers.map(f => f.follower);
     user.following = following.map(f => f.following);
     delete user.password;
+    if (user.settings) {
+      try { user.settings = JSON.parse(user.settings); } catch(e) { user.settings = {}; }
+    } else {
+      user.settings = {};
+    }
     
     const token = jwt.sign({ handle: user.handle, id: user.id }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user });
@@ -216,6 +222,11 @@ app.get('/api/users/me', verifyToken, async (req, res) => {
     user.followers = followers.map(f => f.follower);
     user.following = following.map(f => f.following);
     delete user.password;
+    if (user.settings) {
+      try { user.settings = JSON.parse(user.settings); } catch(e) { user.settings = {}; }
+    } else {
+      user.settings = {};
+    }
     
     res.json({ user });
   } catch (err) {
@@ -230,6 +241,17 @@ app.put('/api/users/me', verifyToken, async (req, res) => {
       'UPDATE users SET displayName = ?, bio = ?, website = ?, avatar = ? WHERE handle = ?',
       [displayName, bio, website, avatar, req.user.handle]
     );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/users/me/settings', verifyToken, async (req, res) => {
+  const { settings } = req.body;
+  try {
+    const settingsStr = typeof settings === 'string' ? settings : JSON.stringify(settings || {});
+    await db.runAsync('UPDATE users SET settings = ? WHERE handle = ?', [settingsStr, req.user.handle]);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -303,14 +325,29 @@ app.delete('/api/users/me', verifyToken, async (req, res) => {
 
 app.get('/api/users', async (req, res) => {
   try {
-    const users = await db.allAsync('SELECT id, handle, displayName, avatar, bio, website, verified FROM users');
+    const users = await db.allAsync('SELECT id, handle, displayName, avatar, bio, website, verified, settings FROM users');
     for (const u of users) {
       const followers = await db.allAsync('SELECT follower FROM follows WHERE following = ?', [u.handle]);
       const following = await db.allAsync('SELECT following FROM follows WHERE follower = ?', [u.handle]);
       u.followers = followers.map(f => f.follower);
       u.following = following.map(f => f.following);
+      if (u.settings) {
+        try { u.settings = JSON.parse(u.settings); } catch(e) { u.settings = {}; }
+      } else {
+        u.settings = {};
+      }
     }
     res.json({ users });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/users/settings', verifyToken, async (req, res) => {
+  const { settings } = req.body;
+  try {
+    await db.runAsync('UPDATE users SET settings = ? WHERE handle = ?', [JSON.stringify(settings), req.user.handle]);
+    res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

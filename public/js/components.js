@@ -1,8 +1,8 @@
-import { icons } from './icons.js';
-import { el, $, $$, timeAgo, renderMarkdown, escapeHtml, getInitials, toast, showModal, confirmDialog, resizeImage, uid, debounce } from './utils.js';
-import { store } from './store.js';
-import { t } from './lang.js';
-import { createRichTextEditor } from './editor.js';
+import { icons } from './icons.js?v=8';
+import { el, $, $$, timeAgo, renderMarkdown, escapeHtml, getInitials, toast, showModal, confirmDialog, resizeImage, uid, debounce } from './utils.js?v=8';
+import { store } from './store.js?v=8';
+import { t } from './lang.js?v=8';
+import { createRichTextEditor } from './editor.js?v=8';
 
 export function renderAvatar(user, sizeClass = 'av-md', hasStoryRing = false) {
   if (!user) return el('div', { className: `avatar ${sizeClass}` });
@@ -88,7 +88,7 @@ export function renderPostCard(post, options = {}) {
     el('div', { className: 'dropdown-item', onclick: () => {
       navigator.clipboard.writeText(window.location.origin + window.location.pathname + '#/post/' + post.id);
       toast(t('linkCopied'), 'success');
-    }}, el('span', { innerHTML: icons.link(16) }), localStorage.getItem('koral_language') === 'en' ? 'Copy Link' : '링크 복사')
+    }}, el('span', { innerHTML: icons.link(16) }), t('copyLink'))
   );
   
   const moreWrap = el('div', { className: 'dropdown' }, moreBtn, dropdown);
@@ -121,13 +121,13 @@ export function renderPostCard(post, options = {}) {
     likeCountSpan
   );
   
-  const shareBtn = el('button', { className: 'post-action-btn', onclick: () => toast('공유 기능 준비중') }, el('span', { innerHTML: icons.share(24) }));
+  const shareBtn = el('button', { className: 'post-action-btn', onclick: () => toast(t('shareComingSoon')) }, el('span', { innerHTML: icons.share(24) }));
   const bookmarkBtn = el('button', { className: `post-action-btn ${isBookmarked?'bookmarked':''}` }, 
     el('span', { innerHTML: isBookmarked ? icons.bookmarkFilled(24) : icons.bookmark(24) })
   );
 
   const likePost = () => {
-    if (!currentUser) { toast('로그인이 필요합니다', 'error'); return; }
+    if (!currentUser) { toast(t('loginRequired'), 'error'); return; }
     const nowLiked = store.toggleLike(post.id);
     likeBtn.className = `post-action-btn flex items-center ${nowLiked?'liked':''}`;
     likeBtnSpan.innerHTML = nowLiked ? icons.heartFilled(24) : icons.heart(24);
@@ -137,7 +137,7 @@ export function renderPostCard(post, options = {}) {
 
   likeBtn.onclick = likePost;
   bookmarkBtn.onclick = () => {
-    if (!currentUser) { toast('로그인이 필요합니다', 'error'); return; }
+    if (!currentUser) { toast(t('loginRequired'), 'error'); return; }
     const nowBk = store.toggleBookmark(post.id);
     bookmarkBtn.className = `post-action-btn ${nowBk?'bookmarked':''}`;
     bookmarkBtn.innerHTML = '';
@@ -182,7 +182,7 @@ export function renderPostCard(post, options = {}) {
         onSubmit: (text) => {
           if (!currentUser) return toast(t('loginRequired'), 'error');
           store.addComment({ postId: post.id, parentId: null, text });
-          toast(localStorage.getItem('koral_language') === 'en' ? 'Comment added successfully.' : '댓글이 작성되었습니다', 'success');
+          toast(t('commentAdded'), 'success');
           if(options.onNavigate) options.onNavigate(`post/${post.id}`);
         }
       })
@@ -235,11 +235,11 @@ export function renderStoryCreator(targetContainer = null, options = {}) {
   const currentUser = store.getState().currentUser;
   const currentLang = localStorage.getItem('koral_language') || 'ko';
   
-  if (!currentUser) return toast(t('loginRequired') || '로그인이 필요합니다.', 'error');
+  if (!currentUser) return toast(t('loginRequired'), 'error');
   
   const wrap = el('div', { className: 'p-6 flex flex-col gap-4 bg-element border border-base rounded-2xl shadow-sm', style: { width: '100%', maxWidth: '548px', margin: '0 auto' } });
   if (!targetContainer) {
-    wrap.appendChild(el('h2', { className: 'font-bold text-lg mb-2 text-tx text-center border-b border-base pb-3' }, options.draftId ? t('editDraft', '임시저장 편집') : t('newShell')));
+    wrap.appendChild(el('h2', { className: 'font-bold text-lg mb-2 text-tx text-center border-b border-base pb-3' }, options.draftId ? t('editDraft') : t('newShell')));
   }
   
   let backgroundLayer = null;
@@ -284,7 +284,7 @@ export function renderStoryCreator(targetContainer = null, options = {}) {
     }
   };
   
-  const placeholderText = currentLang === 'ko' ? '이미지를 업로드해주세요' : currentLang === 'ja' ? '画像をアップロードしてください' : currentLang === 'zh' ? '请上传图片' : 'Please upload an image';
+  const placeholderText = t('uploadImageRequired');
   const placeholder = el('div', { className: 'text-tx-3 flex flex-col items-center pointer-events-none', style: { display: backgroundLayer ? 'none' : 'flex' } },
     el('span', { innerHTML: icons.image(32) }),
     placeholderText
@@ -306,7 +306,7 @@ export function renderStoryCreator(targetContainer = null, options = {}) {
       submitLabel: t('addText'),
       hideAdvanced: true,
       onSubmit: (html) => {
-        if (!html.trim()) return toast(currentLang === 'ko' ? '내용을 입력하세요' : 'Please enter content', 'error');
+        if (!html.trim()) return toast(t('enterContent'), 'error');
         const id = uid();
         textLayers.push({ id, type: 'text', html, x: 250, y: 250, scale: 1, rotate: 0, width: 250, height: 50 });
         activeLayerId = id;
@@ -328,7 +328,7 @@ export function renderStoryCreator(targetContainer = null, options = {}) {
         addTextBtn.disabled = false;
         renderCanvas();
       } catch (err) {
-        toast(currentLang === 'ko' ? '이미지 업로드 실패' : 'Failed to upload image', 'error');
+        toast(t('uploadImageFailed'), 'error');
       }
     }
   };
@@ -459,10 +459,10 @@ export function renderStoryCreator(targetContainer = null, options = {}) {
             showTitle: false,
             initialValue: layer.html,
             minHeight: '100px',
-            submitLabel: t('finishUpload', '완료'),
+            submitLabel: t('finishUpload'),
             hideAdvanced: true,
             onSubmit: (html) => {
-              if (!html.trim()) return toast(currentLang === 'ko' ? '내용을 입력하세요' : 'Please enter content', 'error');
+              if (!html.trim()) return toast(t('enterContent'), 'error');
               layer.html = html;
               renderCanvas();
               textModal.close();
@@ -579,11 +579,11 @@ export function renderStoryCreator(targetContainer = null, options = {}) {
 
   const draftBtn = el('button', { className: 'btn btn-outline flex-1', onclick: () => {
     store.saveDraft('story', { layers: getLayersToSave() }, options.draftId);
-    toast(currentLang === 'ko' ? '임시저장 되었습니다.' : 'Draft saved.', 'success');
-  } }, '임시저장');
+    toast(t('draftSaved'), 'success');
+  } }, t('saveDraft'));
 
   const submitBtn = el('button', { className: 'btn btn-primary flex-1', onclick: () => {
-    if (!backgroundLayer) return toast(currentLang === 'ko' ? '이미지를 필수로 업로드해야 합니다.' : 'You must upload an image.', 'error');
+    if (!backgroundLayer) return toast(t('imageRequired'), 'error');
     
     activeLayerId = null; 
     renderCanvas();
@@ -592,7 +592,7 @@ export function renderStoryCreator(targetContainer = null, options = {}) {
     if (options.draftId) {
       store.deleteDraft(options.draftId);
     }
-    toast(currentLang === 'ko' ? '셸이 완성되었습니다.' : 'Shell created successfully.', 'success');
+    toast(t('shellCreated'), 'success');
     cleanup();
     if (modalRef) modalRef.close();
     window.location.reload();
@@ -605,7 +605,7 @@ export function renderStoryCreator(targetContainer = null, options = {}) {
     targetContainer.innerHTML = '';
     const pageWrap = el('div', { className: 'page-container anim-fade flex flex-col items-center justify-center', style: { maxWidth: '768px' } });
     const titleHeader = el('div', { className: 'mb-6 text-center w-full' },
-      el('h2', { className: 'text-2xl font-bold text-tx' }, options.draftId ? t('editDraft', '임시저장 편집') : t('newShell'))
+      el('h2', { className: 'text-2xl font-bold text-tx' }, options.draftId ? t('editDraft') : t('newShell'))
     );
     pageWrap.append(titleHeader, wrap);
     targetContainer.appendChild(pageWrap);
@@ -763,7 +763,7 @@ export function renderStoryViewer(startIndex, groupedStories, startStoryIndex = 
       },
       onclick: (e) => {
         e.stopPropagation();
-        if (!currentUser) return toast(t('loginRequired') || '로그인이 필요합니다', 'error');
+        if (!currentUser) return toast(t('loginRequired'), 'error');
         const nowLiked = store.toggleStoryLike(story.id);
         storyLikeBtn.style.color = nowLiked ? 'var(--brand-a, #ff7171)' : '#fff';
         storyLikeBtnSpan.innerHTML = nowLiked ? icons.heartFilled(20) : icons.heart(20);
@@ -855,19 +855,16 @@ export function renderSuggestSidebar() {
   if (!currentUser) return el('div');
 
   const currentLang = localStorage.getItem('koral_language') || 'ko';
-  const recTitle = currentLang === 'ko' ? '회원님을 위한 추천' : currentLang === 'ja' ? 'おすすめのユーザー' : currentLang === 'zh' ? '为您推荐' : 'Suggestions for you';
-  const viewAll = currentLang === 'ko' ? '모두 보기' : currentLang === 'ja' ? 'すべて見る' : currentLang === 'zh' ? '查看全部' : 'See All';
-  const switchLabel = currentLang === 'ko' ? '계정 전환' : currentLang === 'ja' ? 'アカウント切り替え' : currentLang === 'zh' ? '切换账号' : 'Switch Account';
-  const logoutLabel = currentLang === 'ko' ? '로그아웃' : currentLang === 'ja' ? 'ログアウト' : currentLang === 'zh' ? '退出登录' : 'Log out';
-  const followingLabel = currentLang === 'ko' ? '팔로잉' : currentLang === 'ja' ? 'フォロー中' : currentLang === 'zh' ? '正在关注' : 'Following';
-  const followLabel = currentLang === 'ko' ? '팔로우' : currentLang === 'ja' ? 'フォロー' : currentLang === 'zh' ? '关注' : 'Follow';
-  const optionsTitle = currentLang === 'ko' ? '옵션' : currentLang === 'ja' ? 'オプション' : currentLang === 'zh' ? '选项' : 'Options';
-  const addAccountLabel = currentLang === 'ko' ? '기존 계정 추가' : currentLang === 'ja' ? '既存のアカウントを追加' : currentLang === 'zh' ? '添加已有账号' : 'Add Existing Account';
+  const recTitle = t('suggestionsForYou');
+  const viewAll = t('seeAll');
+  const switchLabel = t('switchAccount');
+  const logoutLabel = t('logout');
+  const followingLabel = t('following');
+  const followLabel = t('follow');
+  const optionsTitle = t('options');
+  const addAccountLabel = t('addExistingAccount');
   
-  const footerText = currentLang === 'ko' ? '소개 · 도움말 · 홍보 센터 · API · 채용 정보 · 개인정보처리방침 · 약관 · 위치 · 언어 · Meta Verified' :
-                     currentLang === 'ja' ? '基本情報 · ヘルプ · プレス · API · 求人 · プライバシー · 規約 · 位置 · 言語 · Meta Verified' :
-                     currentLang === 'zh' ? '关于 · 帮助 · 新闻 · API · 工作 · 隐私 · 条款 · 位置 · 语言 · Meta Verified' :
-                     'About · Help · Press · API · Jobs · Privacy · Terms · Locations · Language · Meta Verified';
+  const footerText = t('footerLinks');
 
   const container = el('div', { className: 'aside-content flex flex-col', style: { display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 80px)' } });
   
@@ -937,10 +934,10 @@ export function showMoreModal() {
   const currentUser = store.getState().currentUser;
   if (!currentUser) return;
   const currentLang = localStorage.getItem('koral_language') || 'ko';
-  const switchLabel = currentLang === 'ko' ? '계정 전환' : currentLang === 'ja' ? 'アカウント切り替え' : currentLang === 'zh' ? '切换账号' : 'Switch Account';
-  const logoutLabel = currentLang === 'ko' ? '로그아웃' : currentLang === 'ja' ? 'ログアウト' : currentLang === 'zh' ? '退出登录' : 'Log out';
-  const optionsTitle = currentLang === 'ko' ? '옵션' : currentLang === 'ja' ? 'オプション' : currentLang === 'zh' ? '选项' : 'Options';
-  const addAccountLabel = currentLang === 'ko' ? '기존 계정 추가' : currentLang === 'ja' ? '既存のアカウントを追加' : currentLang === 'zh' ? '添加已有账号' : 'Add Existing Account';
+  const switchLabel = t('switchAccount');
+  const logoutLabel = t('logout');
+  const optionsTitle = t('options');
+  const addAccountLabel = t('addExistingAccount');
 
   const showSwitcherModal = () => {
     const wrap = el('div', { className: 'p-2 w-full flex flex-col gap-1' });
@@ -1009,9 +1006,9 @@ export function renderThemeSelector() {
   const currentTheme = store.getTheme();
 
   const options = [
-    { id: 'system', icon: '🖥️', label: '시스템 설정', desc: '기기 설정에 맞춤' },
-    { id: 'light', icon: '☀️', label: '라이트 모드', desc: '밝은 테마' },
-    { id: 'dark', icon: '🌙', label: '다크 모드', desc: '어두운 테마' }
+    { id: 'system', icon: '🖥️', label: t('themeSystem'), desc: t('themeSystemDesc') },
+    { id: 'light', icon: '☀️', label: t('themeLight'), desc: t('themeLightDesc') },
+    { id: 'dark', icon: '🌙', label: t('themeDark'), desc: t('themeDarkDesc') }
   ];
 
   options.forEach(opt => {
@@ -1036,7 +1033,7 @@ export function renderThemeSelector() {
 
 export function renderSearchBar(onNavigate) {
   const wrap = el('div', { className: 'search-wrap' });
-  const input = el('input', { className: 'input', placeholder: '검색', type: 'text' });
+  const input = el('input', { className: 'input', placeholder: t('searchPlaceholder'), type: 'text' });
   const icon = el('div', { className: 'search-icon', innerHTML: icons.search(16) });
   const results = el('div', { className: 'search-results hidden' });
   
@@ -1048,7 +1045,7 @@ export function renderSearchBar(onNavigate) {
     results.innerHTML = '';
     
     if (users.length === 0) {
-      results.appendChild(el('div', { className: 'p-3 text-center text-sm text-muted' }, '검색 결과가 없습니다.'));
+      results.appendChild(el('div', { className: 'p-3 text-center text-sm text-muted' }, t('noSearchResults')));
     } else {
       users.forEach(u => {
         const item = el('div', { className: 'search-result-item', onclick: () => {
@@ -1086,8 +1083,8 @@ export function renderCommentSection(postId) {
     const commentList = buildList(null);
     if (commentList.children.length === 0) {
       container.appendChild(el('div', { className: 'empty-state py-8 text-center' },
-        el('div', { className: 'text-lg font-semibold' }, '아직 댓글이 없습니다.'),
-        el('div', { className: 'text-sm text-tx-3' }, '가장 먼저 댓글을 남겨보세요.')
+        el('div', { className: 'text-lg font-semibold' }, t('noComments')),
+        el('div', { className: 'text-sm text-tx-3' }, t('firstComment'))
       ));
     } else {
       container.appendChild(commentList);
@@ -1109,7 +1106,7 @@ export function renderCommentSection(postId) {
       
       const toggleCommentLike = (e) => {
         e.stopPropagation();
-        if (!currentUser) return toast('로그인이 필요합니다.', 'error');
+        if (!currentUser) return toast(t('loginRequired'), 'error');
         const nowLiked = store.toggleCommentLike(c.id);
         const newCount = store.getState().comments.find(cm => cm.id === c.id).likes.length;
         likeBtnSpan.innerHTML = nowLiked ? icons.heartFilled(14) : icons.heart(14);
@@ -1132,19 +1129,19 @@ export function renderCommentSection(postId) {
         const replyEditorWrap = el('div', { className: 'reply-editor-wrap mt-2' });
         replyEditorWrap.appendChild(
           createRichTextEditor({
-            placeholder: `${handleForPlaceholder}에게 답글 남기기...`,
-            submitLabel: '답글',
+            placeholder: `@${handleForPlaceholder} ` + t('leaveReply'),
+            submitLabel: t('replyBtnText'),
             minHeight: '40px',
             onSubmit: (text) => {
-              if (!currentUser) return toast('로그인이 필요합니다.', 'error');
+              if (!currentUser) return toast(t('loginRequired'), 'error');
               store.addComment({ postId, parentId: c.id, text });
-              toast('답글이 작성되었습니다', 'success');
+              toast(t('replyAdded'), 'success');
               refreshComments();
             }
           })
         );
         itemWrapper.insertBefore(replyEditorWrap, repliesContainer);
-      }}, '답글 달기');
+      }}, t('leaveReply'));
 
       const isOwn = currentUser && c.authorHandle === currentUser.handle;
       const moreDropdown = el('div', { className: 'dropdown-menu', style: { width: '120px' } },
@@ -1157,25 +1154,25 @@ export function renderCommentSection(postId) {
           editWrap.appendChild(
             createRichTextEditor({
               initialValue: c.text,
-              submitLabel: '수정 완료',
+              submitLabel: t('editComplete'),
               minHeight: '40px',
               onSubmit: (text) => {
                 store.editComment(c.id, text);
-                toast('수정되었습니다.', 'success');
+                toast(t('editSuccess'), 'success');
                 refreshComments();
               }
             })
           );
           itemWrapper.insertBefore(editWrap, repliesContainer);
-        }}, el('span', { innerHTML: icons.edit(14) }), '수정'),
+        }}, el('span', { innerHTML: icons.edit(14) }), t('edit')),
         el('div', { className: 'dropdown-item danger', onclick: async () => {
           moreWrap.querySelector('.dropdown-menu').classList.remove('open');
-          if (await confirmDialog('이 댓글을 삭제하시겠습니까?')) {
+          if (await confirmDialog(t('deleteConfirm'))) {
             store.deleteComment(c.id);
-            toast('삭제되었습니다.', 'success');
+            toast(t('deleteSuccess'), 'success');
             refreshComments();
           }
-        }}, el('span', { innerHTML: icons.trash(14) }), '삭제')
+        }}, el('span', { innerHTML: icons.trash(14) }), t('delete'))
       );
       
       const moreBtn = el('span', { className: 'comment-action cursor-pointer hover:text-tx px-1' }, el('span', { innerHTML: icons.more(14) }));
@@ -1198,7 +1195,7 @@ export function renderCommentSection(postId) {
 
       const isLong = c.text.length > 150 || (c.text.match(/\n/g) || []).length > 3;
       const textSpan = el('span', { className: 'comment-text w-full', innerHTML: renderMarkdown(c.text).replace(/^<p>/, '').replace(/<\/p>$/, '') });
-      const toggleMoreBtn = isLong ? el('button', { className: 'text-xs font-bold text-tx-3 hover:text-tx bg-transparent p-0 border-none cursor-pointer mt-1' }, '자세히 보기') : null;
+      const toggleMoreBtn = isLong ? el('button', { className: 'text-xs font-bold text-tx-3 hover:text-tx bg-transparent p-0 border-none cursor-pointer mt-1' }, t('viewMore')) : null;
       
       if (isLong) {
         textSpan.style.display = '-webkit-box';
@@ -1214,11 +1211,11 @@ export function renderCommentSection(postId) {
           if (expanded) {
             textSpan.style.display = 'block';
             textSpan.style.webkitLineClamp = 'unset';
-            toggleMoreBtn.textContent = '간단히 보기';
+            toggleMoreBtn.textContent = t('viewLess');
           } else {
             textSpan.style.display = '-webkit-box';
             textSpan.style.webkitLineClamp = '3';
-            toggleMoreBtn.textContent = '자세히 보기';
+            toggleMoreBtn.textContent = t('viewMore');
           }
         };
       }
@@ -1237,7 +1234,7 @@ export function renderCommentSection(postId) {
         textSpan,
         isLong ? el('div', {}, toggleMoreBtn) : null,
         el('div', { className: 'comment-actions flex items-center gap-2 mt-2' },
-          el('span', { className: 'comment-time' }, timeAgo(c.createdAt) + (c.editedAt ? ' (수정됨)' : '')),
+          el('span', { className: 'comment-time' }, timeAgo(c.createdAt) + (c.editedAt ? t('edited') : '')),
           replyBtn,
           isOwn ? moreWrap : null
         )
@@ -1262,13 +1259,13 @@ export function renderCommentSection(postId) {
         const repliesContent = buildList(c.id);
         repliesContent.style.display = 'none';
         
-        const toggleLabel = el('span', { textContent: `답글 ${replyData.length}개 보기` });
+        const toggleLabel = el('span', { textContent: t('viewReplies').replace('{n}', replyData.length) });
         const toggleBtn = el('div', { 
           className: 'flex items-center gap-2 cursor-pointer text-xs font-semibold text-tx-3 hover:text-tx transition-colors ml-4 pl-6 mt-1',
           onclick: () => {
             const isHidden = repliesContent.style.display === 'none';
             repliesContent.style.display = isHidden ? '' : 'none';
-            toggleLabel.textContent = isHidden ? `답글 ${replyData.length}개 숨기기` : `답글 ${replyData.length}개 보기`;
+            toggleLabel.textContent = isHidden ? t('hideRepliesNum').replace('{n}', replyData.length) : t('viewReplies').replace('{n}', replyData.length);
             chevronIcon.style.transform = isHidden ? 'rotate(180deg)' : '';
           }
         });
@@ -1349,7 +1346,7 @@ export function renderPostPreviewCard(post, options = {}) {
     className: `flex items-center gap-1 cursor-pointer hover:text-tx transition-colors ${isLiked ? 'text-brand' : ''}`,
     onclick: (e) => {
       e.stopPropagation();
-      if (!currentUser) return toast('로그인이 필요합니다.', 'error');
+      if (!currentUser) return toast(t('loginRequired'), 'error');
       const nowLiked = store.toggleLike(post.id);
       likeStat.innerHTML = '';
       likeStat.appendChild(el('span', { innerHTML: nowLiked ? icons.heartFilled(14) : icons.heart(14) }));
@@ -1377,7 +1374,7 @@ export function renderPostPreviewCard(post, options = {}) {
         style: { padding: '2px 4px' },
         onclick: (e) => {
           e.stopPropagation(); // prevent navigation
-          if (!currentUser) return toast('로그인이 필요합니다', 'error');
+          if (!currentUser) return toast(t('loginRequired'), 'error');
           const nowLiked = store.toggleCommentLike(topComment.id);
           commentLikeBtn.className = `flex items-center gap-1 text-xs cursor-pointer hover:scale-110 transition-transform bg-transparent border-none ${nowLiked ? 'text-brand' : 'text-tx-3'}`;
           commentLikeBtnSpan.innerHTML = nowLiked ? icons.heartFilled(12) : icons.heart(12);

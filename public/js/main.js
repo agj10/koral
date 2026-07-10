@@ -1,9 +1,9 @@
-import { icons } from './icons.js';
-import { el, $, $$ } from './utils.js';
-import { store } from './store.js';
-import { t } from './lang.js';
-import { renderFeedPage, renderExplorePage, renderProfilePage, renderPostPage, renderSettingsPage, renderEditProfilePage, renderThemeSettingsPage, renderSecurityPage, renderLanguageSettingsPage, renderLoginPage, renderSignupPage, renderLandingPage, renderCreatePage } from './pages.js';
-import { koralWaves } from './waves.js';
+import { icons } from './icons.js?v=8';
+import { el, $, $$ } from './utils.js?v=8';
+import { store } from './store.js?v=8';
+import { t } from './lang.js?v=8';
+import { renderFeedPage, renderExplorePage, renderProfilePage, renderPostPage, renderSettingsPage, renderEditProfilePage, renderThemeSettingsPage, renderSecurityPage, renderLanguageSettingsPage, renderLoginPage, renderSignupPage, renderLandingPage, renderCreatePage } from './pages.js?v=8';
+import { koralWaves } from './waves.js?v=8';
 
 let appRoot, shell, mainContent;
 
@@ -45,8 +45,8 @@ function buildAppShell() {
   
   const bottomNavItems = el('div', { className: 'mt-auto mb-4', style: { display: 'flex', flexDirection: 'column' } },
     createNavItem('settings', icons.settings(24), t('settings'), 'settings/profile'),
-    createNavItem('more', icons.more(24), '더보기', '#', () => {
-      import('./components.js').then(c => c.showMoreModal());
+    createNavItem('more', icons.more(24), t('more'), '#', () => {
+      import('./components.js?v=8').then(c => c.showMoreModal());
     })
   );
   
@@ -63,14 +63,14 @@ function buildAppShell() {
       createNavItem('m-create', icons.plusSquare(24), '', 'create'),
       currentUser ? createNavItem('m-profile', icons.user(24), '', `profile/${currentUser.handle.replace(/^@/, '')}`) : '',
       createNavItem('m-more', icons.more(24), '', '#', () => {
-        import('./components.js').then(c => c.showMoreModal());
+        import('./components.js?v=8').then(c => c.showMoreModal());
       })
     )
   );
   
   const floatingMoreBtn = el('button', { 
     className: 'floating-more-btn', 
-    onclick: () => import('./components.js').then(c => c.showMoreModal()) 
+    onclick: () => import('./components.js?v=8').then(c => c.showMoreModal()) 
   }, el('span', { innerHTML: icons.more(24) }));
   
   shell.append(sidebar, mainContent, mobileNav, floatingMoreBtn);

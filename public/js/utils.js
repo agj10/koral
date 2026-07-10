@@ -1,3 +1,4 @@
+import { t } from './lang.js?v=7';
 export function uid() {
   return Math.random().toString(36).substring(2, 10);
 }
@@ -7,13 +8,13 @@ export function timeAgo(isoString) {
   const now = new Date();
   const diffInSeconds = Math.floor((now - date) / 1000);
 
-  if (diffInSeconds < 60) return "방금";
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}분 전`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}시간 전`;
-  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}일 전`;
-  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 604800)}주 전`;
+  if (diffInSeconds < 60) return t('timeJustNow');
+  if (diffInSeconds < 3600) return t('timeMinsAgo').replace('{m}', Math.floor(diffInSeconds / 60));
+  if (diffInSeconds < 86400) return t('timeHoursAgo').replace('{h}', Math.floor(diffInSeconds / 3600));
+  if (diffInSeconds < 604800) return t('timeDaysAgo').replace('{d}', Math.floor(diffInSeconds / 86400));
+  if (diffInSeconds < 2592000) return t('timeWeeksAgo').replace('{w}', Math.floor(diffInSeconds / 604800));
   
-  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+  return t('timeDate').replace('{y}', date.getFullYear()).replace('{m}', date.getMonth() + 1).replace('{d}', date.getDate());
 }
 
 export function escapeHtml(str) {
@@ -63,7 +64,7 @@ export function renderMarkdown(text) {
   html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/gim, '<img src="$2" alt="$1" style="max-width:100%; border-radius: var(--r-xl); margin: var(--s3) 0; display:block;" />');
 
   // Videos
-  html = html.replace(/\[비디오\]\(([^)]+)\)/gim, '<video src="$1" controls style="max-width:100%; border-radius: var(--r-xl); margin: var(--s3) 0; display:block;"></video>');
+  html = html.replace(/\[(비디오|Video|video|ビデオ|视频)\]\(([^)]+)\)/gim, '<video src="$1" controls style="max-width:100%; border-radius: var(--r-xl); margin: var(--s3) 0; display:block;"></video>');
   
   // Horizontal Rule
   html = html.replace(/^---$/gim, '<hr />');
@@ -191,7 +192,7 @@ export function showModal(contentEl, options = {}) {
   return { close };
 }
 
-export function confirmDialog(message, title = '확인') {
+export function confirmDialog(message, title = t('confirmBtn')) {
   return new Promise((resolve) => {
     let closeFn;
     const content = el('div', {},
@@ -200,12 +201,12 @@ export function confirmDialog(message, title = '확인') {
       el('div', { className: 'modal-footer' },
         el('button', { 
           className: 'btn btn-ghost', 
-          textContent: '취소',
+          textContent: t('cancelBtn'),
           onclick: () => { closeFn(); resolve(false); }
         }),
         el('button', { 
           className: 'btn btn-primary', 
-          textContent: '확인',
+          textContent: t('confirmBtn'),
           onclick: () => { closeFn(); resolve(true); }
         })
       )
@@ -332,7 +333,7 @@ export function createDropdownSelect(options, value, onChange, placeholder = '')
         value = newVal;
         selectedText.textContent = newLabel;
         if (onChange) onChange(value);
-      }, placeholder || '선택');
+      }, placeholder || t('selectBtn'));
     } 
   }, selectedText, el('div', { innerHTML: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`, className: 'text-tx-3 flex-shrink-0' }));
   

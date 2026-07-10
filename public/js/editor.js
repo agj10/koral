@@ -1,6 +1,7 @@
-import { el, toast, resizeImage, showModal, createDropdownSelect } from './utils.js';
-import { icons } from './icons.js';
-import { store } from './store.js';
+import { el, toast, resizeImage, showModal, createDropdownSelect } from './utils.js?v=8';
+import { t } from './lang.js?v=8';
+import { icons } from './icons.js?v=8';
+import { store } from './store.js?v=8';
 
 // Simple HSV to RGB
 function hsvToRgb(h, s, v) {
@@ -24,7 +25,7 @@ function hsvToHex(h, s, v) {
 
 function showColorPickerModal(onChange, onClose) {
   const wrap = el('div', { className: 'p-2 flex flex-col items-center w-full max-w-sm' });
-  wrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3 mb-4 w-full text-center' }, '색상 선택'));
+  wrap.appendChild(el('div', { className: 'font-bold text-lg text-tx border-b border-base pb-3 mb-4 w-full text-center' }, t('colorSelect')));
 
   let h = 0, s = 100, v = 100;
   
@@ -79,8 +80,8 @@ function showColorPickerModal(onChange, onClose) {
     wheelCanvas,
     el('div', { className: 'flex flex-col gap-4 w-full mt-6 px-4' }, 
       el('div', { className: 'flex flex-col gap-3 w-full' },
-        el('div', { className: 'flex items-center gap-3 w-full' }, el('label', { className: 'text-sm font-semibold text-tx-2 w-10' }, '채도'), sSlider),
-        el('div', { className: 'flex items-center gap-3 w-full' }, el('label', { className: 'text-sm font-semibold text-tx-2 w-10' }, '명도'), vSlider)
+        el('div', { className: 'flex items-center gap-3 w-full' }, el('label', { className: 'text-sm font-semibold text-tx-2 w-10' }, t('saturation')), sSlider),
+        el('div', { className: 'flex items-center gap-3 w-full' }, el('label', { className: 'text-sm font-semibold text-tx-2 w-10' }, t('brightness')), vSlider)
       ),
       el('div', { className: 'w-full h-px bg-base my-2' }),
       el('div', { className: 'flex items-center justify-between gap-3 w-full' }, 
@@ -102,7 +103,7 @@ function showColorPickerModal(onChange, onClose) {
 }
 
 export function createRichTextEditor(options) {
-  const { id = 'default', placeholder = '내용을 입력하세요...', initialValue = '', initialTitle = '', onSubmit, onDraftSave, submitLabel = '등록', minHeight = '100px', showTitle = false } = options;
+  const { id = 'default', placeholder = t('enterContentEllipsis'), initialValue = '', initialTitle = '', onSubmit, onDraftSave, submitLabel = t('registerBtn2'), minHeight = '100px', showTitle = false } = options;
 
   const container = el('div', { className: 'rich-editor bg-subtle border border-base rounded-2xl flex flex-col w-full relative', style: { position: 'relative' } });
   
@@ -110,7 +111,7 @@ export function createRichTextEditor(options) {
   if (showTitle) {
     titleInput = el('input', {
       className: 'w-full bg-transparent p-5 text-2xl font-bold border-b border-base outline-none text-tx',
-      placeholder: '제목을 입력하세요',
+      placeholder: t('titlePlaceholder'),
       value: initialTitle
     });
     container.appendChild(titleInput);
@@ -540,7 +541,7 @@ export function createRichTextEditor(options) {
           exec('insertHTML', `&nbsp;<a href="${url}" download="${file.name}" class="text-brand font-semibold underline">${file.name}</a>&nbsp;`);
         }
       } catch (err) {
-        toast('미디어 첨부 실패', 'error');
+        toast(t('mediaAttachFailed'), 'error');
       }
     }
   };
@@ -556,7 +557,7 @@ export function createRichTextEditor(options) {
     const btn = el('button', { type: 'button', className: 'toolbar-btn hover-active p-2 hover:bg-hover rounded-lg flex items-center justify-center transition-all text-tx hover:text-tx', title, onclick: () => {
       if (isAction) {
         if (cmd === 'link') {
-          const url = prompt('링크 URL을 입력하세요:', 'https://');
+          const url = prompt(t('enterLinkUrl'), 'https://');
           if (url) exec('createLink', url);
         } else if (cmd === 'file') {
           fileInput.click();
@@ -591,7 +592,7 @@ export function createRichTextEditor(options) {
     fontSizes.map(s => ({ value: s.val, label: s.label })),
     3,
     (val) => exec('fontSize', val),
-    '글자 크기'
+    t('fontSize')
   );
   sizeSelect.style.width = '100px';
 
@@ -601,14 +602,14 @@ export function createRichTextEditor(options) {
     fonts.map(f => ({ value: f, label: f })),
     'Pretendard',
     (val) => exec('fontName', val),
-    '폰트'
+    t('fontFamily')
   );
   fontSelect.style.width = '120px';
 
   // Color Picker Popup Trigger
   const colorBtnWrap = el('div', { className: 'relative' });
-  const colorBtn = el('button', { type: 'button', className: 'toolbar-btn hover-active p-2 hover:bg-hover rounded-lg flex items-center justify-center transition-all text-tx hover:text-tx', title: '글자 색상' }, 
-    el('span', { innerHTML: icons.palette ? icons.palette(20) : '색', style: { color: 'currentColor' } })
+  const colorBtn = el('button', { type: 'button', className: 'toolbar-btn hover-active p-2 hover:bg-hover rounded-lg flex items-center justify-center transition-all text-tx hover:text-tx', title: t('fontColor') }, 
+    el('span', { innerHTML: icons.palette ? icons.palette(20) : typeof window.t === 'function' ? window.t('colorSelect') : '색', style: { color: 'currentColor' } })
   );
   let colorPopup = null;
   colorBtn.onclick = () => {
@@ -625,16 +626,16 @@ export function createRichTextEditor(options) {
   colorBtnWrap.appendChild(colorBtn);
 
   const btns = {
-    bold: createBtn('text:B', '굵게', 'bold'),
-    italic: createBtn('text:I', '기울임', 'italic'),
-    underline: createBtn('text:U', '밑줄', 'underline'),
-    strike: createBtn('text:S', '취소선', 'strikeThrough'),
-    left: createBtn('alignLeft', '왼쪽 정렬', 'justifyLeft'),
-    center: createBtn('alignCenter', '가운데 정렬', 'justifyCenter'),
-    right: createBtn('alignRight', '오른쪽 정렬', 'justifyRight'),
-    justify: createBtn('alignJustify', '양쪽 정렬', 'justifyFull'),
-    link: createBtn('link', '링크 삽입', 'link', null, true),
-    file: createBtn('paperclip', '미디어/파일 첨부', 'file', null, true)
+    bold: createBtn('text:B', t('bold'), 'bold'),
+    italic: createBtn('text:I', t('italic'), 'italic'),
+    underline: createBtn('text:U', t('underline'), 'underline'),
+    strike: createBtn('text:S', t('strikethrough'), 'strikeThrough'),
+    left: createBtn('alignLeft', t('alignLeft'), 'justifyLeft'),
+    center: createBtn('alignCenter', t('alignCenter'), 'justifyCenter'),
+    right: createBtn('alignRight', t('alignRight'), 'justifyRight'),
+    justify: createBtn('alignJustify', t('alignJustify'), 'justifyFull'),
+    link: createBtn('link', t('insertLink'), 'link', null, true),
+    file: createBtn('paperclip', t('attachMedia'), 'file', null, true)
   };
 
   function updateToolbarState() {
@@ -710,7 +711,7 @@ export function createRichTextEditor(options) {
       const content = editorArea.innerHTML;
       if (!editorArea.textContent.trim() && !content.includes('<img') && !(titleInput && titleInput.value.trim())) return;
       onDraftSave(content, titleInput ? titleInput.value : '');
-    } }, '임시저장') : null,
+    } }, t('saveDraft')) : null,
     onSubmit ? el('button', { type: 'button', className: 'btn btn-primary px-6', onclick: (e) => {
       const btn = e.currentTarget;
       if (btn.disabled) return;

@@ -176,6 +176,7 @@ blockquote{border-left:3px solid var(--border-br);padding-left:var(--s4);color:v
 .bg-transparent { background: transparent; }
 .bg-subtle { background: var(--bg-sub); }
 .bg-element { background: var(--bg-el); }
+.bg-s { background: var(--bg-s); }
 .bg-brand-grad { background: var(--brand-grad); }
 .hover\:bg-hover:hover { background: var(--bg-hover); }
 .hover\:text-tx:hover { color: var(--tx); }

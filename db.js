@@ -64,9 +64,12 @@ const initDb = async () => {
       bio TEXT,
       website TEXT,
       joinedAt TEXT NOT NULL,
-      verified INTEGER DEFAULT 0
+      verified INTEGER DEFAULT 0,
+      settings TEXT DEFAULT '{}'
     )
   `);
+  
+  try { await db.runAsync(`ALTER TABLE users ADD COLUMN settings TEXT DEFAULT '{}'`); } catch(e) {}
 
   await db.runAsync(`
     CREATE TABLE IF NOT EXISTS follows (

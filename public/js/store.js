@@ -65,6 +65,7 @@ class Store {
         try {
           const meRes = await this.api('/users/me');
           this.state.currentUser = meRes.user;
+          this._syncSettings(meRes.user);
           const notifsRes = await this.api('/notifications');
           this.state.notifications = notifsRes.notifications || [];
           const draftsRes = await this.api('/drafts');
@@ -95,6 +96,20 @@ class Store {
     return res.url;
   }
 
+  _syncSettings(user) {
+    if (!user || !user.settings) return;
+    const settings = user.settings;
+    if (settings.theme) {
+      this.applyTheme(settings.theme);
+    }
+    if (settings.language && settings.language !== storage.getItem('koral_language')) {
+      storage.setItem('koral_language', settings.language);
+      if (typeof window !== 'undefined') {
+        setTimeout(() => location.reload(), 100);
+      }
+    }
+  }
+
   // --- Auth ---
   async login(handleOrEmail, password) {
     try {
@@ -102,6 +117,7 @@ class Store {
       this.token = res.token;
       storage.setItem('koral_token', res.token);
       this.state.currentUser = res.user;
+      this._syncSettings(res.user);
       
       const saved = JSON.parse(storage.getItem('koral_saved_accounts') || '[]');
       const existingIdx = saved.findIndex(u => u.id === res.user.id);
@@ -510,7 +526,11 @@ class Store {
   }
 
   getUser(handle) {
-    return this.state.users.find(u => u.handle === handle || u.handle === '@' + handle || u.handle.replace(/^@/, '') === handle.replace(/^@/, ''));
+    const h = handle.replace(/^@/, '');
+    if (this.state.currentUser && this.state.currentUser.handle.replace(/^@/, '') === h) {
+      return this.state.currentUser;
+    }
+    return this.state.users.find(u => u.handle === handle || u.handle === '@' + handle || u.handle.replace(/^@/, '') === h);
   }
 
   getCommentsForPost(postId) {
@@ -610,8 +630,31 @@ class Store {
     // No-op for compatibility with old components.js logic
   }
 
+  async updateSetting(key, value) {
+    if (key === 'theme') {
+      this.applyTheme(value);
+    } else if (key === 'language') {
+      storage.setItem('koral_language', value);
+    }
+    
+    if (this.state.currentUser) {
+      if (!this.state.currentUser.settings) this.state.currentUser.settings = {};
+      this.state.currentUser.settings[key] = value;
+      try {
+        await this.api('/users/settings', 'PUT', { settings: this.state.currentUser.settings });
+      } catch (err) {
+        console.error('Failed to save settings:', err);
+      }
+    }
+    this._notify();
+  }
+
   setTheme(themeId) {
-    this.applyTheme(themeId);
+    this.updateSetting('theme', themeId);
+  }
+
+  setLanguage(langId) {
+    this.updateSetting('language', langId);
   }
 
   // --- Compatibility methods for existing frontend code ---
